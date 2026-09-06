@@ -1,0 +1,546 @@
+/* =========================================================
+   GIAO DIỆN SÀN ĐẤU 2D (COMBAT ARENA CSS)
+   ========================================================= */
+
+.combat-arena-container {
+    background: radial-gradient(circle at center, rgba(16, 26, 44, 0.9), #080b12);
+    border: 1px solid rgba(78, 204, 163, 0.3);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), inset 0 0 50px rgba(0, 0, 0, 0.6);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Thanh tiêu đề ải trên sàn đấu */
+.combat-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.combat-stage-name {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    color: var(--text-gold);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+}
+
+.combat-controls-top {
+    display: flex;
+    gap: 10px;
+}
+
+/* Khung 2 bên: Đạo Hữu VS Quái Vật */
+.combat-stage-duel {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 30px;
+    min-height: 260px;
+    margin-bottom: 24px;
+}
+
+.combat-fighter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+}
+
+/* Khung Avatar */
+.fighter-avatar-box {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 56px;
+    position: relative;
+    margin-bottom: 16px;
+    transition: transform 0.1s;
+    user-select: none;
+}
+
+#combat-player-avatar-box {
+    background: radial-gradient(circle, rgba(78, 204, 163, 0.25), rgba(10, 15, 25, 0.85));
+    border: 2px solid #4ecca3;
+    box-shadow: 0 0 30px rgba(78, 204, 163, 0.4);
+    animation: playerIdle 3s ease-in-out infinite;
+}
+
+#combat-monster-avatar-box {
+    background: radial-gradient(circle, rgba(235, 77, 75, 0.25), rgba(10, 15, 25, 0.85));
+    border: 2px solid #eb4d4b;
+    box-shadow: 0 0 30px rgba(235, 77, 75, 0.4);
+    animation: monsterIdle 3.5s ease-in-out infinite;
+}
+
+@keyframes playerIdle {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-6px) scale(1.02); }
+}
+
+@keyframes monsterIdle {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-6px) scale(1.03); }
+}
+
+.shake-anim {
+    animation: shakeEffect 0.3s cubic-bezier(.36,.07,.19,.97) both !important;
+}
+
+@keyframes shakeEffect {
+    10%, 90% { transform: translate3d(-4px, 0, 0); }
+    20%, 80% { transform: translate3d(6px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+    40%, 60% { transform: translate3d(6px, 0, 0); }
+}
+
+.fighter-name {
+    font-family: var(--font-heading);
+    font-size: 17px;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+/* Thanh máu và khiên */
+.fighter-bars-container {
+    width: 100%;
+    max-width: 260px;
+}
+
+.fighter-hp-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 4px;
+    color: var(--text-muted);
+}
+
+.combat-hp-bar-outer {
+    width: 100%;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.combat-hp-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.2s ease-out;
+}
+
+#combat-player-hp-bar {
+    background: linear-gradient(90deg, #2ecc71, #4ecca3);
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+}
+
+#combat-monster-hp-bar {
+    background: linear-gradient(90deg, #ff7675, #d63031);
+    box-shadow: 0 0 10px rgba(214, 48, 49, 0.5);
+}
+
+/* Thanh Khiên Chắn Hộ Thể */
+.combat-shield-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: rgba(0, 210, 211, 0.6);
+    border-radius: 6px;
+    transition: width 0.2s ease-out;
+    box-shadow: 0 0 10px #00d2d3;
+    pointer-events: none;
+}
+
+/* Biểu tượng VS ở giữa */
+.combat-vs-badge {
+    font-family: var(--font-heading);
+    font-size: 32px;
+    font-weight: 900;
+    color: #ffd700;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    user-select: none;
+    animation: vsPulse 2s infinite;
+}
+
+@keyframes vsPulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.4)); }
+    50% { transform: scale(1.15); filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.9)); }
+}
+
+/* ================= 3 NÚT KỸ NĂNG TRONG TRẬN ================= */
+.combat-skills-container {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.combat-skill-btn {
+    width: 140px;
+    height: 90px;
+    background: rgba(22, 33, 56, 0.85);
+    border: 1px solid rgba(78, 204, 163, 0.35);
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #fff;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.combat-skill-btn:hover:not(:disabled) {
+    border-color: #4ecca3;
+    background: rgba(78, 204, 163, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(78, 204, 163, 0.3);
+}
+
+.combat-skill-btn:disabled {
+    cursor: not-allowed;
+}
+
+.combat-skill-icon {
+    font-size: 26px;
+}
+
+.combat-skill-name {
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    padding: 0 4px;
+}
+
+/* Lớp phủ hồi chiêu (Cooldown Overlay) */
+.combat-cd-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffd700;
+    font-family: var(--font-heading);
+    backdrop-filter: blur(2px);
+}
+
+/* ================= NHẬT KÝ CHIẾN ĐẤU ================= */
+.combat-log-container {
+    background: rgba(10, 14, 22, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    height: 140px;
+    overflow-y: auto;
+    font-size: 13px;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.combat-log-item {
+    padding: 2px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.log-normal { color: #cbd5e1; }
+.log-crit { color: #ffd700; font-weight: bold; }
+.log-skill { color: #4ecca3; font-weight: 500; }
+.log-damage { color: #ff7675; }
+.log-heal { color: #badc58; }
+.log-buff { color: #00d2d3; }
+.log-info { color: #74b9ff; font-style: italic; }
+.log-victory { color: #ffd700; font-size: 14px; font-weight: bold; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+.log-defeat { color: #ff5252; font-size: 14px; font-weight: bold; }
+
+/* Hộp phần thưởng khi thắng */
+.result-rewards-box {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    padding: 16px;
+    border-radius: var(--radius-sm);
+    margin: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+}
+
+/* Nút Tự Động Đánh Lại */
+#btn-combat-autorepeat.active {
+    background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+    color: #fff !important;
+    font-weight: 600;
+    box-shadow: 0 0 12px rgba(243, 156, 18, 0.5);
+    border: 1px solid #f1c40f;
+}
+
+/* Khung Đếm Ngược Tự Động Đánh Lại trong Modal */
+.auto-repeat-countdown-box {
+    background: rgba(243, 156, 18, 0.1);
+    border: 1px solid rgba(243, 156, 18, 0.4);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin: 14px 0 6px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.countdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #ffd700;
+}
+
+.countdown-spinner {
+    display: inline-block;
+    animation: pulseSpin 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseSpin {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.25) rotate(15deg); }
+    100% { transform: scale(1); }
+}
+
+.countdown-timer {
+    font-size: 18px;
+    color: #ffca28;
+    font-weight: bold;
+}
+
+.countdown-bar-outer {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.countdown-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f39c12, #ffd700);
+    border-radius: 4px;
+    width: 100%;
+    transition: width 0.1s linear;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+}
+
+.countdown-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+/* =========================================================
+   RESPONSIVE CHO SÀN ĐẤU 2D (COMBAT ARENA RESPONSIVE)
+   (TUÂN THỦ: GIỮ NGUYÊN 100% GIAO DIỆN PC TRÊN MÀN HÌNH LỚN)
+   ========================================================= */
+
+/* --- TABLET & MÀN HÌNH VỪA (<= 1024px) --- */
+@media (max-width: 1024px) {
+    .combat-stage-duel {
+        gap: 16px;
+        min-height: 220px;
+    }
+
+    .fighter-avatar-box {
+        width: 100px;
+        height: 100px;
+        font-size: 46px;
+    }
+
+    .combat-skill-btn {
+        width: 120px;
+        height: 80px;
+    }
+}
+
+/* --- MOBILE & PHABLET (<= 768px): ĐỐI KHÁNG NGANG THU GỌN --- */
+@media (max-width: 768px) {
+    .combat-arena-container {
+        padding: 12px 10px;
+    }
+
+    .combat-top-bar {
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+    }
+
+    .combat-stage-name {
+        font-size: 14.5px;
+    }
+
+    .combat-controls-top {
+        gap: 6px;
+    }
+
+    .combat-controls-top .btn-sm {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
+    /* Đấu trường đối kháng ngang gọn gàng (Side-by-side Dual) */
+    .combat-stage-duel {
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: 6px;
+        min-height: unset;
+        margin-bottom: 12px;
+    }
+
+    .fighter-avatar-box {
+        width: 68px;
+        height: 68px;
+        font-size: 32px;
+        margin-bottom: 6px;
+    }
+
+    .fighter-name {
+        font-size: 12px;
+        margin-bottom: 2px;
+    }
+
+    .fighter-realm-sub {
+        font-size: 10px;
+        margin-bottom: 4px;
+    }
+
+    .fighter-health-box {
+        width: 100%;
+        max-width: 135px;
+    }
+
+    .fighter-health-bar-outer {
+        height: 10px;
+        border-radius: 5px;
+    }
+
+    .fighter-hp-text {
+        font-size: 9px;
+        line-height: 10px;
+    }
+
+    .combat-vs-badge {
+        font-size: 18px;
+    }
+
+    /* 3 Nút kỹ năng xuất trận: Trải đều 3 cột, vừa vặn ngón cái */
+    .combat-skills-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+
+    .combat-skill-btn {
+        width: 100%;
+        height: 66px;
+        padding: 4px;
+        gap: 2px;
+    }
+
+    .combat-skill-icon {
+        font-size: 18px;
+    }
+
+    .combat-skill-name {
+        font-size: 10.5px;
+        line-height: 1.2;
+    }
+
+    .combat-cd-overlay {
+        font-size: 16px;
+    }
+
+    /* Khung nhật ký chiến đấu thu gọn trong tầm mắt */
+    .combat-log-container {
+        height: 105px;
+        padding: 8px 10px;
+        font-size: 11.5px;
+    }
+
+    .result-rewards-box {
+        padding: 10px 12px;
+        font-size: 12.5px;
+    }
+
+    .auto-repeat-countdown-box {
+        padding: 10px 12px;
+    }
+}
+
+/* --- SMALL PHONES (<= 480px) --- */
+@media (max-width: 480px) {
+    .combat-arena-container {
+        padding: 10px 6px;
+    }
+
+    .fighter-avatar-box {
+        width: 54px;
+        height: 54px;
+        font-size: 26px;
+    }
+
+    .fighter-name {
+        font-size: 11px;
+    }
+
+    .fighter-health-box {
+        max-width: 110px;
+    }
+
+    .fighter-health-bar-outer {
+        height: 9px;
+    }
+
+    .combat-vs-badge {
+        font-size: 14px;
+    }
+
+    .combat-skill-btn {
+        height: 58px;
+    }
+
+    .combat-skill-icon {
+        font-size: 16px;
+    }
+
+    .combat-skill-name {
+        font-size: 9.5px;
+    }
+
+    .combat-log-container {
+        height: 95px;
+        font-size: 11px;
+    }
+}

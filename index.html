@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Tiên Đạo Trường Sinh - Game Tu Tiên 2D</title>
+    <meta name="description"
+        content="Trò chơi Tu Tiên 2D trực quan bằng JavaScript với 9 Đại Cảnh Giới, hệ thống chọn Ải, 3 ô trang bị, bảng cộng điểm tiềm năng và 3 ô kỹ năng thần thông.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Cinzel:wght@600;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/combat.css">
+</head>
+
+<body>
+    <!-- Canvas hiển thị hiệu ứng linh quang và sát thương nảy số -->
+    <canvas id="canvas-vfx"></canvas>
+
+    <!-- Cụm Header & Thanh Menu Tab Ghim Cố Định Khi Cuộn -->
+    <div class="game-sticky-header">
+        <!-- Header Thông Tin Đạo Hữu -->
+        <header class="game-header">
+            <div class="header-brand">
+                <div class="brand-icon">☯️</div>
+                <div class="brand-title">
+                    <h1>TIÊN ĐẠO TRƯỜNG SINH</h1>
+                    <span class="brand-sub">NGHỊCH THIÊN TU ĐẠO • 2D RPG</span>
+                </div>
+            </div>
+
+            <div class="header-stats">
+                <div class="header-stat-box">
+                    <span class="header-stat-label">Cảnh Giới Tu Vi</span>
+                    <span class="header-realm-tag" id="header-player-realm">Tôi Khí - Tầng 1</span>
+                    <div class="header-bar-wrapper">
+                        <div class="header-bar-fill" id="header-tu-vi-progress" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="header-currency">
+                    <span>💎</span>
+                    <span id="header-linh-thach">200</span>
+                    <small style="font-size: 10px; color: #cbd5e1;">Linh Thạch</small>
+                </div>
+
+                <div class="header-controls">
+                    <button class="btn-sm btn-secondary" id="btn-toggle-sound" title="Bật/Tắt Âm Thanh">🔊 Âm
+                        Thanh</button>
+                    <button class="btn-sm btn-secondary" id="btn-manual-save" title="Lưu Tiến Trình">💾 Lưu</button>
+                    <button class="btn-sm btn-secondary" id="btn-export-save" title="Sao Chép Mã Lưu">📤 Xuất</button>
+                    <button class="btn-sm btn-secondary" id="btn-import-save" title="Nạp Mã Lưu">📥 Nhập</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Thanh Điều Hướng Chức Năng (Tabs) -->
+        <nav class="game-navbar">
+            <button class="nav-tab-btn active" data-tab="character">
+                <span class="nav-icon">🧘‍♂️</span>
+                <span class="nav-text-full">Động Phủ & Nhân Vật</span>
+                <span class="nav-text-short">Động Phủ</span>
+                <span class="badge-counter" id="header-stat-points-badge" style="display: none;">+4 Điểm</span>
+            </button>
+            <button class="nav-tab-btn" data-tab="stages">
+                <span class="nav-icon">🗺️</span>
+                <span class="nav-text-full">Chọn Ải Vượt Cảnh</span>
+                <span class="nav-text-short">Chọn Ải</span>
+            </button>
+            <button class="nav-tab-btn" data-tab="skills">
+                <span class="nav-icon">📜</span>
+                <span class="nav-text-full">Tàng Kinh Các (Kỹ Năng)</span>
+                <span class="nav-text-short">Kỹ Năng</span>
+            </button>
+            <button class="nav-tab-btn" data-tab="shop">
+                <span class="nav-icon">🏪</span>
+                <span class="nav-text-full">Bách Bảo Các</span>
+                <span class="nav-text-short">Bảo Các</span>
+            </button>
+            <button class="nav-tab-btn" data-tab="combat">
+                <span class="nav-icon">⚔️</span>
+                <span class="nav-text-full">Sàn Đấu 2D</span>
+                <span class="nav-text-short">Sàn Đấu</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Khung Nội Dung Chính Của Các Tab -->
+    <main class="game-content">
+
+        <!-- ================= TAB CHÍNH: ĐỘNG PHỦ & NHÂN VẬT (TẤT CẢ TRÊN 1 MÀN HÌNH) ================= -->
+        <section class="tab-page" id="tab-character" style="display: block;">
+
+            <!-- HÀNG TRÊN: 3 CỘT (TRÁI: BẢNG ĐIỂM - GIỮA: TU LUYỆN - PHẢI: TRANG BỊ & KỸ NĂNG) -->
+            <div class="dashboard-3-col">
+
+                <!-- CỘT 1 (BÊN TRÁI): BẢNG CỘNG ĐIỂM TIỀM NĂNG & CHỈ SỐ (DIỆN TÍCH VỪA PHẢI) -->
+                <div class="dashboard-col col-left-stats">
+                    <div class="panel stats-panel-compact">
+                        <div class="panel-header">
+                            <h2 class="panel-title"><span>📊</span> ĐIỂM TIỀM NĂNG & CHỈ SỐ</h2>
+                        </div>
+
+                        <div class="stat-points-header">
+                            <span class="label">Điểm Khả Dụng (+4/tầng):</span>
+                            <span class="points-val" id="stat-points-available">4</span>
+                        </div>
+
+                        <div class="stat-rows-container">
+                            <!-- Hàng Vật Lí -->
+                            <div class="stat-row-card">
+                                <div class="stat-row-info">
+                                    <span class="stat-row-name">⚔️ Sát Thương Vật Lí</span>
+                                    <span class="stat-row-val" id="stat-vat-li-val">15</span>
+                                    <span class="stat-row-sub" id="stat-vat-li-added">(+0 từ 0 điểm)</span>
+                                </div>
+                                <div class="stat-row-btns" id="stat-btns-vat_li">
+                                    <!-- Rendered buttons -->
+                                </div>
+                            </div>
+
+                            <!-- Hàng Phép -->
+                            <div class="stat-row-card">
+                                <div class="stat-row-info">
+                                    <span class="stat-row-name">🔮 Sát Thương Phép</span>
+                                    <span class="stat-row-val" id="stat-phep-val">15</span>
+                                    <span class="stat-row-sub" id="stat-phep-added">(+0 từ 0 điểm)</span>
+                                </div>
+                                <div class="stat-row-btns" id="stat-btns-phep">
+                                    <!-- Rendered buttons -->
+                                </div>
+                            </div>
+
+                            <!-- Hàng Máu -->
+                            <div class="stat-row-card">
+                                <div class="stat-row-info">
+                                    <span class="stat-row-name">❤️ Sinh Mệnh (HP)</span>
+                                    <span class="stat-row-val" id="stat-mau-val">150</span>
+                                    <span class="stat-row-sub" id="stat-mau-added">(+0 HP từ 0 điểm)</span>
+                                </div>
+                                <div class="stat-row-btns" id="stat-btns-mau">
+                                    <!-- Rendered buttons -->
+                                </div>
+                            </div>
+
+                            <!-- Các chỉ số phụ cộng thêm -->
+                            <div class="stat-row-card stat-secondary-card">
+                                <div class="stat-row-info">
+                                    <span class="stat-row-name">🛡️ Phòng Ngự</span>
+                                    <span class="stat-row-val" id="stat-def-val">5 (Vật) / 5 (Phép)</span>
+                                </div>
+                                <div class="stat-row-info" style="align-items: flex-end;">
+                                    <span class="stat-row-name">⚡ Bạo Kích</span>
+                                    <span class="stat-row-val" id="stat-crit-val">5%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CỘT 2 (Ở GIỮA): ĐỘNG PHỦ TU LUYỆN (TRUNG TÂM TU TIÊN) -->
+                <div class="dashboard-col col-center-cultivate">
+                    <div class="panel cultivate-compact-panel">
+                        <div class="panel-header" style="justify-content: center;">
+                            <h2 class="panel-title"><span>🧘‍♂️</span> ĐỘNG PHỦ TU LUYỆN</h2>
+                        </div>
+
+                        <!-- Khu Vực Danh Xưng & Danh Hiệu Nhân Vật -->
+                        <div class="character-identity-banner">
+                            <div class="character-title-tag" id="character-title-badge"
+                                onclick="gameUI.openTitleModal()" title="Nhấp để xem và thay đổi danh hiệu">
+                                <!-- Dynamic Title Badge -->
+                            </div>
+                            <div class="character-name-group">
+                                <h3 class="character-display-name" id="character-display-name">Tiêu Viêm</h3>
+                                <div class="character-action-btns">
+                                    <button class="btn-xs btn-outline-gold" onclick="gameUI.openRenameModal()"
+                                        title="Dùng Cuộn Giấy Đổi Tên để đổi tên">
+                                        ✏️ Đổi Tên
+                                    </button>
+                                    <button class="btn-xs btn-outline-title" onclick="gameUI.openTitleModal()"
+                                        title="Trang bị và quản lý danh hiệu">
+                                        🎖️ Danh Hiệu
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="cultivate-hero-compact">
+                            <div class="meditation-circle-wrapper center-focus">
+                                <div class="meditation-ring"></div>
+                                <div class="meditation-ring outer"></div>
+                                <div class="cultivate-avatar center-focus" id="cultivate-avatar-box">
+                                    🧘‍♂️
+                                </div>
+                            </div>
+
+                            <h2 class="cultivate-realm-title compact" id="cultivate-realm-name">Tôi Khí - Tầng 1</h2>
+                            <div class="cultivate-hanzi compact" id="cultivate-realm-hanzi">淬气</div>
+                            <p class="cultivate-desc compact" id="cultivate-realm-desc">
+                                Luyện thối cốt nhục, bài trừ tạp chất trong cơ thể, bước đầu cảm ứng linh khí thiên địa.
+                            </p>
+
+                            <div class="cultivate-progress-section compact">
+                                <div class="progress-meta">
+                                    <span>Tiến Độ Tu Vi:</span>
+                                    <strong id="cultivate-tu-vi-text">0 / 100 (0%)</strong>
+                                </div>
+                                <div class="progress-bar-outer">
+                                    <div class="progress-bar-inner" id="cultivate-progress-bar" style="width: 0%"></div>
+                                </div>
+                                <div class="afk-rate-box compact" id="cultivate-afk-rate">
+                                    +2 Tu Vi/giây (Tự nhiên)
+                                </div>
+                            </div>
+
+                            <button class="btn-primary btn-block btn-breakthrough-glow" id="btn-breakthrough">
+                                Tích Lũy Tu Vi Để Đột Phá
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CỘT 3 (BÊN PHẢI): 3 Ô TRANG BỊ VÀ 3 Ô KỸ NĂNG XUẤT TRẬN NẰM CHUNG -->
+                <div class="dashboard-col col-right-loadout">
+                    <!-- Khối 3 Ô Trang Bị Đạo Thân -->
+                    <div class="panel panel-equip-loadout">
+                        <div class="panel-header">
+                            <h2 class="panel-title"><span>🛡️</span> 3 Ô TRANG BỊ ĐẠO THÂN</h2>
+                        </div>
+                        <div class="equip-slots-container">
+                            <div id="equip-slot-non"></div>
+                            <div id="equip-slot-giap"></div>
+                            <div id="equip-slot-vukhi"></div>
+                        </div>
+                    </div>
+
+                    <!-- Khối 3 Ô Kỹ Năng Xuất Trận -->
+                    <div class="panel panel-skills-loadout">
+                        <div class="panel-header">
+                            <h2 class="panel-title"><span>⚡</span> 3 Ô KỸ NĂNG XUẤT TRẬN</h2>
+                        </div>
+                        <div class="equipped-skills-vertical">
+                            <div id="equipped-skill-slot-0"></div>
+                            <div id="equipped-skill-slot-1"></div>
+                            <div id="equipped-skill-slot-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- PHẦN DƯỚI: TÚI TRỮ VẬT CÀN KHÔN (CHỨA CẢ VẬT PHẨM LẪN KỸ NĂNG) -->
+            <div class="panel inventory-unified-panel" style="margin-top: 18px;">
+                <div class="panel-header inventory-header-wrap">
+                    <div class="inventory-title-meta">
+                        <h2 class="panel-title"><span>🎒</span> TÚI TRỮ VẬT CÀN KHÔN</h2>
+                        <span class="inventory-subtitle">Chứa trang bị, đan dược và toàn bộ bí kíp võ học đã có</span>
+                    </div>
+
+                    <!-- Bộ Lọc Túi Đồ Gọn Gàng & Ô Tìm Kiếm -->
+                    <div class="inv-toolbar">
+                        <div class="inv-filter-group" id="inv-filter-buttons">
+                            <button class="inv-filter-btn active" data-filter="all"
+                                onclick="gameUI.setInventoryFilter('all')">
+                                ✨ Tất Cả (<span id="inv-count-all">0</span>)
+                            </button>
+                            <button class="inv-filter-btn" data-filter="equip"
+                                onclick="gameUI.setInventoryFilter('equip')">
+                                🛡️ Trang Bị (<span id="inv-count-equip">0</span>)
+                            </button>
+                            <button class="inv-filter-btn" data-filter="skill"
+                                onclick="gameUI.setInventoryFilter('skill')">
+                                ⚡ Bí Kíp (<span id="inv-count-skill">0</span>)
+                            </button>
+                            <button class="inv-filter-btn" data-filter="dan_duoc"
+                                onclick="gameUI.setInventoryFilter('dan_duoc')">
+                                🧪 Đan Dược (<span id="inv-count-dan">0</span>)
+                            </button>
+                        </div>
+                        <div class="inv-search-wrap">
+                            <input type="text" id="inv-search-input" class="inv-search-field"
+                                placeholder="🔍 Tìm vật phẩm, bí kíp..."
+                                oninput="gameUI.handleInventorySearch(this.value)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Danh sách Item & Kỹ năng trong túi đồ -->
+                <div class="inventory-grid unified-grid" id="inventory-item-list">
+                    <!-- Rendered by JavaScript -->
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ================= TAB 2: CHỌN ẢI (STAGES) ================= -->
+        <section class="tab-page" id="tab-stages">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title"><span>🗺️</span> BẢN ĐỒ CHỌN ẢI CHIẾN ĐẤU</h2>
+                    <span style="font-size: 13px; color: var(--text-muted);">
+                        Mỗi ải yêu cầu cảnh giới tu vi tương ứng. Vượt ải nhận Tu Vi, Linh Thạch và Trang Bị quý!
+                    </span>
+                </div>
+                <div class="stage-grid" id="stage-grid-list">
+                    <!-- Rendered by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: TÀNG KINH CÁC (SKILLS) ================= -->
+        <section class="tab-page" id="tab-skills">
+            <div class="panel" style="margin-bottom: 24px;">
+                <div class="panel-header">
+                    <h2 class="panel-title"><span>📖</span> BÍ KÍP ĐÃ LĨNH NGỘ</h2>
+                    <span style="font-size: 13px; color: var(--text-muted);">
+                        Danh sách các môn võ học đã tu luyện thành công
+                    </span>
+                </div>
+                <div class="skill-shop-grid" id="learned-skill-list">
+                    <!-- Rendered by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Tàng Kinh Các (NPC Truyền Công) -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title"><span>🏛️</span> TÀNG KINH CÁC (NPC TRUYỀN CÔNG BÍ TỊCH)</h2>
+                        <span style="font-size: 13px; color: var(--text-muted);">
+                            Mua bí tịch công pháp theo cảnh giới yêu cầu bằng Linh Thạch
+                        </span>
+                    </div>
+                    <div class="shop-counter-badge" id="skill-counter-text">
+                        Đang hiển thị: 0 bí kíp
+                    </div>
+                </div>
+
+                <!-- BỘ LỌC PHÂN LOẠI TÀNG KINH CÁC -->
+                <div class="shop-filter-bar skill-filter-bar">
+                    <!-- Hàng 1: Nút phân loại theo Hệ Kỹ Năng -->
+                    <div class="filter-type-buttons" id="skill-type-buttons">
+                        <button class="shop-type-btn active" data-skilltype="all"><span>🌐</span> Tất Cả</button>
+                        <button class="shop-type-btn" data-skilltype="vat_li"><span>⚔️</span> Vật Lí</button>
+                        <button class="shop-type-btn" data-skilltype="phep"><span>🔮</span> Pháp Thuật</button>
+                        <button class="shop-type-btn" data-skilltype="tri_lieu"><span>💚</span> Hồi Phục</button>
+                        <button class="shop-type-btn" data-skilltype="ho_the"><span>🛡️</span> Bảo Hộ</button>
+                    </div>
+
+                    <!-- Hàng 2: Bộ lọc Cấp Độ / Cảnh Giới, Trạng Thái & Ô Tìm Kiếm -->
+                    <div class="filter-controls-row">
+                        <!-- Lọc theo Cấp Độ / Cảnh Giới yêu cầu -->
+                        <div class="filter-control-group">
+                            <label for="skill-realm-select">Cấp Độ / Cảnh Giới:</label>
+                            <select id="skill-realm-select" class="shop-select-control">
+                                <option value="all">⚡ Tất Cả Cảnh Giới</option>
+                                <option value="current">🎯 Phù Hợp Tu Vi Hiện Tại</option>
+                                <option value="0">Tôi Khí (Cảnh giới 1)</option>
+                                <option value="1">Ngưng Khí (Cảnh giới 2)</option>
+                                <option value="2">Linh Hải (Cảnh giới 3)</option>
+                                <option value="3">Tạo Đảo (Cảnh giới 4)</option>
+                                <option value="4">Nguyên Linh Thụ (Cảnh giới 5)</option>
+                                <option value="5">Tạo Hóa Đài (Cảnh giới 6)</option>
+                                <option value="6">Thông Thiên Trụ (Cảnh giới 7)</option>
+                                <option value="7">Ngọc Điện (Cảnh giới 8)</option>
+                                <option value="8">Đỉnh Cấp Ngai (Cảnh giới 9)</option>
+                                <option value="9">Vô Thượng Lộ (Cảnh giới 10)</option>
+                                <option value="10">Vạn Vì Tinh Tú (Cảnh giới 11)</option>
+                                <option value="11">Đại Đạo Chí Cao Vô Thượng (Cảnh giới 12)</option>
+                            </select>
+                        </div>
+
+                        <!-- Lọc theo Trạng Thái Lĩnh Ngộ -->
+                        <div class="filter-control-group">
+                            <label for="skill-status-select">Trạng Thái:</label>
+                            <select id="skill-status-select" class="shop-select-control">
+                                <option value="all">Tất Cả Trạng Thái</option>
+                                <option value="can_learn">✨ Có Thể Lĩnh Ngộ</option>
+                                <option value="unlearned">🔒 Chưa Lĩnh Ngộ</option>
+                                <option value="learned">✓ Đã Lĩnh Ngộ</option>
+                            </select>
+                        </div>
+
+                        <!-- Ô Tìm Kiếm Bí Kíp -->
+                        <div class="filter-control-group search-group">
+                            <label for="skill-search-input">Tìm Kiếm:</label>
+                            <div class="shop-search-box">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="skill-search-input" class="shop-search-input"
+                                    placeholder="Tên bí kíp, khẩu quyết...">
+                                <button type="button" id="btn-clear-skill-search" class="btn-clear-search"
+                                    style="display: none;" title="Xóa tìm kiếm">&times;</button>
+                            </div>
+                        </div>
+
+                        <!-- Nút Reset Bộ Lọc -->
+                        <div class="filter-control-group reset-group">
+                            <button class="btn-sm btn-secondary" id="btn-reset-skill-filters" title="Xóa bộ lọc">
+                                ↺ Đặt Lại
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="skill-shop-grid" id="npc-skill-shop-list">
+                    <!-- Rendered by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 5: BÁCH BẢO CÁC (SHOP) ================= -->
+        <section class="tab-page" id="tab-shop">
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title"><span>🏪</span> BÁCH BẢO CÁC - THƯƠNG HỘI TIÊN GIỚI</h2>
+                        <span style="font-size: 13px; color: var(--text-muted);">
+                            Cung cấp binh khí, đạo bào, nón thần và đan dược tu luyện
+                        </span>
+                    </div>
+                    <div class="shop-counter-badge" id="shop-counter-text">
+                        Đang hiển thị: 0 vật phẩm
+                    </div>
+                </div>
+
+                <!-- BỘ LỌC PHÂN LOẠI BÁCH BẢO CÁC -->
+                <div class="shop-filter-bar">
+                    <!-- Hàng 1: Nút phân loại theo Loại Item -->
+                    <div class="filter-type-buttons" id="shop-type-buttons">
+                        <button class="shop-type-btn active" data-type="all"><span>🌐</span> Tất Cả</button>
+                        <button class="shop-type-btn" data-type="vukhi"><span>🗡️</span> Vũ Khí</button>
+                        <button class="shop-type-btn" data-type="giap"><span>🥋</span> Giáp</button>
+                        <button class="shop-type-btn" data-type="non"><span>👒</span> Nón</button>
+                        <button class="shop-type-btn" data-type="dan_duoc"><span>💊</span> Đan Dược</button>
+                    </div>
+
+                    <!-- Hàng 2: Bộ lọc Cấp Độ / Cảnh Giới, Phẩm Cấp & Ô Tìm Kiếm -->
+                    <div class="filter-controls-row">
+                        <!-- Lọc theo Cấp Độ / Cảnh Giới yêu cầu -->
+                        <div class="filter-control-group">
+                            <label for="shop-realm-select">Cấp Độ / Cảnh Giới:</label>
+                            <select id="shop-realm-select" class="shop-select-control">
+                                <option value="all">⚡ Tất Cả Cảnh Giới</option>
+                                <option value="current">🎯 Phù Hợp Tu Vi Hiện Tại</option>
+                                <option value="0">Tôi Khí (Cảnh giới 1)</option>
+                                <option value="1">Ngưng Khí (Cảnh giới 2)</option>
+                                <option value="2">Linh Hải (Cảnh giới 3)</option>
+                                <option value="3">Tạo Đảo (Cảnh giới 4)</option>
+                                <option value="4">Nguyên Linh Thụ (Cảnh giới 5)</option>
+                                <option value="5">Tạo Hóa Đài (Cảnh giới 6)</option>
+                                <option value="6">Thông Thiên Trụ (Cảnh giới 7)</option>
+                                <option value="7">Ngọc Điện (Cảnh giới 8)</option>
+                                <option value="8">Đỉnh Cấp Ngai (Cảnh giới 9)</option>
+                                <option value="9">Vô Thượng Lộ (Cảnh giới 10)</option>
+                                <option value="10">Vạn Vì Tinh Tú (Cảnh giới 11)</option>
+                                <option value="11">Đại Đạo Chí Cao Vô Thượng (Cảnh giới 12)</option>
+                            </select>
+                        </div>
+
+                        <!-- Lọc theo Phẩm Cấp -->
+                        <div class="filter-control-group">
+                            <label for="shop-rarity-select">Phẩm Cấp:</label>
+                            <select id="shop-rarity-select" class="shop-select-control">
+                                <option value="all">Tất Cả Phẩm Cấp</option>
+                                <option value="pham">Phàm Phẩm (Trắng)</option>
+                                <option value="linh">Linh Phẩm (Lam)</option>
+                                <option value="huyen">Huyền Phẩm (Tím)</option>
+                                <option value="dia">Địa Phẩm (Cam)</option>
+                                <option value="thien">Thiên Phẩm (Đỏ Kim)</option>
+                                <option value="tien">Tiên Phẩm (Xanh Ngọc)</option>
+                                <option value="thanh">Thánh Phẩm (Vàng Kim)</option>
+                            </select>
+                        </div>
+
+                        <!-- Ô Tìm Kiếm Theo Tên -->
+                        <div class="filter-control-group search-group">
+                            <label for="shop-search-input">Tìm Kiếm:</label>
+                            <div class="shop-search-box">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="shop-search-input" class="shop-search-input"
+                                    placeholder="Tên trang bị, đan dược...">
+                                <button type="button" id="btn-clear-shop-search" class="btn-clear-search"
+                                    style="display: none;" title="Xóa tìm kiếm">&times;</button>
+                            </div>
+                        </div>
+
+                        <!-- Nút Đặt Lại Bộ Lọc -->
+                        <div class="filter-control-group reset-group">
+                            <label>&nbsp;</label>
+                            <button type="button" id="btn-reset-shop-filters" class="btn-sm btn-secondary"
+                                title="Đặt lại bộ lọc về mặc định">
+                                🔄 Đặt Lại
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="shop-grid" id="shop-item-list">
+                    <!-- Rendered by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 6: SÀN ĐẤU 2D (COMBAT) ================= -->
+        <section class="tab-page" id="tab-combat">
+            <div class="combat-arena-container">
+                <!-- Thanh tiêu đề ải -->
+                <div class="combat-top-bar">
+                    <div class="combat-stage-name" id="combat-stage-title">Đang Tiến Vào Ải...</div>
+                    <div class="combat-controls-top">
+                        <button class="btn-sm btn-secondary" id="btn-combat-autorepeat"
+                            title="Tự động đánh lại ải trong vòng 3s khi kết thúc">🔁 Tự Đánh Lại: TẮT</button>
+                        <button class="btn-sm btn-primary active" id="btn-combat-auto">Tự Động: BẬT</button>
+                        <button class="btn-sm btn-danger" id="btn-combat-flee">Rút Lui</button>
+                    </div>
+                </div>
+
+                <!-- Đấu trường 2D: Đạo Hữu VS Quái Vật -->
+                <div class="combat-stage-duel">
+                    <!-- Đạo Hữu -->
+                    <div class="combat-fighter" id="combat-player-box">
+                        <div class="fighter-avatar-box" id="combat-player-avatar-box">
+                            <span id="combat-player-avatar">🧘‍♂️</span>
+                        </div>
+                        <div class="fighter-name" id="combat-player-name">Tiêu Viêm (Tôi Khí - Tầng 1)</div>
+                        <div class="fighter-bars-container">
+                            <div class="fighter-hp-meta">
+                                <span>Sinh Mệnh:</span>
+                                <strong id="combat-player-hp-text">150 / 150</strong>
+                            </div>
+                            <div class="combat-hp-bar-outer">
+                                <div class="combat-hp-bar-fill" id="combat-player-hp-bar" style="width: 100%"></div>
+                                <div class="combat-shield-bar-fill" id="combat-player-shield-bar" style="width: 0%">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Biểu tượng VS -->
+                    <div class="combat-vs-badge">VS</div>
+
+                    <!-- Quái Vật -->
+                    <div class="combat-fighter" id="combat-monster-box">
+                        <div class="fighter-avatar-box" id="combat-monster-avatar-box">
+                            <span id="combat-monster-avatar">🐇</span>
+                        </div>
+                        <div class="fighter-name" id="combat-monster-name" style="color: #ff7675;">Linh Thảo Thỏ Yêu
+                        </div>
+                        <div class="fighter-bars-container">
+                            <div class="fighter-hp-meta">
+                                <span>Sinh Mệnh Yêu Quái:</span>
+                                <strong id="combat-monster-hp-text">220 / 220</strong>
+                            </div>
+                            <div class="combat-hp-bar-outer">
+                                <div class="combat-hp-bar-fill" id="combat-monster-hp-bar" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3 Ô Kỹ Năng Kích Hoạt Trong Trận -->
+                <div class="combat-skills-container">
+                    <button class="combat-skill-btn" id="combat-skill-btn-0">
+                        <span class="combat-skill-icon" id="combat-skill-icon-0">👊</span>
+                        <span class="combat-skill-name" id="combat-skill-name-0">Kỹ Năng 1</span>
+                        <div class="combat-cd-overlay" id="combat-skill-cd-0">3.0s</div>
+                    </button>
+                    <button class="combat-skill-btn" id="combat-skill-btn-1">
+                        <span class="combat-skill-icon" id="combat-skill-icon-1">🔥</span>
+                        <span class="combat-skill-name" id="combat-skill-name-1">Kỹ Năng 2</span>
+                        <div class="combat-cd-overlay" id="combat-skill-cd-1">4.0s</div>
+                    </button>
+                    <button class="combat-skill-btn" id="combat-skill-btn-2">
+                        <span class="combat-skill-icon" id="combat-skill-icon-2">➕</span>
+                        <span class="combat-skill-name" id="combat-skill-name-2">Kỹ Năng 3</span>
+                        <div class="combat-cd-overlay" id="combat-skill-cd-2">0.0s</div>
+                    </button>
+                </div>
+
+                <!-- Khung Nhật Ký Chiến Đấu -->
+                <div class="combat-log-container" id="combat-log-list">
+                    <div class="combat-log-item log-info">Chuẩn bị xuất trận, linh khí vận hành...</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Kết Quả Trận Đấu -->
+    <div class="game-modal" id="battle-result-modal">
+        <div class="game-modal-box">
+            <div class="modal-header">
+                <h3 id="battle-result-title" style="font-family: var(--font-heading); font-size: 20px;">🏆 KẾT QUẢ VƯỢT
+                    ẢI</h3>
+            </div>
+            <div id="battle-result-content">
+                <!-- Rendered dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Chọn Kỹ Năng Gán Vào Ô -->
+    <div class="game-modal" id="skill-select-modal">
+        <div class="game-modal-box">
+            <div class="modal-header">
+                <h3 style="font-family: var(--font-heading); font-size: 18px; color: var(--text-gold);">GÁN KỸ NĂNG VÀO
+                    Ô CHIẾN ĐẤU</h3>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <div id="skill-select-modal-list"
+                style="display: flex; flex-direction: column; gap: 8px; max-height: 350px; overflow-y: auto;">
+                <!-- Rendered dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Đổi Tên Nhân Vật (Cuộn Giấy Đổi Tên) -->
+    <div class="game-modal" id="rename-modal" style="display: none;">
+        <div class="game-modal-box rename-modal-box">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 22px;">📜</span>
+                    <h3 style="font-family: var(--font-heading); font-size: 18px; color: var(--text-gold); margin: 0;">
+                        THIÊN ĐẠO ĐỔI TÊN</h3>
+                </div>
+                <button class="modal-close-btn" onclick="gameUI.closeRenameModal()">&times;</button>
+            </div>
+            <div class="rename-modal-body">
+                <p class="rename-modal-desc">
+                    Sử dụng <strong>1x [Cuộn Giấy Đổi Tên]</strong> để khắc lại đạo hiệu danh xưng mới lên Thiên Đạo
+                    Bia.
+                </p>
+                <div class="rename-status-box" id="rename-scroll-status">
+                    <!-- Dynamic scroll count -->
+                </div>
+                <div class="rename-input-wrapper">
+                    <label for="rename-input-field">Đạo Hiệu Mới:</label>
+                    <input type="text" id="rename-input-field" maxlength="20"
+                        placeholder="Nhập đạo hiệu mới (tối đa 20 ký tự)..." autocomplete="off">
+                </div>
+                <div class="modal-actions mt-3">
+                    <button class="btn-primary" id="btn-confirm-rename" onclick="gameUI.confirmRename()">Xác Nhận Đổi
+                        Tên</button>
+                    <button class="btn-secondary" onclick="gameUI.closeRenameModal()">Hủy Bỏ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Danh Hiệu Thần Thông -->
+    <div class="game-modal" id="title-modal" style="display: none;">
+        <div class="game-modal-box title-modal-box">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 26px;">🎖️</span>
+                    <div>
+                        <h3
+                            style="font-family: var(--font-heading); font-size: 18px; color: var(--text-gold); margin: 0;">
+                            DANH HIỆU THẦN THÔNG</h3>
+                        <small style="color: var(--text-muted); font-size: 11px;">Mở khóa từ trảm sát Boss & Lĩnh ngộ bí
+                            tịch. Mỗi danh hiệu mang lại hiệu ứng buff đặc biệt!</small>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="gameUI.closeTitleModal()">&times;</button>
+            </div>
+            <div class="title-modal-body">
+                <div class="title-current-equipped-bar" id="title-current-equipped-bar">
+                    <!-- Dynamic current title display -->
+                </div>
+                <div class="title-grid-list" id="title-grid-list">
+                    <!-- Dynamic titles list -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Khay Chứa Thông Báo Toast -->
+    <div id="toast-container"></div>
+
+    <!-- Nạp Các Tệp Kịch Bản JavaScript theo thứ tự -->
+    <script src="js/data/realms.js"></script>
+    <script src="js/data/skills.js"></script>
+    <script src="js/data/items.js"></script>
+    <script src="js/data/titles.js"></script>
+    <script src="js/data/stages.js"></script>
+    <script src="js/engine/audio.js"></script>
+    <script src="js/engine/particles.js"></script>
+    <script src="js/engine/storage.js"></script>
+    <script src="js/state/player.js"></script>
+    <script src="js/engine/combat.js"></script>
+    <script src="js/ui/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
