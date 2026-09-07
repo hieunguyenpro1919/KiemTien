@@ -215,6 +215,45 @@ const TITLE_DATABASE = [
         },
         checkUnlocked: (p) => p.clearedStages && p.clearedStages.includes("stage_19")
     },
+
+    {
+        id: "title_thai_so",
+        name: "Thái Sơ Cổ Thần Trảm",
+        icon: "🗿",
+        rarity: "thanh",
+        desc: "Trấn áp Thái Sơ Cổ Thần tại Hỗn Độn Đàm, thấu triệt nguồn gốc cội nguồn của vũ trụ vạn vật.",
+        conditionDesc: "Trảm sát Thái Sơ Cổ Thần (Vượt Ải 20)",
+        category: "boss",
+        buffs: {
+            vatLi: 15000000,
+            phep: 15000000,
+            mau: 1000000000,
+            phongThu: 5000000,
+            khangPhep: 5000000,
+            baoKich: 45
+        },
+        checkUnlocked: (p) => p.clearedStages && p.clearedStages.includes("stage_20")
+    },
+    {
+        id: "title_bat_hu_dai_dao",
+        name: "Vĩnh Hằng Bất Hủ Tôn",
+        icon: "👑",
+        rarity: "thanh",
+        desc: "Vượt qua Tâm Ma Luân Hồi tại Ải 21, chân thân hóa thành cội nguồn của mọi đại đạo chư thiên.",
+        conditionDesc: "Đánh bại Chí Cao Tâm Ma (Vượt Ải 21)",
+        category: "boss",
+        buffs: {
+            vatLi: 35000000,
+            phep: 35000000,
+            mau: 2500000000,
+            phongThu: 12000000,
+            khangPhep: 12000000,
+            baoKich: 50
+        },
+        checkUnlocked: (p) => p.clearedStages && p.clearedStages.includes("stage_21")
+    },
+
+
     {
         id: "title_dac_dao",
         name: "Thông Huyền Kiếm Sĩ",

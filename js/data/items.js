@@ -552,7 +552,7 @@ const ITEM_DATABASE = [
         slot: "vukhi",
         rarity: "tien",
         reqRealm: 9,
-        stats: { vatLi: 3500000, phep: 1450000, baoKich: 55 },
+        stats: { vatLi: 3200000, phep: 3000000, baoKich: 55 },
         price: 350000000,
         sellPrice: 120000000,
         icon: "✨",
@@ -576,11 +576,60 @@ const ITEM_DATABASE = [
         slot: "vukhi",
         rarity: "thanh",
         reqRealm: 11,
-        stats: { vatLi: 45000000, phep: 20000000, baoKich: 75 },
+        stats: { vatLi: 40000000, phep: 40000000, baoKich: 75 },
         price: 3000000000,
         sellPrice: 1000000000,
         icon: "👑",
         desc: "Vũ khí sinh ra từ ý niệm bản nguyên của đại đạo, nhất niệm sinh thế giới, nhất niệm diệt quần tiên."
+    },
+
+    {
+        id: "weapon_phep_thien_01",
+        name: "Thông Thiên Ngũ Hành Phiến",
+        slot: "vukhi",
+        rarity: "thien",
+        reqRealm: 6,
+        stats: { vatLi: 35000, phep: 115000, baoKich: 28 },
+        price: 1250000,
+        sellPrice: 450000,
+        icon: "🪭",
+        desc: "Bảo phiến luyện từ lông Phượng Hoàng thông thiên, phất tay dẫn động ngũ hành linh lực cuộn trào."
+    },
+    {
+        id: "weapon_phep_tien_01",
+        name: "Thái Hư Hỗn Độn Kính",
+        slot: "vukhi",
+        rarity: "tien",
+        reqRealm: 9,
+        stats: { vatLi: 1200000, phep: 4800000, baoKich: 58 },
+        price: 360000000,
+        sellPrice: 125000000,
+        icon: "🪞",
+        desc: "Gương cổ phản chiếu vạn giới hư không, ngưng tụ đạo tắc phép thuật thiên ngoại bắn nát chư thiên."
+    },
+    {
+        id: "weapon_phep_thanh_01",
+        name: "Chí Tôn Vạn Tinh Trượng",
+        slot: "vukhi",
+        rarity: "thanh",
+        reqRealm: 10,
+        stats: { vatLi: 4500000, phep: 18500000, baoKich: 68 },
+        price: 520000000,
+        sellPrice: 260000000,
+        icon: "🪄",
+        desc: "Pháp trượng ngưng tụ ánh sáng của ức vạn tinh thần, một niệm thi triển cấm thuật hủy thiên diệt địa."
+    },
+    {
+        id: "weapon_phep_thanh_02",
+        name: "Đại Đạo Hư Vô Thần Châu",
+        slot: "vukhi",
+        rarity: "thanh",
+        reqRealm: 11,
+        stats: { vatLi: 10000000, phep: 52000000, baoKich: 80 },
+        price: 3200000000,
+        sellPrice: 1100000000,
+        icon: "🔮",
+        desc: "Viên thần châu khởi nguyên chứa đựng vạn pháp quy tắc vũ trụ, uy lực phép thuật đạt tới cực cảnh."
     },
 
     // ================= ĐAN DƯỢC & TIÊU HAO - SẮP XẾP TỪ THẤP ĐẾN CAO =================

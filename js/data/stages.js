@@ -474,7 +474,7 @@ const STAGE_DATABASE = [
             tuVi: 100000000, // 100 Triệu Tu Vi
             linhThach: 1000000000, // 1 Tỷ Linh Thạch
             dropChance: 1.0,
-            possibleDrops: ["weapon_tien_01", "armor_tien_01", "hat_12", "pill_thanh_chuyen"]
+            possibleDrops: ["weapon_tien_01", "armor_tien_01", "hat_12", "weapon_phep_tien_01", "pill_thanh_chuyen"]
         }
     },
 
@@ -503,7 +503,7 @@ const STAGE_DATABASE = [
             tuVi: 500000000, // 500 Triệu Tu Vi
             linhThach: 5000000000, // 5 Tỷ Linh Thạch
             dropChance: 1.0,
-            possibleDrops: ["weapon_thanh_01", "hat_13", "pill_thanh_01", "pill_tay_tuy"]
+            possibleDrops: ["weapon_thanh_01", "hat_13", "weapon_phep_thanh_01", "pill_thanh_01", "pill_tay_tuy"]
         }
     },
 
@@ -532,9 +532,65 @@ const STAGE_DATABASE = [
             tuVi: 2000000000, // 2 Tỷ Tu Vi
             linhThach: 25000000000, // 25 Tỷ Linh Thạch
             dropChance: 1.0,
-            possibleDrops: ["hat_14", "armor_thanh_giap", "weapon_thanh_01", "pill_thanh_01"]
+            possibleDrops: ["hat_14", "armor_thanh_giap", "weapon_phep_thanh_02", "weapon_thanh_01", "pill_thanh_01"]
         }
-    }
+    },
+
+    // ================= KHU VỰC 13: BẢN NGUYÊN KHỞI NGUYÊN GIỚI (YÊU CẦU ĐẠI ĐẠO CHÍ CAO) =================
+    {
+        id: "stage_20",
+        number: 20,
+        name: "Ải 20: Thái Sơ Hỗn Độn Đàm",
+        area: "Bản Nguyên Khởi Nguyên Giới",
+        difficulty: "Chí Cao",
+        diffColor: "#ffd700",
+        reqRealm: 11, // Đại Đạo Chí Cao Vô Thượng
+        reqTier: 10, // Yêu cầu Tầng 11 trở lên
+        desc: "Đầm lầy hỗn độn trước khi thiên địa phân khai. Nơi ngủ say của Cổ Thần Thái Sơ ngưng tụ từ bản nguyên đại đạo.",
+        monster: {
+            name: "Thái Sơ Cổ Thần",
+            title: "Hóa Thân Bản Nguyên Hỗn Độn",
+            avatar: "🗿",
+            hp: 15000000000000, // 15.000 Tỷ Máu (15 Trillion)
+            attack: 450000000,   // 450 Triệu Sát Thương
+            defense: 18000000,
+            attackSpeed: 1.35,
+            isBoss: true
+        },
+        rewards: {
+            tuVi: 10000000000,     // 10 Tỷ Tu Vi
+            linhThach: 100000000000, // 100 Tỷ Linh Thạch
+            dropChance: 1.0,
+            possibleDrops: ["hat_15", "armor_dai_dao_thanh_bao", "pill_khoi_nguyen_thanh_dan"]
+        }
+    },
+    {
+        id: "stage_21",
+        number: 21,
+        name: "Ải 21: Vĩnh Hằng Luân Hồi Kính",
+        area: "Bản Nguyên Khởi Nguyên Giới",
+        difficulty: "Bất Hủ",
+        diffColor: "#e040fb",
+        reqRealm: 11, // Đại Đạo Chí Cao Vô Thượng
+        reqTier: 30, // Yêu cầu Tầng 31 trở lên
+        desc: "Mặt gương luân hồi phản chiếu bản ngã cực hạn. Đánh bại Tâm Ma Đại Đạo để hoàn toàn bước vào cảnh giới bất hủ bất diệt.",
+        monster: {
+            name: "Chí Cao Tâm Ma",
+            title: "Cực Cảnh Đại Đạo Nghịch Luân",
+            avatar: "👁️",
+            hp: 80000000000000, // 80.000 Tỷ Máu (80 Trillion)
+            attack: 1800000000,  // 1.8 Tỷ Sát Thương
+            defense: 45000000,
+            attackSpeed: 1.3,
+            isBoss: true
+        },
+        rewards: {
+            tuVi: 50000000000,     // 50 Tỷ Tu Vi
+            linhThach: 500000000000, // 500 Tỷ Linh Thạch
+            dropChance: 1.0,
+            possibleDrops: ["weapon_dai_dao_chi_ton", "weapon_phep_thanh_02", "pill_khoi_nguyen_thanh_dan"]
+        }
+    },
 ];
 
 class StageSystem {

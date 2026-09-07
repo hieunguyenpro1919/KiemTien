@@ -387,6 +387,19 @@ const SKILL_DATABASE = [
         vfx: "golden_shield",
         desc: "Thân thể chạm ngưỡng vô thượng, ngưng tụ lớp giáp hộ thân bằng 120% Máu tối đa."
     },
+    {
+        id: "skill_vo_thuong_van_kiem_phep",
+        name: "Vô Thượng Lôi Ngục Trận",
+        type: "phep",
+        reqRealm: 9,
+        reqTier: 2,
+        price: 30000000,
+        cooldown: 10,
+        multiplier: 16500.0,
+        icon: "⚡",
+        vfx: "divine_thunder",
+        desc: "Dẫn động lôi kiếp từ thiên ngoại hư không tạo thành biển sấm sét vô tận. Gây 1,650,000% sát thương Phép."
+    },
 
     // --- VẠN VÌ TINH TÚ (Realm 10) ---
     {
@@ -443,6 +456,32 @@ const SKILL_DATABASE = [
         vfx: "celestial_aura",
         desc: "Nghịch chuyển quy tắc sinh tử, hồi phục 100% Máu tối đa và nhận khiên bằng 100% HP tối đa."
     },
+    {
+        id: "skill_dai_dao_tich_diet",
+        name: "Đại Đạo Hư Vô Thần Quang",
+        type: "phep",
+        reqRealm: 11,
+        reqTier: 2,
+        price: 550000000,
+        cooldown: 14,
+        multiplier: 135000.0,
+        icon: "🌌",
+        vfx: "oblivion_beam",
+        desc: "Giải phóng chùm sáng bản nguyên khởi nguyên của vũ trụ, xóa bỏ tồn tại của đối thủ. Gây 13,500,000% sát thương Phép chí cao."
+    },
+    {
+        id: "skill_van_phap_quy_tong",
+        name: "Vạn Pháp Quy Tông Thuật",
+        type: "phep",
+        reqRealm: 11,
+        reqTier: 8,
+        price: 900000000,
+        cooldown: 16,
+        multiplier: 180000.0,
+        icon: "⚛️",
+        vfx: "cosmic_crush",
+        desc: "Dung hợp ức vạn pháp tắc đạo môn thành một đòn hủy diệt tối hậu. Gây 18,000,000% sát thương Phép."
+    }
 ];
 
 class SkillSystem {
