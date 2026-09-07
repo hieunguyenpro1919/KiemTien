@@ -360,6 +360,89 @@ const SKILL_DATABASE = [
         vfx: "tempest_melody",
         desc: "Tiếng sáo réo rắt câu thông cửu thiên cương phong, triệu hoán chân thân Phong Thần giáng thế. Cơn bão cuồng nộ hủy diệt thổi bay vạn vật, gây 500000% sát thương Phép cực mạnh."
     },
+    // --- VÔ THƯỢNG LỘ (Realm 9) ---
+    {
+        id: "skill_vo_thuong_kiem_y",
+        name: "Vô Thượng Bất Diệt Kiếm Ý",
+        type: "vat_li",
+        reqRealm: 9,
+        reqTier: 0,
+        price: 25000000,
+        cooldown: 10,
+        multiplier: 15000.0,
+        icon: "⚔️",
+        vfx: "cosmic_crush",
+        desc: "Kiếm ý siêu việt trần thế chém rách trật tự không gian. Gây 1,500,000% sát thương Vật Lí."
+    },
+    {
+        id: "skill_vo_thuong_ho_the",
+        name: "Bất Diệt Chân Thân",
+        type: "ho_the",
+        reqRealm: 9,
+        reqTier: 5,
+        price: 45000000,
+        cooldown: 12,
+        multiplier: 1.2,
+        icon: "🛡️",
+        vfx: "golden_shield",
+        desc: "Thân thể chạm ngưỡng vô thượng, ngưng tụ lớp giáp hộ thân bằng 120% Máu tối đa."
+    },
+
+    // --- VẠN VÌ TINH TÚ (Realm 10) ---
+    {
+        id: "skill_tinh_ha_lac_tieu",
+        name: "Tinh Hà Lạc Tiêu",
+        type: "phep",
+        reqRealm: 10,
+        reqTier: 0,
+        price: 100000000,
+        cooldown: 12,
+        multiplier: 45000.0,
+        icon: "🌠",
+        vfx: "cosmic_crush",
+        desc: "Dẫn dắt vạn thiên tinh tú lao xuống như thiên thạch diệt thế. Gây 4,500,000% sát thương Phép cực hạn."
+    },
+    {
+        id: "skill_tinh_than_ho_the",
+        name: "Chu Thiên Tinh Thần Khôi",
+        type: "ho_the",
+        reqRealm: 10,
+        reqTier: 4,
+        price: 150000000,
+        cooldown: 14,
+        multiplier: 1.5,
+        icon: "🪐",
+        vfx: "golden_shield",
+        desc: "Triệu hồi quỹ đạo ngân hà hộ thân, nhận lớp khiên hấp thụ bằng 150% Máu tối đa."
+    },
+
+    // --- ĐẠI ĐẠO CHÍ CAO VÔ THƯỢNG (Realm 11) ---
+    {
+        id: "skill_dai_dao_quy_nhan",
+        name: "Đại Đạo Khởi Nguyên Thần Quyền",
+        type: "vat_li",
+        reqRealm: 11,
+        reqTier: 0,
+        price: 500000000,
+        cooldown: 15,
+        multiplier: 120000.0,
+        icon: "💥",
+        vfx: "cosmic_crush",
+        desc: "Dồn toàn bộ căn nguyên vũ trụ vào một quyền, vạn vật quy về tro bụi. Gây 12,000,000% sát thương Vật Lí."
+    },
+    {
+        id: "skill_hon_don_tai_sinh",
+        name: "Hư Vô Nghịch Chuyển",
+        type: "tri_lieu",
+        reqRealm: 11,
+        reqTier: 5,
+        price: 800000000,
+        cooldown: 18,
+        multiplier: 15.0,
+        icon: "⚛️",
+        vfx: "celestial_aura",
+        desc: "Nghịch chuyển quy tắc sinh tử, hồi phục 100% Máu tối đa và nhận khiên bằng 100% HP tối đa."
+    },
 ];
 
 class SkillSystem {

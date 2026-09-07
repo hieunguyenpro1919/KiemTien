@@ -24,6 +24,7 @@ class UIController {
         // Bộ lọc cho Túi Đồ Tổng Hợp (Unified Inventory)
         this.invFilter = "all"; // all | equip | skill | dan_duoc
         this.invSearchQuery = "";
+        this.quickSellKeepOne = true; // Bán nhanh đồ trùng: mặc định giữ lại 1 bản cho trang bị chưa mặc
 
         // Bộ lọc cho Tàng Kinh Các
         this.skillFilterType = "all";   // all | vat_li | phep | tri_lieu | ho_the
@@ -784,14 +785,31 @@ class UIController {
                 // Nút hành động
                 let actionBtns = "";
                 if (isEquip) {
-                    if (!isRealmOk) {
-                        actionBtns = `
-                            <button class="btn-sm btn-disabled" disabled title="Cần đạt cảnh giới ${reqRealmName} mới có thể trang bị">🔒 Cần ${reqRealmName}</button>
-                            <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')">Bán (${item.sellPrice} 💎)</button>
-                        `;
+                    const isEquipped = (this.player.equipped?.non === item.id || this.player.equipped?.giap === item.id || this.player.equipped?.vukhi === item.id);
+                    const equipBtn = !isRealmOk
+                        ? `<button class="btn-sm btn-disabled" disabled title="Cần đạt cảnh giới ${reqRealmName} mới có thể trang bị">🔒 Cần ${reqRealmName}</button>`
+                        : `<button class="btn-sm btn-primary" onclick="event.stopPropagation(); gameUI.equipItem('${item.id}')">${isEquipped ? "Đổi" : "Trang Bị"}</button>`;
+
+                    if (count > 1) {
+                        if (isEquipped) {
+                            actionBtns = `
+                                ${equipBtn}
+                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')" title="Bán 1 món">Bán 1 (${item.sellPrice} 💎)</button>
+                                <button class="btn-sm btn-warning" onclick="event.stopPropagation(); gameUI.sellAllItems('${item.id}')" title="Bán toàn bộ ${count} bản trong túi đồ (vẫn giữ bản đang mặc trên người)">⚡ Bán Trùng (${count}) (${this.formatNumber(item.sellPrice * count)} 💎)</button>
+                            `;
+                        } else {
+                            const dupsCount = count - 1;
+                            const dupsGain = item.sellPrice * dupsCount;
+                            actionBtns = `
+                                ${equipBtn}
+                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')" title="Bán 1 món">Bán 1 (${item.sellPrice} 💎)</button>
+                                <button class="btn-sm btn-warning" onclick="event.stopPropagation(); gameUI.sellItemDuplicates('${item.id}')" title="Giữ lại 1 bản trong túi đồ, bán nhanh ${dupsCount} bản trùng">Bán Trùng (${dupsCount}) (${this.formatNumber(dupsGain)} 💎)</button>
+                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellAllItems('${item.id}')" title="Bán toàn bộ ${count} món trong túi">Bán Hết (${this.formatNumber(item.sellPrice * count)} 💎)</button>
+                            `;
+                        }
                     } else {
                         actionBtns = `
-                            <button class="btn-sm btn-primary" onclick="event.stopPropagation(); gameUI.equipItem('${item.id}')">Trang Bị</button>
+                            ${equipBtn}
                             <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')">Bán (${item.sellPrice} 💎)</button>
                         `;
                     }
@@ -1032,6 +1050,141 @@ class UIController {
             this.renderCharacterTab();
             this.updateHeaderInfo();
             StorageSystem.save(this.player);
+        }
+    }
+
+    /**
+     * Bán nhanh các bản sao trùng lặp của 1 trang bị cụ thể (giữ lại 1 bản an toàn nếu chưa mặc)
+     */
+    sellItemDuplicates(itemId) {
+        const res = this.player.sellItemDuplicates(itemId);
+        if (res && res.success) {
+            this.sound.playClick();
+            this.showToast(`Đã bán ${res.soldCount}x bản trùng của [${res.item.name}], giữ lại ${res.keptCount} bản, thu về +${this.formatNumber(res.totalGain)} Linh Thạch!`, "info");
+            this.renderCharacterTab();
+            this.updateHeaderInfo();
+            StorageSystem.save(this.player);
+        } else {
+            this.showToast(res ? res.msg : "Không thể bán bản trùng!", "error");
+        }
+    }
+
+    // ================= MODAL BÁN NHANH TRANG BỊ TRÙNG LẶP =================
+
+    openQuickSellDupsModal() {
+        const modal = document.getElementById("quick-sell-dups-modal");
+        if (!modal) return;
+
+        const summary = this.player.getDuplicateEquipmentSummary(this.quickSellKeepOne);
+        if (summary.totalCount === 0) {
+            this.sound.playClick();
+            this.showToast("Không tìm thấy trang bị trùng lặp nào trong túi!", "info");
+            return;
+        }
+
+        this.renderQuickSellDupsModal();
+        modal.style.display = "flex";
+        this.sound.playClick();
+    }
+
+    closeQuickSellDupsModal() {
+        const modal = document.getElementById("quick-sell-dups-modal");
+        if (modal) modal.style.display = "none";
+    }
+
+    toggleQuickSellKeepOne(checked) {
+        this.quickSellKeepOne = !!checked;
+        this.renderQuickSellDupsModal();
+    }
+
+    renderQuickSellDupsModal() {
+        const modal = document.getElementById("quick-sell-dups-modal");
+        const bannerEl = document.getElementById("quick-sell-stat-banner");
+        const listEl = document.getElementById("quick-sell-list-container");
+        const btnConfirm = document.getElementById("btn-confirm-quick-sell");
+        const chkKeepOne = document.getElementById("chk-keep-one-unused");
+
+        if (!modal || !bannerEl || !listEl) return;
+
+        if (chkKeepOne) {
+            chkKeepOne.checked = this.quickSellKeepOne;
+        }
+
+        const summary = this.player.getDuplicateEquipmentSummary(this.quickSellKeepOne);
+
+        bannerEl.innerHTML = `
+            <div class="quick-sell-stat-col">
+                <span class="quick-sell-stat-label">🛡️ Trang bị trùng thanh lý</span>
+                <span class="quick-sell-stat-val">${summary.totalCount} món</span>
+            </div>
+            <div class="quick-sell-stat-col">
+                <span class="quick-sell-stat-label">💎 Linh Thạch thu về</span>
+                <span class="quick-sell-stat-val">+${this.formatNumber(summary.totalGain)} 💎</span>
+            </div>
+        `;
+
+        if (summary.totalCount === 0) {
+            listEl.innerHTML = `
+                <div style="text-align:center; padding: 24px 10px; color: var(--text-muted);">
+                    <div style="font-size: 28px; margin-bottom: 6px;">✨</div>
+                    <div>Túi đồ gọn gàng! Không có trang bị trùng nào theo tiêu chí này.</div>
+                </div>
+            `;
+            if (btnConfirm) {
+                btnConfirm.disabled = true;
+                btnConfirm.classList.add("btn-disabled");
+                btnConfirm.innerText = "Không Có Trang Bị Trùng";
+            }
+            return;
+        }
+
+        if (btnConfirm) {
+            btnConfirm.disabled = false;
+            btnConfirm.classList.remove("btn-disabled");
+            btnConfirm.innerText = `⚡ Xác Nhận Bán Nhanh (${summary.totalCount} Món)`;
+        }
+
+        listEl.innerHTML = "";
+        summary.duplicates.forEach(d => {
+            const item = d.item;
+            const rarity = ItemSystem.getRarity(item.rarity);
+            const slotName = item.slot === "non" ? "NÓN" : (item.slot === "giap" ? "GIÁP" : "VŨ KHÍ");
+
+            const row = document.createElement("div");
+            row.className = "quick-sell-row-item";
+            row.innerHTML = `
+                <div class="quick-sell-item-left">
+                    <span class="quick-sell-item-icon">${item.icon}</span>
+                    <div class="quick-sell-item-details">
+                        <strong class="quick-sell-item-name" style="color: ${rarity.color}">${item.name}</strong>
+                        <div class="quick-sell-item-meta">
+                            <span style="color: ${rarity.color}">${rarity.name}</span> • <span>${slotName}</span> •
+                            ${d.isEquipped
+                                ? `<span style="color: #ffd700; font-weight:600;">(Đang mặc • Bán hết ${d.dupsCount} bản túi)</span>`
+                                : `<span style="color: #a0aec0;">(Chưa mặc • Bán ${d.dupsCount}, giữ ${d.keepCount} bản)</span>`}
+                        </div>
+                    </div>
+                </div>
+                <div class="quick-sell-item-right">
+                    <span class="quick-sell-sell-count">Bán x${d.dupsCount}</span>
+                    <span class="quick-sell-gain-price">+${this.formatNumber(d.totalGain)} 💎</span>
+                </div>
+            `;
+            listEl.appendChild(row);
+        });
+    }
+
+    confirmQuickSellDups() {
+        const res = this.player.sellAllDuplicateEquipment(this.quickSellKeepOne);
+        if (res && res.success) {
+            this.sound.playClick();
+            this.closeQuickSellDupsModal();
+            this.showToast(`🎉 Bán nhanh thành công ${res.totalCount} trang bị trùng, thu về +${this.formatNumber(res.totalGain)} Linh Thạch!`, "success");
+            this.renderCharacterTab();
+            this.updateHeaderInfo();
+            StorageSystem.save(this.player);
+        } else {
+            this.showToast(res ? res.msg : "Không có trang bị trùng để bán!", "info");
         }
     }
 

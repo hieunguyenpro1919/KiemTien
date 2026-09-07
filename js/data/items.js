@@ -194,6 +194,18 @@ const ITEM_DATABASE = [
         icon: "👑",
         desc: "Thánh quan chí cao quy tụ căn nguyên đại đạo vũ trụ, mang trên đầu như chư thiên thần phật đồng hành hộ mệnh."
     },
+    {
+        id: "hat_15",
+        name: "Khởi Nguyên Thái Cực Quán",
+        slot: "non",
+        rarity: "thanh",
+        reqRealm: 11,
+        stats: { mau: 800000000, phongThu: 22000000, khangPhep: 20000000 },
+        price: 3500000000,
+        sellPrice: 1200000000,
+        icon: "👑",
+        desc: "Thần quan đúc từ bản nguyên thái cực thuở sơ khai, thức hải vĩnh hằng cùng thiên địa."
+    },
 
     // ================= GIÁP (ARMOR) - SẮP XẾP TỪ THẤP ĐẾN CAO =================
     {
@@ -339,6 +351,30 @@ const ITEM_DATABASE = [
         sellPrice: 95000000,
         icon: "🥻",
         desc: "Thiên y dệt từ vân vụ tinh hà, vạn pháp bất xâm, độc tôn thiên địa."
+    },
+    {
+        id: "armor_van_vi_tinh_giap",
+        name: "Vạn Tinh Quy Tông Giáp",
+        slot: "giap",
+        rarity: "thanh",
+        reqRealm: 10,
+        stats: { mau: 350000000, phongThu: 4500000 },
+        price: 600000000,
+        sellPrice: 200000000,
+        icon: "🌌",
+        desc: "Dệt từ bụi tinh vân và quỹ đạo tinh tú, ngưng kết lực lượng phòng ngự vô hạn của dải ngân hà."
+    },
+    {
+        id: "armor_dai_dao_thanh_bao",
+        name: "Khởi Nguyên Hư Vô Thánh Bào",
+        slot: "giap",
+        rarity: "thanh",
+        reqRealm: 11,
+        stats: { mau: 1200000000, phongThu: 15000000 },
+        price: 2500000000,
+        sellPrice: 900000000,
+        icon: "⚛️",
+        desc: "Thánh bào sinh ra trước thuở hỗn độn sơ khai, mọi đòn tấn công chạm vào đều tiêu biến vào cõi hư vô."
     },
 
     // ================= VŨ KHÍ (WEAPON) - SẮP XẾP TỪ THẤP ĐẾN CAO =================
@@ -534,6 +570,18 @@ const ITEM_DATABASE = [
         icon: "🌟",
         desc: "Thánh kiếm nắm giữ cội nguồn đại đạo, một chém trảm dứt vạn vì tinh tú."
     },
+    {
+        id: "weapon_dai_dao_chi_ton",
+        name: "Chí Cao Vĩnh Hằng Luân Hồi Kiếm",
+        slot: "vukhi",
+        rarity: "thanh",
+        reqRealm: 11,
+        stats: { vatLi: 45000000, phep: 20000000, baoKich: 75 },
+        price: 3000000000,
+        sellPrice: 1000000000,
+        icon: "👑",
+        desc: "Vũ khí sinh ra từ ý niệm bản nguyên của đại đạo, nhất niệm sinh thế giới, nhất niệm diệt quần tiên."
+    },
 
     // ================= ĐAN DƯỢC & TIÊU HAO - SẮP XẾP TỪ THẤP ĐẾN CAO =================
     {
@@ -655,7 +703,31 @@ const ITEM_DATABASE = [
         sellPrice: 150000000,
         icon: "💠",
         desc: "Thánh dược ngưng tụ toàn bộ sinh cơ của một tinh hệ, lập tức tăng 150,000,000 Tu Vi."
-    }
+    },
+    {
+        id: "pill_tinh_tu",
+        name: "Cửu Diệu Thần Tinh Đan",
+        slot: "dan_duoc",
+        rarity: "thanh",
+        reqRealm: 10,
+        tuViGain: 800000000,
+        price: 2000000000,
+        sellPrice: 600000000,
+        icon: "🪐",
+        desc: "Đan dược cô đọng tinh hoa năng lượng của chín vì tinh tú, lập tức gia tăng 800,000,000 Tu Vi."
+    },
+    {
+        id: "pill_khoi_nguyen_thanh_dan",
+        name: "Đại Đạo Khởi Nguyên Đan",
+        slot: "dan_duoc",
+        rarity: "thanh",
+        reqRealm: 11,
+        tuViGain: 3500000000,
+        price: 10000000000,
+        sellPrice: 3000000000,
+        icon: "⚛️",
+        desc: "Thánh đan đoạt thiên địa tạo hóa cội nguồn, lập tức gia tăng 3,500,000,000 Tu Vi."
+    },
 ];
 
 class ItemSystem {

@@ -595,6 +595,156 @@ class Player {
         return { success: true, count: count, totalGain: totalGain, item: item };
     }
 
+    /**
+     * Bán các bản trùng lặp của 1 loại trang bị trong túi đồ
+     * @param {string} itemId - ID trang bị
+     * @param {number|null} keepCount - Số lượng giữ lại trong túi (nếu null: giữ 0 nếu đang mặc, giữ 1 nếu chưa mặc)
+     */
+    sellItemDuplicates(itemId, keepCount = null) {
+        const item = (typeof ItemSystem !== "undefined") ? ItemSystem.getItemById(itemId) : null;
+        if (!item) return { success: false, msg: "Trang bị không tồn tại!" };
+
+        const equipSlots = ["non", "giap", "vukhi"];
+        if (!equipSlots.includes(item.slot)) {
+            return { success: false, msg: "Vật phẩm này không phải là trang bị!" };
+        }
+
+        const isEquipped = (this.equipped?.non === itemId || this.equipped?.giap === itemId || this.equipped?.vukhi === itemId);
+        const targetKeep = (keepCount !== null) ? keepCount : (isEquipped ? 0 : 1);
+
+        const totalInInv = (this.inventory || []).filter(id => id === itemId).length;
+        const sellCount = Math.max(0, totalInInv - targetKeep);
+
+        if (sellCount <= 0) {
+            return {
+                success: false,
+                msg: `Không có bản trùng lặp nào của [${item.name}] để bán!`
+            };
+        }
+
+        let removed = 0;
+        const newInv = [];
+        for (const id of (this.inventory || [])) {
+            if (id === itemId && removed < sellCount) {
+                removed++;
+            } else {
+                newInv.push(id);
+            }
+        }
+        this.inventory = newInv;
+
+        const unitSellPrice = item.sellPrice || 10;
+        const totalGain = unitSellPrice * sellCount;
+        this.linhThach = (this.linhThach || 0) + totalGain;
+
+        return {
+            success: true,
+            item,
+            soldCount: sellCount,
+            keptCount: totalInInv - sellCount,
+            totalGain
+        };
+    }
+
+    /**
+     * Phân tích và lấy danh sách tổng hợp toàn bộ trang bị trùng lặp trong túi đồ
+     * @param {boolean} keepOneUnused - Giữ lại 1 bản cho mỗi loại trang bị chưa mặc trên người (mặc định: true)
+     */
+    getDuplicateEquipmentSummary(keepOneUnused = true) {
+        const equipSlots = ["non", "giap", "vukhi"];
+        const counts = new Map();
+
+        (this.inventory || []).forEach(id => {
+            const item = (typeof ItemSystem !== "undefined") ? ItemSystem.getItemById(id) : null;
+            if (item && equipSlots.includes(item.slot)) {
+                counts.set(id, (counts.get(id) || 0) + 1);
+            }
+        });
+
+        const duplicates = [];
+        let totalCount = 0;
+        let totalGain = 0;
+
+        counts.forEach((count, id) => {
+            const item = ItemSystem.getItemById(id);
+            if (!item) return;
+
+            const isEquipped = (this.equipped?.non === id || this.equipped?.giap === id || this.equipped?.vukhi === id);
+            const keepCount = (keepOneUnused && !isEquipped) ? 1 : 0;
+            const dupsCount = Math.max(0, count - keepCount);
+
+            if (dupsCount > 0) {
+                const gain = (item.sellPrice || 10) * dupsCount;
+                totalCount += dupsCount;
+                totalGain += gain;
+                duplicates.push({
+                    item,
+                    inInvCount: count,
+                    dupsCount,
+                    keepCount,
+                    isEquipped,
+                    unitPrice: item.sellPrice || 10,
+                    totalGain: gain
+                });
+            }
+        });
+
+        // Sắp xếp danh sách từ thấp đến cao (cảnh giới, phẩm cấp, giá)
+        if (typeof ItemSystem !== "undefined" && ItemSystem.compareItems) {
+            duplicates.sort((a, b) => ItemSystem.compareItems(a.item, b.item));
+        }
+
+        return {
+            duplicates,
+            totalCount,
+            totalGain
+        };
+    }
+
+    /**
+     * Bán toàn bộ trang bị trùng lặp trong túi đồ (Nón, Giáp, Vũ khí)
+     * @param {boolean} keepOneUnused - Giữ lại 1 bản cho mỗi loại trang bị chưa mặc trên người (mặc định: true)
+     */
+    sellAllDuplicateEquipment(keepOneUnused = true) {
+        const summary = this.getDuplicateEquipmentSummary(keepOneUnused);
+        if (summary.totalCount === 0) {
+            return {
+                success: false,
+                msg: "Không có trang bị trùng lặp nào trong túi!",
+                totalCount: 0,
+                totalGain: 0,
+                summary
+            };
+        }
+
+        const toRemoveMap = new Map();
+        summary.duplicates.forEach(d => {
+            toRemoveMap.set(d.item.id, d.dupsCount);
+        });
+
+        let actuallyRemoved = 0;
+        const newInventory = [];
+        for (const id of (this.inventory || [])) {
+            const needRemove = toRemoveMap.get(id) || 0;
+            if (needRemove > 0) {
+                toRemoveMap.set(id, needRemove - 1);
+                actuallyRemoved++;
+            } else {
+                newInventory.push(id);
+            }
+        }
+
+        this.inventory = newInventory;
+        this.linhThach = (this.linhThach || 0) + summary.totalGain;
+
+        return {
+            success: true,
+            totalCount: actuallyRemoved,
+            totalGain: summary.totalGain,
+            summary
+        };
+    }
+
     // ================= LƯU & TẢI TRẠNG THÁI =================
 
     toJSON() {

@@ -129,6 +129,11 @@ Mỗi phẩm cấp có màu sắc, khung viền và hiệu ứng hào quang tư�
 Tất cả danh sách vật phẩm trong túi đồ, cửa hàng Bách Bảo Các và Tàng Kinh Các đều được sắp xếp chặt chẽ theo thứ tự:
 $$\text{Cảnh Giới Yêu Cầu} \longrightarrow \text{Phẩm Cấp / Tầng} \longrightarrow \text{Giá Bán} \longrightarrow \text{Tên ABC}$$
 
+### Tính Năng Bán Nhanh Trang Bị Trùng Lặp
+* **Bán trên từng thẻ trang bị**: Khi có từ 2 món trở lên (`count > 1`), bổ sung các nút `Bán 1`, `Bán Trùng` (giữ lại 1 bản an toàn trong túi, bán sạch các bản thừa) và `Bán Hết`.
+* **Bán Nhanh Toàn Diện (`⚡ Bán Đồ Trùng`)**: Quét toàn bộ nón, giáp, vũ khí trùng trong túi, hiển thị modal xem trước số lượng và tổng Linh Thạch thu về, kèm cơ chế an toàn giữ lại 1 bản cho mỗi loại trang bị chưa mặc.
+* **Bảo vệ tuyệt đối**: Trang bị đang mặc trên người không bao giờ bị bán; đan dược và bí kíp võ học không bị ảnh hưởng.
+
 ---
 
 ## 📜 6. HỆ THỐNG KỸ NĂNG & TÀNG KINH CÁC (SKILL SYSTEM)

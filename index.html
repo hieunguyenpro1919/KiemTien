@@ -281,10 +281,17 @@
                                 🧪 Đan Dược (<span id="inv-count-dan">0</span>)
                             </button>
                         </div>
-                        <div class="inv-search-wrap">
-                            <input type="text" id="inv-search-input" class="inv-search-field"
-                                placeholder="🔍 Tìm vật phẩm, bí kíp..."
-                                oninput="gameUI.handleInventorySearch(this.value)">
+                        <div class="inv-actions-bar">
+                            <div class="inv-search-wrap">
+                                <input type="text" id="inv-search-input" class="inv-search-field"
+                                    placeholder="🔍 Tìm vật phẩm, bí kíp..."
+                                    oninput="gameUI.handleInventorySearch(this.value)">
+                            </div>
+                            <button class="btn-quick-sell-dups" id="btn-quick-sell-dups"
+                                onclick="gameUI.openQuickSellDupsModal()"
+                                title="Bán nhanh toàn bộ nón, giáp, vũ khí trùng lặp trong túi đồ">
+                                ⚡ Bán Đồ Trùng
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -673,6 +680,50 @@
                 </div>
                 <div class="title-grid-list" id="title-grid-list">
                     <!-- Dynamic titles list -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Bán Nhanh Trang Bị Trùng Lặp -->
+    <div class="game-modal" id="quick-sell-dups-modal" style="display: none;">
+        <div class="game-modal-box quick-sell-modal-box">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 26px;">⚡</span>
+                    <div>
+                        <h3 style="font-family: var(--font-heading); font-size: 18px; color: var(--text-gold); margin: 0;">
+                            BÁN NHANH TRANG BỊ TRÙNG LẶP</h3>
+                        <small style="color: var(--text-muted); font-size: 11px;">Thanh lý nón, giáp, vũ khí dư thừa thu hồi Linh Thạch</small>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="gameUI.closeQuickSellDupsModal()">&times;</button>
+            </div>
+            <div class="quick-sell-modal-body">
+                <!-- Thống kê tóm tắt -->
+                <div class="quick-sell-stat-banner" id="quick-sell-stat-banner">
+                    <!-- Dynamic summary counters -->
+                </div>
+
+                <!-- Tùy chọn an toàn -->
+                <div class="quick-sell-option-wrapper">
+                    <label class="quick-sell-option-label" for="chk-keep-one-unused">
+                        <input type="checkbox" id="chk-keep-one-unused" checked onchange="gameUI.toggleQuickSellKeepOne(this.checked)">
+                        <span><strong>🛡️ Giữ lại 1 bản</strong> cho mỗi loại trang bị chưa mặc trên người (Khuyên dùng)</span>
+                    </label>
+                </div>
+
+                <!-- Danh sách trang bị trùng sẽ bán -->
+                <div class="quick-sell-list-container" id="quick-sell-list-container">
+                    <!-- Dynamic items list -->
+                </div>
+
+                <!-- Nút hành động -->
+                <div class="modal-actions mt-3">
+                    <button class="btn-primary btn-quick-sell-confirm" id="btn-confirm-quick-sell" onclick="gameUI.confirmQuickSellDups()">
+                        ⚡ Xác Nhận Bán Nhanh
+                    </button>
+                    <button class="btn-secondary" onclick="gameUI.closeQuickSellDupsModal()">Đóng</button>
                 </div>
             </div>
         </div>
