@@ -464,8 +464,8 @@ const STAGE_DATABASE = [
             name: "Hóa Thân Vấn Đạo",
             title: "Cực Cảnh Đại Đạo",
             avatar: "🌌",
-            hp: 10000000000, // 10 Tỷ Máu
-            attack: 1000000, // 1 Triệu Sát Thương
+            hp: 100000000000, // 100 Tỷ Máu
+            attack: 10000000, // 10 Triệu Sát Thương
             defense: 850000,
             attackSpeed: 1.5,
             isBoss: true

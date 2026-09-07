@@ -294,24 +294,28 @@ class CombatEngine {
         this.sound.playVictory();
 
         const stage = this.currentStage;
-        const rewards = stage.rewards;
+        const rewards = stage?.rewards || { tuVi: 0, linhThach: 0, dropChance: 0, possibleDrops: [] };
 
-        // Nhận Tu Vi và Linh Thạch
-        this.player.addTuVi(rewards.tuVi);
-        this.player.linhThach += rewards.linhThach;
+        // Nhận Tu Vi và Linh Thạch an toàn phòng vệ
+        this.player.addTuVi(rewards.tuVi || 0);
+        this.player.linhThach = (Number(this.player.linhThach) || 0) + (Number(rewards.linhThach) || 0);
 
-        if (!this.player.clearedStages.includes(stage.id)) {
+        if (!Array.isArray(this.player.clearedStages)) {
+            this.player.clearedStages = [];
+        }
+        if (stage?.id && !this.player.clearedStages.includes(stage.id)) {
             this.player.clearedStages.push(stage.id);
         }
 
         // Kiểm tra rơi vật phẩm
         let droppedItem = null;
-        if (Math.random() < rewards.dropChance && rewards.possibleDrops.length > 0) {
+        const possibleDrops = Array.isArray(rewards.possibleDrops) ? rewards.possibleDrops : [];
+        if (rewards.dropChance && Math.random() < rewards.dropChance && possibleDrops.length > 0) {
             let selectedDropId = null;
 
             // Xử lý cơ chế rơi cực hiếm cho Tẩy Tủy Đan (chống lạm phát)
-            if (rewards.possibleDrops.includes("pill_tay_tuy")) {
-                const normalDrops = rewards.possibleDrops.filter(id => id !== "pill_tay_tuy");
+            if (possibleDrops.includes("pill_tay_tuy")) {
+                const normalDrops = possibleDrops.filter(id => id !== "pill_tay_tuy");
                 // Tẩy Tủy Đan chỉ có 3% cơ hội xuất hiện khi kích hoạt rơi đồ
                 if (Math.random() < 0.03) {
                     selectedDropId = "pill_tay_tuy";
@@ -321,12 +325,15 @@ class CombatEngine {
                     selectedDropId = "pill_tay_tuy";
                 }
             } else {
-                selectedDropId = rewards.possibleDrops[Math.floor(Math.random() * rewards.possibleDrops.length)];
+                selectedDropId = possibleDrops[Math.floor(Math.random() * possibleDrops.length)];
             }
 
             if (selectedDropId) {
+                if (!Array.isArray(this.player.inventory)) {
+                    this.player.inventory = [];
+                }
                 this.player.inventory.push(selectedDropId);
-                droppedItem = ItemSystem.getItemById(selectedDropId);
+                droppedItem = (typeof ItemSystem !== "undefined") ? ItemSystem.getItemById(selectedDropId) : null;
             }
         }
 

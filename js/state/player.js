@@ -7,62 +7,72 @@
  */
 
 class Player {
-    constructor() {
-        this.name = "Tiêu Viêm";
-        this.realmIndex = 0; // Tôi Khí (0) -> Đỉnh Cấp Ngai (8)
-        this.tierIndex = 0;  // Tầng 1 (0) -> Đỉnh Phong (9)
-        this.tuVi = 0;
-        this.statPoints = 4; // Bắt đầu với 4 điểm ban đầu để cộng
-
-        // Điểm thuộc tính tự do đã cộng
-        this.statVatLi = 0;
-        this.statPhep = 0;
-        this.statMau = 0;
-
-        // 3 Ô Trang Bị
-        this.equipped = {
-            non: null,   // itemId
-            giap: null,  // itemId
-            vukhi: null  // itemId
+    /**
+     * Khung mẫu dữ liệu mặc định (DEFAULT_PLAYER_DATA)
+     * Đảm bảo mọi bản lưu (save data) cũ hoặc mới luôn có đầy đủ cấu trúc chuẩn
+     */
+    static getDefaultData() {
+        return {
+            saveVersion: 2,
+            name: "Tiêu Viêm",
+            realmIndex: 0, // Tôi Khí (0) -> Đỉnh Cấp Ngai (8) -> Vô Thượng Lộ...
+            tierIndex: 0,  // Tầng 1 (0) -> Đỉnh Phong (9)
+            tuVi: 0,
+            statPoints: 4, // Bắt đầu với 4 điểm tiềm năng
+            statVatLi: 0,
+            statPhep: 0,
+            statMau: 0,
+            equipped: {
+                non: null,   // itemId
+                giap: null,  // itemId
+                vukhi: null  // itemId
+            },
+            equippedSkills: [
+                "skill_toai_thach_quyen", // Ô 1
+                "skill_dan_hoa_thuat",    // Ô 2
+                null                      // Ô 3
+            ],
+            learnedSkills: [
+                "skill_toai_thach_quyen",
+                "skill_dan_hoa_thuat"
+            ],
+            inventory: [
+                "hat_01",
+                "armor_01",
+                "weapon_01",
+                "pill_tu_khi_tieu",
+                "pill_tu_khi_tieu",
+                "item_rename_scroll"
+            ],
+            equippedTitle: "title_so_nhap",
+            unlockedTitles: ["title_so_nhap"],
+            hasHadRenameScroll: true,
+            linhThach: 200,
+            clearedStages: [],
+            lastOnlineTime: Date.now()
         };
+    }
 
-        // 3 Ô Kỹ Năng trong trận
-        this.equippedSkills = [
-            "skill_toai_thach_quyen", // Ô 1
-            "skill_dan_hoa_thuat",    // Ô 2
-            null                      // Ô 3
-        ];
-
-        // Danh sách Kỹ năng đã học
-        this.learnedSkills = [
-            "skill_toai_thach_quyen",
-            "skill_dan_hoa_thuat"
-        ];
-
-        // Túi đồ (Inventory)
-        this.inventory = [
-            "hat_01",
-            "armor_01",
-            "weapon_01",
-            "pill_tu_khi_tieu",
-            "pill_tu_khi_tieu",
-            "item_rename_scroll"
-        ];
-
-        // Hệ thống Danh Hiệu (Titles)
-        this.equippedTitle = "title_so_nhap";
-        this.unlockedTitles = ["title_so_nhap"];
-
-        // Tiền tệ: Linh Thạch
-        this.linhThach = 200;
-
-        // Danh sách ải đã vượt qua
-        this.clearedStages = [];
-
-        // Thời điểm online gần nhất (dùng tính tu vi treo máy ngoại tuyến)
-        this.lastOnlineTime = Date.now();
-
-        // Trạng thái chiến đấu
+    constructor() {
+        const d = Player.getDefaultData();
+        this.name = d.name;
+        this.realmIndex = d.realmIndex;
+        this.tierIndex = d.tierIndex;
+        this.tuVi = d.tuVi;
+        this.statPoints = d.statPoints;
+        this.statVatLi = d.statVatLi;
+        this.statPhep = d.statPhep;
+        this.statMau = d.statMau;
+        this.equipped = { ...d.equipped };
+        this.equippedSkills = [...d.equippedSkills];
+        this.learnedSkills = [...d.learnedSkills];
+        this.inventory = [...d.inventory];
+        this.equippedTitle = d.equippedTitle;
+        this.unlockedTitles = [...d.unlockedTitles];
+        this.hasHadRenameScroll = true;
+        this.linhThach = d.linhThach;
+        this.clearedStages = [...d.clearedStages];
+        this.lastOnlineTime = d.lastOnlineTime;
         this.currentHp = this.getMaxHp();
     }
 
@@ -217,9 +227,9 @@ class Player {
         // 1 điểm Máu = +25 HP
         // 1 điểm Vật Lí = +3 Sát Thương Vật Lí
         // 1 điểm Phép = +3 Sát Thương Phép
-        const allocatedHp = this.statMau * 25;
-        const allocatedVatLi = this.statVatLi * 3;
-        const allocatedPhep = this.statPhep * 3;
+        const allocatedHp = (this.statMau || 0) * 25;
+        const allocatedVatLi = (this.statVatLi || 0) * 3;
+        const allocatedPhep = (this.statPhep || 0) * 3;
 
         // Chỉ số cộng từ 3 Ô Trang Bị
         let equipHp = 0;
@@ -229,9 +239,10 @@ class Player {
         let equipKhangPhep = 0;
         let equipBaoKich = 0;
 
+        const equippedMap = this.equipped || {};
         ["non", "giap", "vukhi"].forEach(slot => {
-            const itemId = this.equipped[slot];
-            if (itemId) {
+            const itemId = equippedMap[slot];
+            if (itemId && typeof ItemSystem !== "undefined") {
                 const item = ItemSystem.getItemById(itemId);
                 if (item && item.stats) {
                     if (item.stats.mau) equipHp += item.stats.mau;
@@ -278,15 +289,18 @@ class Player {
             phongThu: totalPhongThu,
             khangPhep: totalKhangPhep,
             baoKich: totalBaoKich,
-
-            // Chi tiết đóng góp
-            base: { hp: baseHp, vatLi: baseVatLi, phep: basePhep, phongThu: basePhongThu, khangPhep: baseKhangPhep },
-            allocated: { hp: allocatedHp, vatLi: allocatedVatLi, phep: allocatedPhep },
-            equipment: { hp: equipHp, vatLi: equipVatLi, phep: equipPhep, phongThu: equipPhongThu, khangPhep: equipKhangPhep, baoKich: equipBaoKich },
-            title: { hp: titleHp, vatLi: titleVatLi, phep: titlePhep, phongThu: titlePhongThu, khangPhep: titleKhangPhep, baoKich: titleBaoKich }
+            titleHp,
+            titleVatLi,
+            titlePhep,
+            titlePhongThu,
+            titleKhangPhep,
+            titleBaoKich
         };
     }
 
+    /**
+     * Lấy Máu tối đa
+     */
     getMaxHp() {
         return this.getTotalStats().maxHp;
     }
@@ -301,12 +315,20 @@ class Player {
      * Mặc trang bị vào ô chỉ định (nón, giáp, vũ khí)
      */
     equipItem(itemId) {
-        const item = ItemSystem.getItemById(itemId);
+        if (!this.equipped) {
+            this.equipped = { non: null, giap: null, vukhi: null };
+        }
+        if (!Array.isArray(this.inventory)) {
+            this.inventory = [];
+        }
+
+        const item = (typeof ItemSystem !== "undefined") ? ItemSystem.getItemById(itemId) : null;
         if (!item || !["non", "giap", "vukhi"].includes(item.slot)) return false;
 
         // Kiểm tra yêu cầu cảnh giới của trang bị
         if (this.realmIndex < item.reqRealm) {
-            return { success: false, msg: `Cần cảnh giới ${RealmSystem.getRealm(item.reqRealm).name} mới có thể trang bị!` };
+            const reqName = (typeof RealmSystem !== "undefined" && RealmSystem.getRealm(item.reqRealm)) ? RealmSystem.getRealm(item.reqRealm).name : `Cảnh giới ${item.reqRealm}`;
+            return { success: false, msg: `Cần cảnh giới ${reqName} mới có thể trang bị!` };
         }
 
         // Tìm trong túi đồ
@@ -334,6 +356,13 @@ class Player {
      */
     unequipItem(slot) {
         if (!["non", "giap", "vukhi"].includes(slot)) return false;
+        if (!this.equipped) {
+            this.equipped = { non: null, giap: null, vukhi: null };
+        }
+        if (!Array.isArray(this.inventory)) {
+            this.inventory = [];
+        }
+
         const currentItem = this.equipped[slot];
         if (!currentItem) return false;
 
@@ -350,6 +379,13 @@ class Player {
      * Học kỹ năng từ Shop / NPC Tàng Kinh Các
      */
     learnSkill(skillId) {
+        if (!Array.isArray(this.learnedSkills)) {
+            this.learnedSkills = [];
+        }
+        if (!Array.isArray(this.equippedSkills)) {
+            this.equippedSkills = [null, null, null];
+        }
+
         const skill = SkillSystem.getSkillById(skillId);
         if (!skill) return { success: false, msg: "Bí kíp không tồn tại!" };
 
@@ -563,54 +599,84 @@ class Player {
 
     toJSON() {
         return {
-            name: this.name,
-            equippedTitle: this.equippedTitle,
-            unlockedTitles: this.unlockedTitles,
-            realmIndex: this.realmIndex,
-            tierIndex: this.tierIndex,
-            tuVi: isNaN(this.tuVi) ? 0 : this.tuVi,
-            statPoints: this.statPoints,
-            statVatLi: this.statVatLi,
-            statPhep: this.statPhep,
-            statMau: this.statMau,
-            equipped: this.equipped,
-            equippedSkills: this.equippedSkills,
-            learnedSkills: this.learnedSkills,
-            inventory: this.inventory,
+            saveVersion: (typeof StorageSystem !== "undefined" && StorageSystem.CURRENT_SAVE_VERSION) ? StorageSystem.CURRENT_SAVE_VERSION : 2,
+            name: (typeof this.name === "string" && this.name.trim()) ? this.name.trim() : "Tiêu Viêm",
+            equippedTitle: this.equippedTitle || "title_so_nhap",
+            unlockedTitles: (Array.isArray(this.unlockedTitles) && this.unlockedTitles.length > 0) ? [...this.unlockedTitles] : ["title_so_nhap"],
+            realmIndex: Number(this.realmIndex) || 0,
+            tierIndex: Number(this.tierIndex) || 0,
+            tuVi: isNaN(this.tuVi) ? 0 : Number(this.tuVi),
+            statPoints: isNaN(this.statPoints) ? 0 : Number(this.statPoints),
+            statVatLi: Number(this.statVatLi) || 0,
+            statPhep: Number(this.statPhep) || 0,
+            statMau: Number(this.statMau) || 0,
+            equipped: {
+                non: this.equipped?.non || null,
+                giap: this.equipped?.giap || null,
+                vukhi: this.equipped?.vukhi || null
+            },
+            equippedSkills: Array.isArray(this.equippedSkills)
+                ? [this.equippedSkills[0] || null, this.equippedSkills[1] || null, this.equippedSkills[2] || null]
+                : ["skill_toai_thach_quyen", "skill_dan_hoa_thuat", null],
+            learnedSkills: Array.isArray(this.learnedSkills) ? [...this.learnedSkills] : ["skill_toai_thach_quyen", "skill_dan_hoa_thuat"],
+            inventory: Array.isArray(this.inventory) ? [...this.inventory] : [],
             hasHadRenameScroll: true,
-            linhThach: this.linhThach,
-            clearedStages: this.clearedStages,
+            linhThach: isNaN(this.linhThach) ? 0 : Number(this.linhThach),
+            clearedStages: Array.isArray(this.clearedStages) ? [...this.clearedStages] : [],
             lastOnlineTime: Date.now()
         };
     }
 
     fromJSON(data) {
-        if (!data) return;
-        this.name = data.name || this.name;
-        this.equippedTitle = data.equippedTitle || "title_so_nhap";
-        this.unlockedTitles = data.unlockedTitles || ["title_so_nhap"];
-        this.realmIndex = data.realmIndex || 0;
-        this.tierIndex = data.tierIndex || 0;
-        this.tuVi = isNaN(data.tuVi) ? 0 : (data.tuVi || 0);
-        this.statPoints = data.statPoints !== undefined ? data.statPoints : 4;
-        this.statVatLi = data.statVatLi || 0;
-        this.statPhep = data.statPhep || 0;
-        this.statMau = data.statMau || 0;
-        this.equipped = data.equipped || { non: null, giap: null, vukhi: null };
-        this.equippedSkills = data.equippedSkills || ["skill_toai_thach_quyen", "skill_dan_hoa_thuat", null];
-        this.learnedSkills = data.learnedSkills || ["skill_toai_thach_quyen", "skill_dan_hoa_thuat"];
-        this.inventory = data.inventory || [];
+        if (!data || typeof data !== "object") return;
+        const defaults = Player.getDefaultData();
+
+        this.name = (typeof data.name === "string" && data.name.trim()) ? data.name.trim() : (this.name || defaults.name);
+        this.equippedTitle = (typeof data.equippedTitle === "string" && data.equippedTitle) ? data.equippedTitle : defaults.equippedTitle;
+        this.unlockedTitles = (Array.isArray(data.unlockedTitles) && data.unlockedTitles.length > 0) ? [...data.unlockedTitles] : [...defaults.unlockedTitles];
+        this.realmIndex = (typeof data.realmIndex === "number" && !isNaN(data.realmIndex)) ? data.realmIndex : defaults.realmIndex;
+        this.tierIndex = (typeof data.tierIndex === "number" && !isNaN(data.tierIndex)) ? data.tierIndex : defaults.tierIndex;
+        this.tuVi = (typeof data.tuVi === "number" && !isNaN(data.tuVi)) ? Math.max(0, data.tuVi) : defaults.tuVi;
+        this.statPoints = (typeof data.statPoints === "number" && !isNaN(data.statPoints)) ? Math.max(0, data.statPoints) : defaults.statPoints;
+        this.statVatLi = (typeof data.statVatLi === "number" && !isNaN(data.statVatLi)) ? Math.max(0, data.statVatLi) : defaults.statVatLi;
+        this.statPhep = (typeof data.statPhep === "number" && !isNaN(data.statPhep)) ? Math.max(0, data.statPhep) : defaults.statPhep;
+        this.statMau = (typeof data.statMau === "number" && !isNaN(data.statMau)) ? Math.max(0, data.statMau) : defaults.statMau;
+
+        this.equipped = {
+            non: data.equipped?.non ?? null,
+            giap: data.equipped?.giap ?? null,
+            vukhi: data.equipped?.vukhi ?? null
+        };
+
+        this.equippedSkills = Array.isArray(data.equippedSkills)
+            ? [data.equippedSkills[0] ?? null, data.equippedSkills[1] ?? null, data.equippedSkills[2] ?? null]
+            : [...defaults.equippedSkills];
+
+        this.learnedSkills = Array.isArray(data.learnedSkills)
+            ? [...data.learnedSkills]
+            : [...defaults.learnedSkills];
+
+        this.inventory = Array.isArray(data.inventory)
+            ? [...data.inventory]
+            : [...defaults.inventory];
+
         // Tặng 1 Cuộn Giấy Đổi Tên cho người chơi nếu chưa từng nhận
         if (!this.inventory.includes("item_rename_scroll") && !data.hasHadRenameScroll) {
             this.inventory.push("item_rename_scroll");
         }
-        this.linhThach = data.linhThach !== undefined ? data.linhThach : 200;
-        this.clearedStages = data.clearedStages || [];
-        this.lastOnlineTime = data.lastOnlineTime || Date.now();
+        this.hasHadRenameScroll = true;
+
+        this.linhThach = (typeof data.linhThach === "number" && !isNaN(data.linhThach)) ? Math.max(0, data.linhThach) : defaults.linhThach;
+        this.clearedStages = Array.isArray(data.clearedStages) ? [...data.clearedStages] : [];
+        this.lastOnlineTime = (typeof data.lastOnlineTime === "number" && !isNaN(data.lastOnlineTime)) ? data.lastOnlineTime : Date.now();
         this.currentHp = this.getMaxHp();
     }
 }
 
 if (typeof window !== "undefined") {
     window.Player = Player;
+}
+
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = Player;
 }
