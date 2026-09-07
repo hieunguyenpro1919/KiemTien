@@ -1439,8 +1439,8 @@ class UIController {
                 <div class="stage-monster-info">
                     <span class="monster-avatar">${stage.monster.avatar}</span>
                     <div class="monster-meta">
-                        <strong>${stage.monster.name} ${stage.monster.isBoss ? "👑 (BOSS)" : ""}</strong>
-                        <small>HP: ${this.formatNumber(stage.monster.hp)} | Công: ${this.formatNumber(stage.monster.attack)}</small>
+                        <strong>${stage.monster.name} ${stage.monster.isBoss ? `<span class="boss-badge">👑 BOSS (Kim Thân ${Math.round((stage.monster.damageCapPct || (stage.number >= 16 ? 0.10 : 0.15)) * 100)}%)</span>` : ""}</strong>
+                        <small>HP: ${this.formatNumber(stage.monster.hp)} | Công: ${this.formatNumber(stage.monster.attack)}${stage.monster.isBoss ? ` | Kim Thân: Tối đa ${Math.round((stage.monster.damageCapPct || (stage.number >= 16 ? 0.10 : 0.15)) * 100)}% HP/đòn` : ""}</small>
                     </div>
                 </div>
 
@@ -1486,7 +1486,10 @@ class UIController {
         const pNameEl = document.getElementById("combat-player-name");
         const stageTitleEl = document.getElementById("combat-stage-title");
 
-        if (mNameEl) mNameEl.innerText = `${stage.monster.name} ${stage.monster.isBoss ? "👑 (BOSS)" : ""}`;
+        if (mNameEl) {
+            const bossCapStr = stage.monster.isBoss ? ` 👑 (BOSS - Kim Thân ${Math.round((stage.monster.damageCapPct || (stage.number >= 16 ? 0.10 : 0.15)) * 100)}%)` : "";
+            mNameEl.innerText = `${stage.monster.name}${bossCapStr}`;
+        }
         if (mAvatarEl) mAvatarEl.innerText = stage.monster.avatar;
         if (pAvatarEl) pAvatarEl.innerText = "🧘‍♂️";
         if (pNameEl) {

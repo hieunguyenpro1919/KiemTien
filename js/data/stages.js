@@ -76,7 +76,8 @@ const STAGE_DATABASE = [
             attack: 85,
             defense: 25,
             attackSpeed: 2.4,
-            isBoss: true
+            isBoss: true,
+            damageCapPct: 0.15
         },
         rewards: {
             tuVi: 220,
@@ -103,7 +104,8 @@ const STAGE_DATABASE = [
             attack: 160,
             defense: 45,
             attackSpeed: 1.8,
-            isBoss: true
+            isBoss: true,
+            damageCapPct: 0.15
         },
         rewards: {
             tuVi: 550,
@@ -158,7 +160,8 @@ const STAGE_DATABASE = [
             attack: 520,
             defense: 150,
             attackSpeed: 2.1,
-            isBoss: true
+            isBoss: true,
+            damageCapPct: 0.15
         },
         rewards: {
             tuVi: 2800,
@@ -185,7 +188,8 @@ const STAGE_DATABASE = [
             attack: 980,
             defense: 260,
             attackSpeed: 1.7,
-            isBoss: true
+            isBoss: true,
+            damageCapPct: 0.15
         },
         rewards: {
             tuVi: 6500,
@@ -240,7 +244,8 @@ const STAGE_DATABASE = [
             attack: 3400,
             defense: 950,
             attackSpeed: 1.8,
-            isBoss: true
+            isBoss: true,
+            damageCapPct: 0.15
         },
         rewards: {
             tuVi: 38000,
@@ -295,7 +300,8 @@ const STAGE_DATABASE = [
             attack: 14000,
             defense: 4200,
             attackSpeed: 1.7,
-            isBoss: true
+            isBoss: true,
+            damageCapPct: 0.15
         },
         rewards: {
             tuVi: 220000,
@@ -352,7 +358,8 @@ const STAGE_DATABASE = [
             attack: 62000,
             defense: 18000,
             attackSpeed: 1.6,
-            isBoss: true
+            isBoss: true,
+            damageCapPct: 0.15
         },
         rewards: {
             tuVi: 1500000,
@@ -381,7 +388,8 @@ const STAGE_DATABASE = [
             attack: 140000,
             defense: 45000,
             attackSpeed: 1.8,
-            isBoss: true
+            isBoss: true,
+            damageCapPct: 0.15
         },
         rewards: {
             tuVi: 4500000,
@@ -410,7 +418,8 @@ const STAGE_DATABASE = [
             attack: 320000,
             defense: 95000,
             attackSpeed: 1.5,
-            isBoss: true
+            isBoss: true,
+            damageCapPct: 0.15
         },
         rewards: {
             tuVi: 12000000,
@@ -439,7 +448,8 @@ const STAGE_DATABASE = [
             attack: 850000,
             defense: 250000,
             attackSpeed: 1.4,
-            isBoss: true
+            isBoss: true,
+            damageCapPct: 0.10
         },
         rewards: {
             tuVi: 35000000,
@@ -468,7 +478,8 @@ const STAGE_DATABASE = [
             attack: 10000000, // 10 Triệu Sát Thương
             defense: 850000,
             attackSpeed: 1.5,
-            isBoss: true
+            isBoss: true,
+            damageCapPct: 0.10
         },
         rewards: {
             tuVi: 100000000, // 100 Triệu Tu Vi
@@ -497,7 +508,8 @@ const STAGE_DATABASE = [
             attack: 25000000, // 25 Triệu Sát Thương
             defense: 2000000,
             attackSpeed: 1.5,
-            isBoss: true
+            isBoss: true,
+            damageCapPct: 0.10
         },
         rewards: {
             tuVi: 500000000, // 500 Triệu Tu Vi
@@ -526,7 +538,8 @@ const STAGE_DATABASE = [
             attack: 120000000, // 120 Triệu Sát Thương
             defense: 6000000,
             attackSpeed: 1.4,
-            isBoss: true
+            isBoss: true,
+            damageCapPct: 0.10
         },
         rewards: {
             tuVi: 2000000000, // 2 Tỷ Tu Vi
@@ -555,7 +568,8 @@ const STAGE_DATABASE = [
             attack: 450000000,   // 450 Triệu Sát Thương
             defense: 18000000,
             attackSpeed: 1.35,
-            isBoss: true
+            isBoss: true,
+            damageCapPct: 0.10
         },
         rewards: {
             tuVi: 10000000000,     // 10 Tỷ Tu Vi
@@ -582,7 +596,8 @@ const STAGE_DATABASE = [
             attack: 1800000000,  // 1.8 Tỷ Sát Thương
             defense: 45000000,
             attackSpeed: 1.3,
-            isBoss: true
+            isBoss: true,
+            damageCapPct: 0.10
         },
         rewards: {
             tuVi: 50000000000,     // 50 Tỷ Tu Vi

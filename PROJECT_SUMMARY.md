@@ -179,6 +179,15 @@ Người chơi có thể tùy biến lắp đặt 3 kỹ năng chủ động và
 | 17 | **Vấn Đạo** | **Thiên Ngoại Hư Không** | **Đỉnh Cấp Ngai** | **Hóa Thân Vấn Đạo 👑** | **100 Tỷ** | **10 Triệu** | **100 Tr Tu Vi • 1 Tỷ Linh Thạch** |
 | 18 | **Tinh Hà Thần Điện** | **Vô Thượng Tinh Vực** | **Vô Thượng Lộ** | **Tinh Hà Thần Long 👑** | **500 Tỷ** | **35 Triệu** | **500 Tr Tu Vi • 5 Tỷ Linh Thạch** |
 | 19 | **Đại Đạo Thần Cung** | **Chí Cao Vĩnh Hằng** | **Vạn Vì Tinh Tú** | **Hư Vô Thần Đế 👑** | **2.500 Tỷ** | **120 Triệu** | **2 Tỷ Tu Vi • 25 Tỷ Linh Thạch** |
+| 20 | **Thái Sơ Hỗn Độn Đàm** | **Bản Nguyên Khởi Nguyên** | **Đại Đạo Chí Cao T11** | **Thái Sơ Cổ Thần 👑** | **15.000 Tỷ** | **450 Triệu** | **10 Tỷ Tu Vi • 100 Tỷ Linh Thạch** |
+| 21 | **Vĩnh Hằng Luân Hồi Kính** | **Bản Nguyên Khởi Nguyên** | **Đại Đạo Chí Cao T31** | **Chí Cao Tâm Ma 👑** | **80.000 Tỷ** | **1.8 Tỷ** | **50 Tỷ Tu Vi • 500 Tỷ Linh Thạch** |
+
+### 🛡️ Cơ Chế Kim Thân Hộ Thể (Damage Cap Boss)
+* Toàn bộ 15 Boss trong ải chiến đấu đều được trang bị bảo bối **Kim Thân Hộ Thể**:
+  * **Boss Thường (Ải 3, 4, 6, 7, 9, 11, 13, 14, 15)**: Giới hạn sát thương nhận vào mỗi đòn đánh hoặc kỹ năng không vượt quá **15% Máu tối đa**.
+  * **Đại Boss Tối Cao (Ải 16, 17, 18, 19, 20, 21)**: Giới hạn sát thương nhận vào mỗi đòn đánh hoặc kỹ năng không vượt quá **10% Máu tối đa**.
+* Triệt tiêu hoàn toàn tình trạng One-Hit Boss ở giai đoạn cuối game, buộc người chơi phải giao tranh tối thiểu 7 đến 10 hiệp.
+* Hiệu ứng thị giác & âm thanh: Nảy chữ vàng kim `KIM THÂN!`, rung lắc avatar và kích hoạt âm thanh khiên bảo hộ `playShield()`.
 
 ---
 
@@ -198,6 +207,8 @@ Danh hiệu được mở khóa khi người chơi hoàn thành các chiến tí
 * **Vấn Đạo Thần Tôn** (`title_van_dao`): Vượt Ải 17 Vấn Đạo (HP +20M, Công +500k, Thủ/Kháng +200k, Bạo +25%).
 * **Tinh Hà Chi Chủ** (`title_tinh_ha`): Vượt Ải 18 Tinh Hà Thần Điện (HP +80M, Công +1.5M, Thủ/Kháng +600k, Bạo +30%).
 * **Đại Đạo Quy Nhất** (`title_dai_dao`): Vượt Ải 19 Đại Đạo Thần Cung (HP +300M, Công +5M, Thủ/Kháng +2M, Bạo +40%).
+* **Thái Sơ Thần Quân** (`title_thai_so`): Vượt Ải 20 Thái Sơ Hỗn Độn Đàm (HP +1.2 Tỷ, Công +25M, Thủ/Kháng +10M, Bạo +45%).
+* **Bất Hủ Đại Đạo Tối Thượng** (`title_bat_hu_dai_dao`): Vượt Ải 21 Vĩnh Hằng Luân Hồi Kính (HP +5 Tỷ, Công +100M, Thủ/Kháng +40M, Bạo +50%).
 * **Thông Huyền Kiếm Sĩ** (`title_dac_dao`): Lĩnh ngộ từ 5 bí kíp trở lên (Vật lí +70, Phép +70, Bạo +3%).
 * **Vạn Pháp Thông Tri** (`title_van_phap`): Lĩnh ngộ toàn bộ bí kíp trong Tàng Kinh Các (HP +500k, Công +25k, Thủ/Kháng +12k, Bạo +10%).
 * **Bất Hủ Chân Nhân** (`title_bat_hu`): Đạt cảnh giới Tạo Đảo trở lên (HP +3,500, Công +300, Thủ/Kháng +120).
@@ -223,6 +234,7 @@ Danh hiệu được mở khóa khi người chơi hoàn thành các chiến tí
 * **Cơ Chế Tự Động (Auto Combat)**: Tự động kích hoạt các kỹ năng đã hồi chiêu, ưu tiên từ trái sang phải.
 * **Tự Đánh Lại (Auto-Repeat)**: Tự động đếm ngược 3 giây và lặp lại khiêu chiến ải vừa đánh thắng, hỗ trợ người chơi cày cấp và farm trang bị tiện lợi.
 * **Hệ Thống Thanh Máu Kép (HP & Shield)**: Hiển thị thanh máu chính màu đỏ/xanh lá và thanh khiên bảo hộ màu xanh ngọc xếp chồng trực quan.
+* **Cơ Chế Kim Thân Chống One-Hit**: Tích hợp thuật toán `applyDamageCap()` trực tiếp vào vòng lặp chiến đấu cho cả đánh thường và kỹ năng pháp thuật/vật lí, kèm nhật ký chiến đấu `[KIM THÂN]` nổi bật màu vàng kim.
 * **Định Dạng Số Lớn Tối Tân (`formatNumber` & `formatHp`)**: Tự động rút gọn các con số hàng triệu, hàng tỷ, hàng nghìn tỷ (`Tr`, `Tỷ`, `Nghìn Tỷ`) với độ chính xác cao, ngăn chặn hiện tượng tràn số làm hỏng bố cục CSS.
 
 ---

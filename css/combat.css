@@ -275,6 +275,20 @@
 .log-info { color: #74b9ff; font-style: italic; }
 .log-victory { color: #ffd700; font-size: 14px; font-weight: bold; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
 .log-defeat { color: #ff5252; font-size: 14px; font-weight: bold; }
+.log-kim-than { color: #ffd700; font-weight: bold; text-shadow: 0 0 8px rgba(255, 215, 0, 0.45); }
+
+.boss-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #ffd700;
+    background: rgba(255, 215, 0, 0.12);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
 
 /* Hộp phần thưởng khi thắng */
 .result-rewards-box {
