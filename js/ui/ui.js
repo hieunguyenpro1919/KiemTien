@@ -44,6 +44,7 @@ class UIController {
         this.bindEvents();
         this.updateHeaderInfo();
         this.updateAutoRepeatBtnUI();
+        this.updateCombatSpeedBtnUI();
         this.renderAll();
     }
 
@@ -75,6 +76,14 @@ class UIController {
                     this.combat.useSkill(i);
                 });
             }
+        }
+
+        // Nút Tốc Độ Trận Đấu (x1, x2, x3)
+        const btnSpeed = document.getElementById("btn-combat-speed");
+        if (btnSpeed) {
+            btnSpeed.addEventListener("click", () => {
+                this.toggleCombatSpeed();
+            });
         }
 
         // Nút Tự Động Chiến Đấu (Tự xuất chiêu)
@@ -1439,8 +1448,8 @@ class UIController {
                 <div class="stage-monster-info">
                     <span class="monster-avatar">${stage.monster.avatar}</span>
                     <div class="monster-meta">
-                        <strong>${stage.monster.name} ${stage.monster.isBoss ? `<span class="boss-badge">👑 BOSS (Kim Thân ${Math.round((stage.monster.damageCapPct || (stage.number >= 16 ? 0.10 : 0.15)) * 100)}%)</span>` : ""}</strong>
-                        <small>HP: ${this.formatNumber(stage.monster.hp)} | Công: ${this.formatNumber(stage.monster.attack)}${stage.monster.isBoss ? ` | Kim Thân: Tối đa ${Math.round((stage.monster.damageCapPct || (stage.number >= 16 ? 0.10 : 0.15)) * 100)}% HP/đòn` : ""}</small>
+                        <strong>${stage.monster.name} ${stage.monster.isBoss ? `<span class="boss-badge">👑 BOSS (Kim Thân ${Math.round((stage.monster.damageCapPct || (stage.number >= 16 ? 0.20 : 0.25)) * 100)}% • Phá ${Math.round((stage.monster.breakCapPct || (stage.number >= 16 ? 0.30 : 0.40)) * 100)}%)</span>` : ""}</strong>
+                        <small>HP: ${this.formatNumber(stage.monster.hp)} | Công: ${this.formatNumber(stage.monster.attack)}${stage.monster.isBoss ? ` | Kim Thân: Thường ${Math.round((stage.monster.damageCapPct || (stage.number >= 16 ? 0.20 : 0.25)) * 100)}% • Phá ${Math.round((stage.monster.breakCapPct || (stage.number >= 16 ? 0.30 : 0.40)) * 100)}% HP` : ""}</small>
                     </div>
                 </div>
 
@@ -1487,7 +1496,10 @@ class UIController {
         const stageTitleEl = document.getElementById("combat-stage-title");
 
         if (mNameEl) {
-            const bossCapStr = stage.monster.isBoss ? ` 👑 (BOSS - Kim Thân ${Math.round((stage.monster.damageCapPct || (stage.number >= 16 ? 0.10 : 0.15)) * 100)}%)` : "";
+            const isSupreme = stage.number >= 16;
+            const capPct = Math.round((stage.monster.damageCapPct || (isSupreme ? 0.20 : 0.25)) * 100);
+            const breakPct = Math.round((stage.monster.breakCapPct || (isSupreme ? 0.30 : 0.40)) * 100);
+            const bossCapStr = stage.monster.isBoss ? ` 👑 (BOSS - Kim Thân ${capPct}% • Phá ${breakPct}%)` : "";
             mNameEl.innerText = `${stage.monster.name}${bossCapStr}`;
         }
         if (mAvatarEl) mAvatarEl.innerText = stage.monster.avatar;
@@ -1689,14 +1701,15 @@ class UIController {
         const container = document.getElementById("auto-repeat-countdown-container");
         if (!container) return;
 
-        let timeLeft = 3.0;
-        const totalTime = 3.0;
+        const speed = this.combat?.speedMultiplier || 1;
+        const totalTime = Math.max(1.0, +(3.0 / speed).toFixed(1));
+        let timeLeft = totalTime;
 
         container.innerHTML = `
             <div class="auto-repeat-countdown-box">
                 <div class="countdown-header">
                     <span class="countdown-spinner">⏳</span>
-                    <span>Tự động đánh lại ải sau: <strong class="countdown-timer" id="auto-repeat-timer">3.0</strong>s</span>
+                    <span>Tự động đánh lại ải sau: <strong class="countdown-timer" id="auto-repeat-timer">${totalTime.toFixed(1)}</strong>s</span>
                 </div>
                 <div class="countdown-bar-outer">
                     <div class="countdown-bar-fill" id="auto-repeat-bar" style="width: 100%;"></div>
@@ -1732,6 +1745,37 @@ class UIController {
 
     cancelAutoRepeat() {
         this.toggleAutoRepeat(false);
+    }
+
+    // ================= ĐIỀU KHIỂN TỐC ĐỘ TRẬN ĐẤU (x1, x2, x3) =================
+
+    toggleCombatSpeed() {
+        const current = this.combat?.speedMultiplier || 1;
+        let next = 1;
+        if (current === 1) next = 2;
+        else if (current === 2) next = 3;
+        else next = 1;
+
+        if (this.combat) {
+            this.combat.setSpeedMultiplier(next);
+        } else {
+            localStorage.setItem("tu_tien_combat_speed", String(next));
+        }
+
+        this.sound?.playClick();
+        this.updateCombatSpeedBtnUI();
+        this.showToast(`⚡ Tốc độ chiến đấu: x${next}`, "info");
+    }
+
+    updateCombatSpeedBtnUI() {
+        const btn = document.getElementById("btn-combat-speed");
+        if (!btn) return;
+
+        const speed = this.combat?.speedMultiplier || parseInt(localStorage.getItem("tu_tien_combat_speed") || "1", 10);
+        btn.classList.remove("speed-x1", "speed-x2", "speed-x3");
+        btn.classList.add(`speed-x${speed}`);
+        btn.innerText = `⚡ Tốc Độ: x${speed}`;
+        btn.title = `Tốc độ trận đấu: x${speed} (Bấm để đổi x1 -> x2 -> x3)`;
     }
 
     // ================= TAB KỸ NĂNG & TÀNG KINH CÁC (SKILLS) =================

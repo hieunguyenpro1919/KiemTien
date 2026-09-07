@@ -158,36 +158,43 @@ Người chơi có thể tùy biến lắp đặt 3 kỹ năng chủ động và
 
 ## 🗺️ 7. HỆ THỐNG 19 ẢI CHIẾN ĐẤU & ĐẠI BOSS (STAGES DATABASE)
 
-| Ải | Tên Ải | Khu Vực | Yêu Cầu | Boss / Quái | HP Boss | Sát Thương | Phần Thưởng Chính |
+| Ải | Tên Ải | Khu Vực | Yêu Cầu | Boss / Quái | HP Boss | Sát Thương | Phần Thưởng Chính (Mới) |
 |:---:|:---|:---|:---:|:---|:---:|:---:|:---|
-| 1 | Thảo Dược Viên Ngoại Vi | Thanh Vân Ngoại Vi | Tôi Khí T1 | Linh Thảo Thỏ Yêu | 220 | 16 | 35 Tu Vi • 15 Linh Thạch |
-| 2 | Bích Lạc Khê Cốc | Thanh Vân Ngoại Vi | Tôi Khí T3 | Hắc Thủy Xà | 550 | 38 | 90 Tu Vi • 35 Linh Thạch |
-| 3 | Hắc Sa Động Phủ | Thanh Vân Ngoại Vi | Tôi Khí T6 | Cuồng Bạo Ma Hùng 👑 | 1,400 | 85 | 220 Tu Vi • 80 Linh Thạch |
-| 4 | Phong Lôi Lãm Nhai | Thanh Vân Ngoại Vi | Tôi Khí Đỉnh | Thiết Vũ Điêu Vương 👑 | 3,200 | 180 | 500 Tu Vi • 180 Linh Thạch |
-| 5 | Tử Trúc Lâm Uyên | U Minh Cốc | Ngưng Khí T1 | U Minh Lang Vực | 6,500 | 320 | 1,100 Tu Vi • 400 Linh Thạch |
-| 6 | Hỏa Vân Động | U Minh Cốc | Ngưng Khí T4 | Xích Diễm Ma Viên 👑 | 15,000 | 680 | 2,400 Tu Vi • 900 Linh Thạch |
-| 7 | Vạn Thú Tế Đàn | U Minh Cốc | Ngưng Khí Đỉnh | Huyết Lân Cự Mãng 👑 | 35,000 | 1,450 | 5,500 Tu Vi • 2,000 Linh Thạch |
-| 8 | Bích Hải Triều Sinh | Vô Tận Linh Hải | Linh Hải T1 | Thủy Tinh Cự Hạt | 85,000 | 3,200 | 12,000 Tu Vi • 4,500 Linh Thạch |
-| 9 | Đoạn Long Thủy Phủ | Vô Tận Linh Hải | Linh Hải Đỉnh | Hắc Thủy Bát Đầu Giao 👑 | 300,000 | 9,800 | 45,000 Tu Vi • 15,000 Linh Thạch |
-| 10 | Phù Không Cổ Đảo | Cổ Đảo Bí Cảnh | Tạo Đảo T1 | Cổ Giáp Nham Thạch Thú | 850,000 | 26,000 | 120k Tu Vi • 45k Linh Thạch |
-| 11 | Trấn Ma Phong Ấn | Cổ Đảo Bí Cảnh | Tạo Đảo Đỉnh | Viễn Cổ Ma Thần Tàn Hồn 👑 | 2.8 Tr | 75,000 | 350k Tu Vi • 150k Linh Thạch |
-| 12 | Thần Mộc Sâm Lâm | Nguyên Linh Cấm Địa | Nguyên Linh Thụ | Huyết Đằng Yêu Thụ 👑 | 10 Tr | 220,000 | 1.2 Tr Tu Vi • 500k Linh Thạch |
-| 13 | Lôi Đình Tế Đàn | Tạo Hóa Tiên Cảnh | Tạo Hóa Đài | Diệt Thế Cửu Thiên Lôi Thú 👑 | 35 Tr | 650,000 | 4.5 Tr Tu Vi • 1.8 Tr Linh Thạch |
-| 14 | Thông Thiên Đỉnh | Thông Thiên Cực Cảnh | Thông Thiên Trụ | Kình Thiên Thần Tướng 👑 | 140 Tr | 2.2 Tr | 18 Tr Tu Vi • 7 Tr Linh Thạch |
-| 15 | Bạch Ngọc Tiên Cung | Cửu Tiêu Ngọc Điện | Ngọc Điện | Ngọc Hư Chiến Thần 👑 | 600 Tr | 7.5 Tr | 75 Tr Tu Vi • 30 Tr Linh Thạch |
-| 16 | Cửu Trọng Ngai Vàng | Đỉnh Cấp Tiên Giới | Đỉnh Cấp Ngai | Hỗn Độn Chúa Tể 👑 | 3.5 Tỷ | 35 Tr | 350 Tr Tu Vi • 150 Tr Linh Thạch |
-| 17 | **Vấn Đạo** | **Thiên Ngoại Hư Không** | **Đỉnh Cấp Ngai** | **Hóa Thân Vấn Đạo 👑** | **100 Tỷ** | **10 Triệu** | **100 Tr Tu Vi • 1 Tỷ Linh Thạch** |
-| 18 | **Tinh Hà Thần Điện** | **Vô Thượng Tinh Vực** | **Vô Thượng Lộ** | **Tinh Hà Thần Long 👑** | **500 Tỷ** | **35 Triệu** | **500 Tr Tu Vi • 5 Tỷ Linh Thạch** |
-| 19 | **Đại Đạo Thần Cung** | **Chí Cao Vĩnh Hằng** | **Vạn Vì Tinh Tú** | **Hư Vô Thần Đế 👑** | **2.500 Tỷ** | **120 Triệu** | **2 Tỷ Tu Vi • 25 Tỷ Linh Thạch** |
-| 20 | **Thái Sơ Hỗn Độn Đàm** | **Bản Nguyên Khởi Nguyên** | **Đại Đạo Chí Cao T11** | **Thái Sơ Cổ Thần 👑** | **15.000 Tỷ** | **450 Triệu** | **10 Tỷ Tu Vi • 100 Tỷ Linh Thạch** |
-| 21 | **Vĩnh Hằng Luân Hồi Kính** | **Bản Nguyên Khởi Nguyên** | **Đại Đạo Chí Cao T31** | **Chí Cao Tâm Ma 👑** | **80.000 Tỷ** | **1.8 Tỷ** | **50 Tỷ Tu Vi • 500 Tỷ Linh Thạch** |
+| 1 | Thảo Dược Viên Ngoại Vi | Thanh Vân Ngoại Vi | Tôi Khí T1 | Linh Thảo Thỏ Yêu | 220 | 16 | 120 Tu Vi • 50 Linh Thạch |
+| 2 | Bích Lạc Khê Cốc | Thanh Vân Ngoại Vi | Tôi Khí T3 | Hắc Thủy Xà | 550 | 38 | 300 Tu Vi • 120 Linh Thạch |
+| 3 | Hắc Sa Động Phủ | Thanh Vân Ngoại Vi | Tôi Khí T6 | Cuồng Bạo Ma Hùng 👑 | 1,400 | 85 | 800 Tu Vi • 300 Linh Thạch |
+| 4 | Phong Lôi Lãm Nhai | Thanh Vân Ngoại Vi | Tôi Khí Đỉnh | Thiết Vũ Điêu Vương 👑 | 3,200 | 180 | 2,000 Tu Vi • 750 Linh Thạch |
+| 5 | Cổ Thụ Lạc Lối | Vạn Thú Ma Lâm | Ngưng Khí T1 | U Minh Bạch Lang | 5,800 | 280 | 4,500 Tu Vi • 1,600 Linh Thạch |
+| 6 | Xích Hỏa Diễm Đàm | Vạn Thú Ma Lâm | Ngưng Khí T4 | Xích Diễm Ma Viên 👑 | 12,500 | 520 | 10,000 Tu Vi • 4,000 Linh Thạch |
+| 7 | Vạn Thú Tế Đàn | Vạn Thú Ma Lâm | Ngưng Khí Đỉnh | Huyết Lân Cự Mãng Vương 👑 | 26,000 | 980 | 25,000 Tu Vi • 9,500 Linh Thạch |
+| 8 | U Lam Hàn Hải | Trầm Uyên Linh Hải | Linh Hải T1 | Bích Hải Kình Ngư | 55,000 | 1,800 | 55,000 Tu Vi • 22,000 Linh Thạch |
+| 9 | Đoạn Long Thủy Phủ | Trầm Uyên Linh Hải | Linh Hải T8 | Hắc Thủy Bát Đầu Giao 👑 | 120,000 | 3,400 | 140,000 Tu Vi • 55,000 Linh Thạch |
+| 10 | Hoang Khư Tàn Tích | Cổ Đảo Hoang Khư | Tạo Đảo T1 | Cổ Đảo Cự Thạch Tướng | 280,000 | 7,200 | 320,000 Tu Vi • 130,000 Linh Thạch |
+| 11 | Phong Ma Tiên Trận | Cổ Đảo Hoang Khư | Tạo Đảo Đỉnh | Viễn Cổ Ma Thần Tàn Hồn 👑 | 600,000 | 14,000 | 800,000 Tu Vi • 350,000 Linh Thạch |
+| 12 | Thần Thụ Tầng Dưới | Nguyên Linh Thánh Địa | Nguyên Linh Thụ | Cổ Thụ Hộ Vệ Thần | 1.3 Tr | 28,000 | 2 Tr Tu Vi • 850,000 Linh Thạch |
+| 13 | Cửu Thiên Lôi Trì | Tạo Hóa Lôi Sơn | Tạo Hóa Đài | Cửu Tiêu Lôi Kỳ Lân 👑 | 3.2 Tr | 62,000 | 5.5 Tr Tu Vi • 2.4 Tr Linh Thạch |
+| 14 | Kình Thiên Đỉnh Giới | Thông Thiên Ma Giới | Thông Thiên Trụ | Hư Không Cự Ma 👑 | 8.5 Tr | 140,000 | 16 Tr Tu Vi • 6.5 Tr Linh Thạch |
+| 15 | Bạch Ngọc Tiên Môn | Ngọc Hư Tiên Cung | Ngọc Điện | Ngọc Hư Chiến Thần 👑 | 22 Tr | 320,000 | 45 Tr Tu Vi • 18 Tr Linh Thạch |
+| 16 | Đỉnh Cấp Vương Tọa | Cửu Trọng Thiên Đỉnh | Đỉnh Cấp Ngai | Hỗn Độn Chúa Tể 👑 | 60 Tr | 850,000 | 130 Tr Tu Vi • 75 Tr Linh Thạch |
+| 17 | **Vấn Đạo** | **Thiên Ngoại Hư Không** | **Đỉnh Cấp Ngai** | **Hóa Thân Vấn Đạo 👑** | **100 Tỷ** | **10 Triệu** | **350 Tr Tu Vi • 3.5 Tỷ Linh Thạch** |
+| 18 | **Tinh Hà Thần Điện** | **Vô Thượng Tinh Vực** | **Vô Thượng Lộ** | **Tinh Hà Thần Long 👑** | **250 Tỷ** | **25 Triệu** | **1.8 Tỷ Tu Vi • 18 Tỷ Linh Thạch** |
+| 19 | **Đại Đạo Thần Cung** | **Chí Cao Vĩnh Hằng** | **Vạn Vì Tinh Tú** | **Hư Vô Thần Đế 👑** | **2.500 Tỷ** | **120 Triệu** | **7.5 Tỷ Tu Vi • 85 Tỷ Linh Thạch** |
+| 20 | **Thái Sơ Hỗn Độn Đàm** | **Bản Nguyên Khởi Nguyên** | **Đại Đạo Chí Cao T11** | **Thái Sơ Cổ Thần 👑** | **15.000 Tỷ** | **450 Triệu** | **35 Tỷ Tu Vi • 350 Tỷ Linh Thạch** |
+| 21 | **Vĩnh Hằng Luân Hồi Kính** | **Bản Nguyên Khởi Nguyên** | **Đại Đạo Chí Cao T31** | **Chí Cao Tâm Ma 👑** | **80.000 Tỷ** | **1.8 Tỷ** | **180 Tỷ Tu Vi • 1.8 Nghìn Tỷ Linh Thạch** |
 
-### 🛡️ Cơ Chế Kim Thân Hộ Thể (Damage Cap Boss)
-* Toàn bộ 15 Boss trong ải chiến đấu đều được trang bị bảo bối **Kim Thân Hộ Thể**:
-  * **Boss Thường (Ải 3, 4, 6, 7, 9, 11, 13, 14, 15)**: Giới hạn sát thương nhận vào mỗi đòn đánh hoặc kỹ năng không vượt quá **15% Máu tối đa**.
-  * **Đại Boss Tối Cao (Ải 16, 17, 18, 19, 20, 21)**: Giới hạn sát thương nhận vào mỗi đòn đánh hoặc kỹ năng không vượt quá **10% Máu tối đa**.
-* Triệt tiêu hoàn toàn tình trạng One-Hit Boss ở giai đoạn cuối game, buộc người chơi phải giao tranh tối thiểu 7 đến 10 hiệp.
-* Hiệu ứng thị giác & âm thanh: Nảy chữ vàng kim `KIM THÂN!`, rung lắc avatar và kích hoạt âm thanh khiên bảo hộ `playShield()`.
+### 🛡️ Cơ Chế Phá Kim Thân (Boss Damage Cap & Cap-Break)
+* Toàn bộ 15 Boss trong ải chiến đấu được trang bị cơ chế **Kim Thân Hộ Thể** kết hợp **Phá Kim Thân**:
+  * **Boss Thường (Ải 3, 4, 6, 7, 9, 11, 13, 14, 15)**:
+    * **Đòn đánh thường (không crit)**: Trần sát thương nhận vào tối đa **25% Máu tối đa**.
+    * **Đòn Bạo Kích & Kỹ Năng Thần Thông (Phá Kim Thân)**: Xé rách Kim Thân, trần sát thương nới rộng lên tới **40% Máu tối đa**.
+  * **Đại Boss Tối Cao (Ải 16, 17, 18, 19, 20, 21)**:
+    * **Đòn đánh thường (không crit)**: Trần sát thương nhận vào tối đa **20% Máu tối đa**.
+    * **Đòn Bạo Kích & Kỹ Năng Thần Thông (Phá Kim Thân)**: Xé rách Kim Thân, trần sát thương nới rộng lên tới **30% Máu tối đa**.
+* **Cân bằng hoàn hảo**: Boss không còn bị trâu lì hay kéo dài trận đấu quá lâu (chỉ cần 3 - 4 đòn đánh chất lượng là hạ gục Boss), nhưng vẫn triệt tiêu hoàn toàn lỗi One-Hit kill.
+* **Hiệu ứng thị giác & âm thanh phong phú**:
+  * Đánh thường chạm trần: Nảy chữ vàng kim `KIM THÂN!`, nhật ký log màu vàng `🛡️ [KIM THÂN]`.
+  * Bạo kích hoặc Thần thông phá trần: Nảy chữ màu cam rực rỡ `PHÁ KIM THÂN!` (`#ff9100`), nhật ký log màu cam phát sáng `💥 [PHÁ KIM THÂN]`.
+  * Âm thanh bảo hộ `playShield()` khi kích hoạt hộ thể.
 
 ---
 
@@ -231,8 +238,9 @@ Danh hiệu được mở khóa khi người chơi hoàn thành các chiến tí
 ## ⚔️ 10. SÀN ĐẤU 2D & ĐIỀU KHIỂN CHIẾN ĐẤU (COMBAT ENGINE)
 
 * **Vòng Lặp Chiến Đấu 100ms (Tick Rate 10Hz)**: Đảm bảo độ mượt mà, tính toán sát thương, thời gian hồi chiêu và nhịp xuất chiêu chuẩn xác.
+* **Tính Năng Tăng Tốc Độ Trận Đấu (Speed Multiplier: x1, x2, x3)**: Cho phép chuyển đổi tốc độ đánh quái nhanh gấp 2 hoặc 3 lần thông qua nút `⚡ Tốc Độ: x1 / x2 / x3`. Tăng tốc đồng bộ nhịp đánh, hồi chiêu và rút ngắn thời gian đếm ngược lặp ải, lưu trạng thái vào `localStorage`.
 * **Cơ Chế Tự Động (Auto Combat)**: Tự động kích hoạt các kỹ năng đã hồi chiêu, ưu tiên từ trái sang phải.
-* **Tự Đánh Lại (Auto-Repeat)**: Tự động đếm ngược 3 giây và lặp lại khiêu chiến ải vừa đánh thắng, hỗ trợ người chơi cày cấp và farm trang bị tiện lợi.
+* **Tự Đánh Lại (Auto-Repeat)**: Tự động đếm ngược và lặp lại khiêu chiến ải vừa đánh thắng, hỗ trợ người chơi cày cấp và farm trang bị tiện lợi.
 * **Hệ Thống Thanh Máu Kép (HP & Shield)**: Hiển thị thanh máu chính màu đỏ/xanh lá và thanh khiên bảo hộ màu xanh ngọc xếp chồng trực quan.
 * **Cơ Chế Kim Thân Chống One-Hit**: Tích hợp thuật toán `applyDamageCap()` trực tiếp vào vòng lặp chiến đấu cho cả đánh thường và kỹ năng pháp thuật/vật lí, kèm nhật ký chiến đấu `[KIM THÂN]` nổi bật màu vàng kim.
 * **Định Dạng Số Lớn Tối Tân (`formatNumber` & `formatHp`)**: Tự động rút gọn các con số hàng triệu, hàng tỷ, hàng nghìn tỷ (`Tr`, `Tỷ`, `Nghìn Tỷ`) với độ chính xác cao, ngăn chặn hiện tượng tràn số làm hỏng bố cục CSS.

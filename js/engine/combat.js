@@ -27,8 +27,24 @@ class CombatEngine {
         this.playerAttackTimer = 0;
         this.monsterAttackTimer = 0;
 
+        // Tốc độ trận đấu (x1, x2, x3)
+        const savedSpeed = (typeof localStorage !== "undefined") ? parseInt(localStorage.getItem("tu_tien_combat_speed") || "1", 10) : 1;
+        this.speedMultiplier = [1, 2, 3].includes(savedSpeed) ? savedSpeed : 1;
+
         this.combatInterval = null;
         this.onCombatEndCallback = null;
+    }
+
+    /**
+     * Thay đổi tốc độ trận đấu (1, 2, 3)
+     */
+    setSpeedMultiplier(speed) {
+        const val = parseInt(speed, 10);
+        this.speedMultiplier = [1, 2, 3].includes(val) ? val : 1;
+        if (typeof localStorage !== "undefined") {
+            localStorage.setItem("tu_tien_combat_speed", String(this.speedMultiplier));
+        }
+        return this.speedMultiplier;
     }
 
     /**
@@ -64,8 +80,10 @@ class CombatEngine {
         this.updateUI();
         this.addCombatLog(`Bước vào [${stage.name}], tao ngộ [${stage.monster.name}]!`, "info");
         if (this.monster.isBoss) {
-            const capPct = this.monster.damageCapPct !== undefined ? this.monster.damageCapPct : (stage.number >= 16 ? 0.10 : 0.15);
-            this.addCombatLog(`🛡️ [KIM THÂN HỘ THỂ] [${this.monster.name}] sở hữu Kim Thân, mỗi đòn đánh nhận tối đa ${Math.round(capPct * 100)}% Sinh Lực!`, "kim-than");
+            const isSupreme = stage.number >= 16;
+            const capPct = this.monster.damageCapPct !== undefined ? this.monster.damageCapPct : (isSupreme ? 0.20 : 0.25);
+            const breakCapPct = this.monster.breakCapPct !== undefined ? this.monster.breakCapPct : (isSupreme ? 0.30 : 0.40);
+            this.addCombatLog(`🛡️ [KIM THÂN HỘ THỂ] [${this.monster.name}] sở hữu Kim Thân! Đòn thường nhận tối đa ${Math.round(capPct * 100)}% Máu. Bạo kích & Kỹ năng phá trần ${Math.round(breakCapPct * 100)}% Máu!`, "kim-than");
         }
     }
 
@@ -83,10 +101,13 @@ class CombatEngine {
     tick(dt) {
         if (!this.isActive) return;
 
+        // Nhân hệ số tốc độ trận đấu (x1, x2, x3)
+        const effectiveDt = dt * (this.speedMultiplier || 1);
+
         // Giảm thời gian hồi chiêu của 3 kỹ năng
         for (let i = 0; i < 3; i++) {
             if (this.skillCooldowns[i] > 0) {
-                this.skillCooldowns[i] = Math.max(0, this.skillCooldowns[i] - dt);
+                this.skillCooldowns[i] = Math.max(0, this.skillCooldowns[i] - effectiveDt);
             }
         }
 
@@ -101,14 +122,14 @@ class CombatEngine {
         }
 
         // Đòn đánh thường của người chơi (mỗi 1.5 giây)
-        this.playerAttackTimer += dt;
+        this.playerAttackTimer += effectiveDt;
         if (this.playerAttackTimer >= 1.5) {
             this.playerAttackTimer = 0;
             this.playerBasicAttack();
         }
 
         // Đòn đánh của Quái vật
-        this.monster.currentAttackTimer += dt;
+        this.monster.currentAttackTimer += effectiveDt;
         if (this.monster.currentAttackTimer >= (this.monster.attackSpeed || 2.0)) {
             this.monster.currentAttackTimer = 0;
             this.monsterAttack();
@@ -119,19 +140,27 @@ class CombatEngine {
 
     /**
      * Áp dụng cơ chế Kim Thân Hộ Thể (Damage Cap) nếu mục tiêu là Boss
-     * Trả về { damage, isCapped, originalDamage, capPct }
+     * Hỗ trợ Cơ chế Phá Kim Thân:
+     * - isSpecial = false (Đòn đánh thường không crit): Ngưỡng trần thường (25% máu, 20% Boss tối cao)
+     * - isSpecial = true (Đòn Bạo Kích hoặc Kỹ Năng): Ngưỡng trần phá Kim Thân (40% máu, 30% Boss tối cao)
+     * Trả về { damage, isCapped, isBreak, originalDamage, capPct }
      */
-    applyDamageCap(rawDmg) {
+    applyDamageCap(rawDmg, isSpecial = false) {
         if (!this.monster || !this.monster.isBoss) {
-            return { damage: rawDmg, isCapped: false };
+            return { damage: rawDmg, isCapped: false, isBreak: false };
         }
 
-        // Tỷ lệ ngưỡng sát thương tối đa: 15% cho Boss thường, 10% cho Đại Boss tối cao (hoặc cấu hình trong monster)
-        let capPct = 0.15;
-        if (this.monster.damageCapPct !== undefined) {
-            capPct = this.monster.damageCapPct;
-        } else if (this.currentStage && this.currentStage.number >= 16) {
-            capPct = 0.10;
+        const isSupreme = this.currentStage && this.currentStage.number >= 16;
+        let capPct;
+
+        if (isSpecial) {
+            capPct = this.monster.breakCapPct !== undefined 
+                ? this.monster.breakCapPct 
+                : (isSupreme ? 0.30 : 0.40);
+        } else {
+            capPct = this.monster.damageCapPct !== undefined 
+                ? this.monster.damageCapPct 
+                : (isSupreme ? 0.20 : 0.25);
         }
 
         const maxAllowedDmg = Math.max(1, Math.floor(this.monsterMaxHp * capPct));
@@ -139,12 +168,13 @@ class CombatEngine {
             return {
                 damage: maxAllowedDmg,
                 isCapped: true,
+                isBreak: !!isSpecial,
                 originalDamage: rawDmg,
                 capPct: capPct
             };
         }
 
-        return { damage: rawDmg, isCapped: false, capPct: capPct };
+        return { damage: rawDmg, isCapped: false, isBreak: false, capPct: capPct };
     }
 
     /**
@@ -161,8 +191,8 @@ class CombatEngine {
         let actualDmg = Math.max(1, baseDmg - Math.floor(this.monster.defense * 0.4));
         if (isCrit) actualDmg = Math.floor(actualDmg * 1.65);
 
-        // Áp dụng Kim Thân Hộ Thể (Damage Cap)
-        const capResult = this.applyDamageCap(actualDmg);
+        // Áp dụng Kim Thân Hộ Thể (isCrit kích hoạt Phá Kim Thân)
+        const capResult = this.applyDamageCap(actualDmg, isCrit);
         actualDmg = capResult.damage;
 
         this.monsterHp = Math.max(0, this.monsterHp - actualDmg);
@@ -179,12 +209,20 @@ class CombatEngine {
             this.particles.emitSlash(mPos.x, mPos.y);
             this.particles.addFloatingText(isCrit ? `BẠO! -${actualDmg}` : `-${actualDmg}`, mPos.x, mPos.y - 20, isCrit ? "#ffca28" : "#fff", isCrit);
             if (capResult.isCapped) {
-                this.particles.addFloatingText("KIM THÂN!", mPos.x, mPos.y - 48, "#ffd700", true);
+                if (capResult.isBreak) {
+                    this.particles.addFloatingText("PHÁ KIM THÂN!", mPos.x, mPos.y - 48, "#ff9100", true);
+                } else {
+                    this.particles.addFloatingText("KIM THÂN!", mPos.x, mPos.y - 48, "#ffd700", true);
+                }
             }
         }
 
         if (capResult.isCapped) {
-            this.addCombatLog(`🛡️ [KIM THÂN] Boss kích hoạt hộ thể hóa giải sát thương vượt ngưỡng! Gây ${actualDmg} sát thương!`, "kim-than");
+            if (capResult.isBreak) {
+                this.addCombatLog(`💥 [PHÁ KIM THÂN] Đòn bạo kích xé rách Kim Thân của [${this.monster.name}], gây ${actualDmg.toLocaleString()} sát thương (Trần ${Math.round(capResult.capPct * 100)}% Máu)!`, "pha-kim-than");
+            } else {
+                this.addCombatLog(`🛡️ [KIM THÂN] Boss kích hoạt hộ thể hóa giải sát thương vượt ngưỡng! Gây ${actualDmg.toLocaleString()} sát thương (Trần ${Math.round(capResult.capPct * 100)}% Máu)!`, "kim-than");
+            }
         } else {
             this.addCombatLog(`Đạo hữu vung kiếm trúng [${this.monster.name}], gây ${actualDmg} sát thương!`, isCrit ? "crit" : "normal");
         }
@@ -222,8 +260,8 @@ class CombatEngine {
             let finalDmg = Math.max(1, rawDmg - Math.floor(this.monster.defense * 0.3));
             if (isCrit) finalDmg = Math.floor(finalDmg * 1.7);
 
-            // Áp dụng Kim Thân Hộ Thể (Damage Cap)
-            const capResult = this.applyDamageCap(finalDmg);
+            // Áp dụng Kim Thân Hộ Thể (Kỹ năng luôn kích hoạt Phá Kim Thân)
+            const capResult = this.applyDamageCap(finalDmg, true);
             finalDmg = capResult.damage;
 
             this.monsterHp = Math.max(0, this.monsterHp - finalDmg);
@@ -238,12 +276,12 @@ class CombatEngine {
                 this.particles.emitSlash(mPos.x, mPos.y, slashColor);
                 this.particles.addFloatingText(isCrit ? `CHÍ MẠNG! -${finalDmg}` : `-${finalDmg}`, mPos.x, mPos.y - 30, slashColor, isCrit);
                 if (capResult.isCapped) {
-                    this.particles.addFloatingText("KIM THÂN!", mPos.x, mPos.y - 58, "#ffd700", true);
+                    this.particles.addFloatingText("PHÁ KIM THÂN!", mPos.x, mPos.y - 58, "#ff9100", true);
                 }
             }
 
             if (capResult.isCapped) {
-                this.addCombatLog(`🛡️ [KIM THÂN] Boss kích hoạt hộ thể hóa giải thần thông vượt ngưỡng! Nhận ${finalDmg} sát thương Vật Lí!`, "kim-than");
+                this.addCombatLog(`💥 [PHÁ KIM THÂN] Thần thông bộc phá xé rách Kim Thân của [${this.monster.name}], gây ${finalDmg.toLocaleString()} sát thương Vật Lí (Trần ${Math.round(capResult.capPct * 100)}% Máu)!`, "pha-kim-than");
             } else {
                 this.addCombatLog(`Thi triển [${skill.name}]! Gây ${finalDmg} sát thương Vật Lí!`, "skill");
             }
@@ -255,8 +293,8 @@ class CombatEngine {
             let finalDmg = Math.max(1, rawDmg - Math.floor(mResist * 0.3));
             if (isCrit) finalDmg = Math.floor(finalDmg * 1.7);
 
-            // Áp dụng Kim Thân Hộ Thể (Damage Cap)
-            const capResult = this.applyDamageCap(finalDmg);
+            // Áp dụng Kim Thân Hộ Thể (Kỹ năng luôn kích hoạt Phá Kim Thân)
+            const capResult = this.applyDamageCap(finalDmg, true);
             finalDmg = capResult.damage;
 
             this.monsterHp = Math.max(0, this.monsterHp - finalDmg);
@@ -283,12 +321,12 @@ class CombatEngine {
             if (this.particles) {
                 this.particles.addFloatingText(isCrit ? `PHÁP BẠO! -${finalDmg}` : `-${finalDmg}`, mPos.x, mPos.y - 30, "#ff5722", isCrit);
                 if (capResult.isCapped) {
-                    this.particles.addFloatingText("KIM THÂN!", mPos.x, mPos.y - 58, "#ffd700", true);
+                    this.particles.addFloatingText("PHÁ KIM THÂN!", mPos.x, mPos.y - 58, "#ff9100", true);
                 }
             }
 
             if (capResult.isCapped) {
-                this.addCombatLog(`🛡️ [KIM THÂN] Boss kích hoạt hộ thể hóa giải pháp thuật vượt ngưỡng! Nhận ${finalDmg} sát thương Phép!`, "kim-than");
+                this.addCombatLog(`💥 [PHÁ KIM THÂN] Thần thông bộc phá xé rách Kim Thân của [${this.monster.name}], gây ${finalDmg.toLocaleString()} sát thương Phép (Trần ${Math.round(capResult.capPct * 100)}% Máu)!`, "pha-kim-than");
             } else {
                 this.addCombatLog(`Thi triển [${skill.name}]! Pháp thuật bùng nổ gây ${finalDmg} sát thương!`, "skill");
             }

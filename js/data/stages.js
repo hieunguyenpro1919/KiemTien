@@ -26,9 +26,9 @@ const STAGE_DATABASE = [
             attackSpeed: 2.2
         },
         rewards: {
-            tuVi: 35,
-            linhThach: 15,
-            dropChance: 0.4,
+            tuVi: 120,
+            linhThach: 50,
+            dropChance: 0.5,
             possibleDrops: ["hat_01", "armor_01", "pill_tu_khi_tieu"]
         }
     },
@@ -52,9 +52,9 @@ const STAGE_DATABASE = [
             attackSpeed: 2.0
         },
         rewards: {
-            tuVi: 90,
-            linhThach: 35,
-            dropChance: 0.45,
+            tuVi: 300,
+            linhThach: 120,
+            dropChance: 0.55,
             possibleDrops: ["weapon_01", "hat_02", "pill_tu_khi_tieu"]
         }
     },
@@ -77,12 +77,13 @@ const STAGE_DATABASE = [
             defense: 25,
             attackSpeed: 2.4,
             isBoss: true,
-            damageCapPct: 0.15
+            damageCapPct: 0.25,
+            breakCapPct: 0.40
         },
         rewards: {
-            tuVi: 220,
-            linhThach: 80,
-            dropChance: 0.55,
+            tuVi: 800,
+            linhThach: 300,
+            dropChance: 0.65,
             possibleDrops: ["armor_02", "weapon_02", "pill_tu_khi_trung"]
         }
     },
@@ -105,12 +106,13 @@ const STAGE_DATABASE = [
             defense: 45,
             attackSpeed: 1.8,
             isBoss: true,
-            damageCapPct: 0.15
+            damageCapPct: 0.25,
+            breakCapPct: 0.40
         },
         rewards: {
-            tuVi: 550,
-            linhThach: 200,
-            dropChance: 0.65,
+            tuVi: 2000,
+            linhThach: 750,
+            dropChance: 0.75,
             possibleDrops: ["weapon_02", "hat_02", "pill_tay_tuy", "pill_tu_khi_trung"]
         }
     },
@@ -136,9 +138,9 @@ const STAGE_DATABASE = [
             attackSpeed: 1.9
         },
         rewards: {
-            tuVi: 1200,
-            linhThach: 450,
-            dropChance: 0.45,
+            tuVi: 4500,
+            linhThach: 1600,
+            dropChance: 0.55,
             possibleDrops: ["hat_03", "armor_03", "pill_tu_khi_dai"]
         }
     },
@@ -161,12 +163,13 @@ const STAGE_DATABASE = [
             defense: 150,
             attackSpeed: 2.1,
             isBoss: true,
-            damageCapPct: 0.15
+            damageCapPct: 0.25,
+            breakCapPct: 0.40
         },
         rewards: {
-            tuVi: 2800,
-            linhThach: 1100,
-            dropChance: 0.55,
+            tuVi: 10000,
+            linhThach: 4000,
+            dropChance: 0.65,
             possibleDrops: ["weapon_03", "armor_03", "pill_tu_khi_dai"]
         }
     },
@@ -189,12 +192,13 @@ const STAGE_DATABASE = [
             defense: 260,
             attackSpeed: 1.7,
             isBoss: true,
-            damageCapPct: 0.15
+            damageCapPct: 0.25,
+            breakCapPct: 0.40
         },
         rewards: {
-            tuVi: 6500,
-            linhThach: 2500,
-            dropChance: 0.7,
+            tuVi: 25000,
+            linhThach: 9500,
+            dropChance: 0.8,
             possibleDrops: ["weapon_03", "hat_03", "pill_tay_tuy", "pill_tu_khi_dai"]
         }
     },
@@ -220,9 +224,9 @@ const STAGE_DATABASE = [
             attackSpeed: 2.2
         },
         rewards: {
-            tuVi: 15000,
-            linhThach: 6000,
-            dropChance: 0.5,
+            tuVi: 55000,
+            linhThach: 22000,
+            dropChance: 0.6,
             possibleDrops: ["hat_04", "armor_04", "weapon_04"]
         }
     },
@@ -245,12 +249,13 @@ const STAGE_DATABASE = [
             defense: 950,
             attackSpeed: 1.8,
             isBoss: true,
-            damageCapPct: 0.15
+            damageCapPct: 0.25,
+            breakCapPct: 0.40
         },
         rewards: {
-            tuVi: 38000,
-            linhThach: 15000,
-            dropChance: 0.7,
+            tuVi: 140000,
+            linhThach: 55000,
+            dropChance: 0.8,
             possibleDrops: ["weapon_04", "hat_04", "armor_04", "pill_tay_tuy"]
         }
     },
@@ -276,9 +281,9 @@ const STAGE_DATABASE = [
             attackSpeed: 2.5
         },
         rewards: {
-            tuVi: 90000,
-            linhThach: 38000,
-            dropChance: 0.55,
+            tuVi: 320000,
+            linhThach: 130000,
+            dropChance: 0.65,
             possibleDrops: ["hat_05", "armor_05", "weapon_05"]
         }
     },
@@ -301,12 +306,13 @@ const STAGE_DATABASE = [
             defense: 4200,
             attackSpeed: 1.7,
             isBoss: true,
-            damageCapPct: 0.15
+            damageCapPct: 0.25,
+            breakCapPct: 0.40
         },
         rewards: {
-            tuVi: 220000,
-            linhThach: 95000,
-            dropChance: 0.75,
+            tuVi: 800000,
+            linhThach: 350000,
+            dropChance: 0.85,
             possibleDrops: ["weapon_05", "hat_05", "armor_05", "pill_tay_tuy"]
         }
     },
@@ -332,9 +338,9 @@ const STAGE_DATABASE = [
             attackSpeed: 2.0
         },
         rewards: {
-            tuVi: 550000,
-            linhThach: 240000,
-            dropChance: 0.6,
+            tuVi: 2000000,
+            linhThach: 850000,
+            dropChance: 0.7,
             possibleDrops: ["hat_06", "armor_06", "weapon_06"]
         }
     },
@@ -359,12 +365,13 @@ const STAGE_DATABASE = [
             defense: 18000,
             attackSpeed: 1.6,
             isBoss: true,
-            damageCapPct: 0.15
+            damageCapPct: 0.25,
+            breakCapPct: 0.40
         },
         rewards: {
-            tuVi: 1500000,
-            linhThach: 650000,
-            dropChance: 0.7,
+            tuVi: 5500000,
+            linhThach: 2400000,
+            dropChance: 0.8,
             possibleDrops: ["hat_07", "armor_07", "weapon_07"]
         }
     },
@@ -389,12 +396,13 @@ const STAGE_DATABASE = [
             defense: 45000,
             attackSpeed: 1.8,
             isBoss: true,
-            damageCapPct: 0.15
+            damageCapPct: 0.25,
+            breakCapPct: 0.40
         },
         rewards: {
-            tuVi: 4500000,
-            linhThach: 1800000,
-            dropChance: 0.75,
+            tuVi: 16000000,
+            linhThach: 6500000,
+            dropChance: 0.85,
             possibleDrops: ["hat_08", "armor_08", "weapon_08"]
         }
     },
@@ -419,12 +427,13 @@ const STAGE_DATABASE = [
             defense: 95000,
             attackSpeed: 1.5,
             isBoss: true,
-            damageCapPct: 0.15
+            damageCapPct: 0.25,
+            breakCapPct: 0.40
         },
         rewards: {
-            tuVi: 12000000,
-            linhThach: 5000000,
-            dropChance: 0.8,
+            tuVi: 45000000,
+            linhThach: 18000000,
+            dropChance: 0.9,
             possibleDrops: ["hat_09", "armor_09", "weapon_09"]
         }
     },
@@ -449,11 +458,12 @@ const STAGE_DATABASE = [
             defense: 250000,
             attackSpeed: 1.4,
             isBoss: true,
-            damageCapPct: 0.10
+            damageCapPct: 0.20,
+            breakCapPct: 0.30
         },
         rewards: {
-            tuVi: 35000000,
-            linhThach: 20000000,
+            tuVi: 130000000,
+            linhThach: 75000000,
             dropChance: 1.0,
             possibleDrops: ["hat_10", "armor_10", "weapon_10"]
         }
@@ -479,11 +489,12 @@ const STAGE_DATABASE = [
             defense: 850000,
             attackSpeed: 1.5,
             isBoss: true,
-            damageCapPct: 0.10
+            damageCapPct: 0.20,
+            breakCapPct: 0.30
         },
         rewards: {
-            tuVi: 100000000, // 100 Triệu Tu Vi
-            linhThach: 1000000000, // 1 Tỷ Linh Thạch
+            tuVi: 350000000, // 350 Triệu Tu Vi
+            linhThach: 3500000000, // 3.5 Tỷ Linh Thạch
             dropChance: 1.0,
             possibleDrops: ["weapon_tien_01", "armor_tien_01", "hat_12", "weapon_phep_tien_01", "pill_thanh_chuyen"]
         }
@@ -509,11 +520,12 @@ const STAGE_DATABASE = [
             defense: 2000000,
             attackSpeed: 1.5,
             isBoss: true,
-            damageCapPct: 0.10
+            damageCapPct: 0.20,
+            breakCapPct: 0.30
         },
         rewards: {
-            tuVi: 500000000, // 500 Triệu Tu Vi
-            linhThach: 5000000000, // 5 Tỷ Linh Thạch
+            tuVi: 1800000000, // 1.8 Tỷ Tu Vi
+            linhThach: 18000000000, // 18 Tỷ Linh Thạch
             dropChance: 1.0,
             possibleDrops: ["weapon_thanh_01", "hat_13", "weapon_phep_thanh_01", "pill_thanh_01", "pill_tay_tuy"]
         }
@@ -539,11 +551,12 @@ const STAGE_DATABASE = [
             defense: 6000000,
             attackSpeed: 1.4,
             isBoss: true,
-            damageCapPct: 0.10
+            damageCapPct: 0.20,
+            breakCapPct: 0.30
         },
         rewards: {
-            tuVi: 2000000000, // 2 Tỷ Tu Vi
-            linhThach: 25000000000, // 25 Tỷ Linh Thạch
+            tuVi: 7500000000, // 7.5 Tỷ Tu Vi
+            linhThach: 85000000000, // 85 Tỷ Linh Thạch
             dropChance: 1.0,
             possibleDrops: ["hat_14", "armor_thanh_giap", "weapon_phep_thanh_02", "weapon_thanh_01", "pill_thanh_01"]
         }
@@ -569,11 +582,12 @@ const STAGE_DATABASE = [
             defense: 18000000,
             attackSpeed: 1.35,
             isBoss: true,
-            damageCapPct: 0.10
+            damageCapPct: 0.20,
+            breakCapPct: 0.30
         },
         rewards: {
-            tuVi: 10000000000,     // 10 Tỷ Tu Vi
-            linhThach: 100000000000, // 100 Tỷ Linh Thạch
+            tuVi: 35000000000,     // 35 Tỷ Tu Vi
+            linhThach: 350000000000, // 350 Tỷ Linh Thạch
             dropChance: 1.0,
             possibleDrops: ["hat_15", "armor_dai_dao_thanh_bao", "pill_khoi_nguyen_thanh_dan"]
         }
@@ -597,11 +611,12 @@ const STAGE_DATABASE = [
             defense: 45000000,
             attackSpeed: 1.3,
             isBoss: true,
-            damageCapPct: 0.10
+            damageCapPct: 0.20,
+            breakCapPct: 0.30
         },
         rewards: {
-            tuVi: 50000000000,     // 50 Tỷ Tu Vi
-            linhThach: 500000000000, // 500 Tỷ Linh Thạch
+            tuVi: 180000000000,     // 180 Tỷ Tu Vi
+            linhThach: 1800000000000, // 1.8 Nghìn Tỷ Linh Thạch (1.8 Trillion)
             dropChance: 1.0,
             possibleDrops: ["weapon_dai_dao_chi_ton", "weapon_phep_thanh_02", "pill_khoi_nguyen_thanh_dan"]
         }

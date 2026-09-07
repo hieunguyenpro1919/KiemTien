@@ -34,6 +34,51 @@
     gap: 10px;
 }
 
+/* Nút chỉnh tốc độ trận đấu x1, x2, x3 */
+.btn-speed {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #cbd5e1;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-speed:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.btn-speed.speed-x1 {
+    color: #cbd5e1;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-speed.speed-x2 {
+    color: #ffb300;
+    border-color: rgba(255, 179, 0, 0.6);
+    background: rgba(255, 179, 0, 0.12);
+    box-shadow: 0 0 10px rgba(255, 179, 0, 0.25);
+    text-shadow: 0 0 6px rgba(255, 179, 0, 0.5);
+}
+
+.btn-speed.speed-x3 {
+    color: #ff1744;
+    border-color: rgba(255, 23, 68, 0.7);
+    background: rgba(255, 23, 68, 0.15);
+    box-shadow: 0 0 14px rgba(255, 23, 68, 0.35);
+    text-shadow: 0 0 8px rgba(255, 23, 68, 0.6);
+    animation: speedPulse 1.2s infinite ease-in-out;
+}
+
+@keyframes speedPulse {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(255, 23, 68, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 18px rgba(255, 23, 68, 0.6);
+    }
+}
+
 /* Khung 2 bên: Đạo Hữu VS Quái Vật */
 .combat-stage-duel {
     display: grid;
@@ -276,6 +321,7 @@
 .log-victory { color: #ffd700; font-size: 14px; font-weight: bold; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
 .log-defeat { color: #ff5252; font-size: 14px; font-weight: bold; }
 .log-kim-than { color: #ffd700; font-weight: bold; text-shadow: 0 0 8px rgba(255, 215, 0, 0.45); }
+.log-pha-kim-than { color: #ff9100; font-weight: bold; text-shadow: 0 0 8px rgba(255, 145, 0, 0.5); }
 
 .boss-badge {
     display: inline-block;
