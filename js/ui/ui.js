@@ -276,9 +276,15 @@ class UIController {
                 this.resetSkillFilters();
             });
         }
+
+        // Tự động ẩn dứt điểm Tooltip khi click, cuộn trang hoặc chạm màn hình điện thoại
+        window.addEventListener("click", () => this.hideItemTooltip());
+        window.addEventListener("scroll", () => this.hideItemTooltip(), true);
+        window.addEventListener("touchstart", () => this.hideItemTooltip(), { passive: true });
     }
 
     switchTab(tabName) {
+        this.hideItemTooltip(); // Cưỡng chế ẩn tooltip khi chuyển trang, tránh lưu màn
         this.currentTab = tabName;
 
         // Đổi active button nav
@@ -582,6 +588,7 @@ class UIController {
     }
 
     unequipItem(slot) {
+        this.hideItemTooltip(); // Cưỡng chế ẩn tooltip
         if (this.player.unequipItem(slot)) {
             this.sound.playEquip();
             this.showToast("Đã tháo trang bị cất vào túi đồ!", "info");
@@ -957,6 +964,7 @@ class UIController {
     }
 
     equipItem(itemId) {
+        this.hideItemTooltip(); // Cưỡng chế ẩn tooltip
         const res = this.player.equipItem(itemId);
         if (res && res.success) {
             this.sound.playEquip();
@@ -970,6 +978,7 @@ class UIController {
     }
 
     useConsumable(itemId) {
+        this.hideItemTooltip(); // Cưỡng chế ẩn tooltip
         const item = ItemSystem.getItemById(itemId);
         if (item && item.isRenameScroll) {
             this.openRenameModal();
@@ -1010,6 +1019,7 @@ class UIController {
      * Dùng toàn bộ đan dược cùng loại một lúc
      */
     useAllConsumables(itemId) {
+        this.hideItemTooltip(); // Cưỡng chế ẩn tooltip
         const item = ItemSystem.getItemById(itemId);
         if (!item || item.slot !== "dan_duoc") return;
 
@@ -1047,6 +1057,7 @@ class UIController {
     }
 
     sellItem(itemId) {
+        this.hideItemTooltip(); // Cưỡng chế ẩn tooltip
         const res = this.player.sellItem(itemId);
         if (res && res.success) {
             this.sound.playClick();
@@ -1061,6 +1072,7 @@ class UIController {
      * Bán toàn bộ vật phẩm cùng loại một lúc
      */
     sellAllItems(itemId) {
+        this.hideItemTooltip(); // Cưỡng chế ẩn tooltip
         const item = ItemSystem.getItemById(itemId);
         if (!item) return;
 
@@ -1081,6 +1093,7 @@ class UIController {
      * Bán nhanh các bản sao trùng lặp của 1 trang bị cụ thể (giữ lại 1 bản an toàn nếu chưa mặc)
      */
     sellItemDuplicates(itemId) {
+        this.hideItemTooltip(); // Cưỡng chế ẩn tooltip
         const res = this.player.sellItemDuplicates(itemId);
         if (res && res.success) {
             this.sound.playClick();
@@ -1184,8 +1197,8 @@ class UIController {
                         <div class="quick-sell-item-meta">
                             <span style="color: ${rarity.color}">${rarity.name}</span> • <span>${slotName}</span> •
                             ${d.isEquipped
-                                ? `<span style="color: #ffd700; font-weight:600;">(Đang mặc • Bán hết ${d.dupsCount} bản túi)</span>`
-                                : `<span style="color: #a0aec0;">(Chưa mặc • Bán ${d.dupsCount}, giữ ${d.keepCount} bản)</span>`}
+                    ? `<span style="color: #ffd700; font-weight:600;">(Đang mặc • Bán hết ${d.dupsCount} bản túi)</span>`
+                    : `<span style="color: #a0aec0;">(Chưa mặc • Bán ${d.dupsCount}, giữ ${d.keepCount} bản)</span>`}
                         </div>
                     </div>
                 </div>
@@ -1936,6 +1949,7 @@ class UIController {
     }
 
     buySkill(skillId) {
+        this.hideItemTooltip(); // Cưỡng chế ẩn tooltip
         const res = this.player.learnSkill(skillId);
         if (res && res.success) {
             this.sound.playBreakthrough();
@@ -2175,6 +2189,7 @@ class UIController {
     }
 
     buyShopItem(itemId, quantity = 1) {
+        this.hideItemTooltip(); // Cưỡng chế ẩn tooltip
         const res = this.player.buyItem(itemId, quantity);
         if (res && res.success) {
             this.sound.playEquip();
@@ -2225,19 +2240,28 @@ class UIController {
         return num.toLocaleString("vi-VN");
     }
 
-    // ================= TOOLTIP HIỂN THỊ THÔNG TIN TRANG BỊ =================
+    // ================= TOOLTIP HIỂN THỊ THÔNG TIN TRANG BỊ & KỸ NĂNG =================
 
-    showItemTooltip(e, itemId) {
-        const item = ItemSystem.getItemById(itemId);
-        if (!item) return;
-
+    getOrCreateTooltip() {
         let tooltip = document.getElementById("item-tooltip");
         if (!tooltip) {
             tooltip = document.createElement("div");
             tooltip.id = "item-tooltip";
             tooltip.className = "item-tooltip-box";
+            tooltip.style.pointerEvents = "none";
+            tooltip.style.position = "fixed";
+            tooltip.style.zIndex = "999999";
+            tooltip.style.display = "none";
             document.body.appendChild(tooltip);
         }
+        return tooltip;
+    }
+
+    showItemTooltip(e, itemId) {
+        const item = ItemSystem.getItemById(itemId);
+        if (!item) return;
+
+        const tooltip = this.getOrCreateTooltip();
 
         const rarity = ItemSystem.getRarity(item.rarity);
         const reqRealmObj = RealmSystem.getRealm(item.reqRealm);
@@ -2299,13 +2323,14 @@ class UIController {
 
     moveItemTooltip(e) {
         const tooltip = document.getElementById("item-tooltip");
-        if (tooltip && tooltip.style.display !== "none") {
+        if (tooltip && tooltip.style.display === "flex") {
             this.positionTooltip(e, tooltip);
         }
     }
 
     positionTooltip(e, tooltip) {
-        const offset = 16;
+        if (!tooltip || !e) return;
+        const offset = 14;
         const tipRect = tooltip.getBoundingClientRect();
         const width = tipRect.width || 300;
         const height = tipRect.height || 220;
@@ -2313,17 +2338,17 @@ class UIController {
         let x = e.clientX + offset;
         let y = e.clientY + offset;
 
-        // Nếu sát mép phải thì đảo sang trái
+        // Nếu chạm lề phải thì hiển thị sang bên trái con trỏ chuột
         if (x + width > window.innerWidth - 12) {
             x = e.clientX - width - offset;
         }
-        // Nếu sát mép dưới thì đẩy lên trên
+        // Nếu chạm lề dưới thì đẩy lên trên con trỏ chuột
         if (y + height > window.innerHeight - 12) {
             y = e.clientY - height - offset;
         }
 
-        tooltip.style.left = `${Math.max(10, x)}px`;
-        tooltip.style.top = `${Math.max(10, y)}px`;
+        tooltip.style.left = `${Math.max(8, x)}px`;
+        tooltip.style.top = `${Math.max(8, y)}px`;
     }
 
     hideItemTooltip() {
@@ -2337,13 +2362,7 @@ class UIController {
         const skill = SkillSystem.getSkillById(skillId);
         if (!skill) return;
 
-        let tooltip = document.getElementById("item-tooltip");
-        if (!tooltip) {
-            tooltip = document.createElement("div");
-            tooltip.id = "item-tooltip";
-            tooltip.className = "item-tooltip-box";
-            document.body.appendChild(tooltip);
-        }
+        const tooltip = this.getOrCreateTooltip();
 
         const typeLabels = {
             vat_li: { label: "VẬT LÍ", color: "#ff7675", bg: "rgba(255, 118, 117, 0.15)", border: "#ff7675" },
