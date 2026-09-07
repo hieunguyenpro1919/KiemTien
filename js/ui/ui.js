@@ -460,25 +460,49 @@ class UIController {
         // Chỉ số Vật Lí
         const vatLiValEl = document.getElementById("stat-vat-li-val");
         const vatLiAddedEl = document.getElementById("stat-vat-li-added");
-        if (vatLiValEl) vatLiValEl.innerText = pStats.vatLi;
-        if (vatLiAddedEl) vatLiAddedEl.innerText = `(+${this.player.statVatLi * 3} từ ${this.player.statVatLi} điểm)`;
+        if (vatLiValEl) vatLiValEl.innerText = this.formatNumber(pStats.vatLi);
+        const vatLiPts = this.player.statVatLi || 0;
+        const vatLiFlat = vatLiPts * 5;
+        const vatLiPct = pStats.bonusVatLiPct || (vatLiPts * 0.35).toFixed(1);
+        if (vatLiAddedEl) {
+            vatLiAddedEl.innerText = vatLiPts > 0
+                ? `(+${this.formatNumber(vatLiFlat)} • +${vatLiPct}% từ ${vatLiPts}đ)`
+                : `(+0 từ 0đ)`;
+            vatLiAddedEl.title = `Mỗi điểm: +5 Công Vật Lí & +0.35% Tổng Sát Thương VL. Mỗi 20 điểm: +1% Bạo Kích.`;
+        }
 
         // Chỉ số Phép
         const phepValEl = document.getElementById("stat-phep-val");
         const phepAddedEl = document.getElementById("stat-phep-added");
-        if (phepValEl) phepValEl.innerText = pStats.phep;
-        if (phepAddedEl) phepAddedEl.innerText = `(+${this.player.statPhep * 3} từ ${this.player.statPhep} điểm)`;
+        if (phepValEl) phepValEl.innerText = this.formatNumber(pStats.phep);
+        const phepPts = this.player.statPhep || 0;
+        const phepFlat = phepPts * 5;
+        const phepPct = pStats.bonusPhepPct || (phepPts * 0.35).toFixed(1);
+        if (phepAddedEl) {
+            phepAddedEl.innerText = phepPts > 0
+                ? `(+${this.formatNumber(phepFlat)} • +${phepPct}% từ ${phepPts}đ)`
+                : `(+0 từ 0đ)`;
+            phepAddedEl.title = `Mỗi điểm: +5 Công Phép & +0.35% Tổng Sát Thương Phép. Mỗi 20 điểm: +1 Kháng Phép.`;
+        }
 
         // Chỉ số Máu
         const mauValEl = document.getElementById("stat-mau-val");
         const mauAddedEl = document.getElementById("stat-mau-added");
-        if (mauValEl) mauValEl.innerText = pStats.maxHp;
-        if (mauAddedEl) mauAddedEl.innerText = `(+${this.player.statMau * 25} HP từ ${this.player.statMau} điểm)`;
+        if (mauValEl) mauValEl.innerText = this.formatNumber(pStats.maxHp);
+        const mauPts = this.player.statMau || 0;
+        const mauFlat = mauPts * 30;
+        const mauPct = pStats.bonusHpPct || (mauPts * 0.4).toFixed(1);
+        if (mauAddedEl) {
+            mauAddedEl.innerText = mauPts > 0
+                ? `(+${this.formatNumber(mauFlat)} HP • +${mauPct}% từ ${mauPts}đ)`
+                : `(+0 HP từ 0đ)`;
+            mauAddedEl.title = `Mỗi điểm: +30 HP & +0.4% Tổng Máu Tối Đa. Mỗi 10 điểm: +1 Phòng Ngự & +1 Kháng Phép.`;
+        }
 
         // Phòng thủ & Bạo kích
         const defValEl = document.getElementById("stat-def-val");
         const critValEl = document.getElementById("stat-crit-val");
-        if (defValEl) defValEl.innerText = `${pStats.phongThu} (Vật) / ${pStats.khangPhep} (Phép)`;
+        if (defValEl) defValEl.innerText = `${this.formatNumber(pStats.phongThu)} (Vật) / ${this.formatNumber(pStats.khangPhep)} (Phép)`;
         if (critValEl) critValEl.innerText = `${pStats.baoKich}%`;
 
         // Các nút cộng điểm (+1, +5, Max)

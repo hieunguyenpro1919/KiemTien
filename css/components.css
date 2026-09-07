@@ -372,10 +372,12 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    flex: 1;
+    min-width: 0;
 }
 
 .stat-row-name {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     color: #fff;
     display: flex;
@@ -391,7 +393,8 @@
 
 .stat-row-sub {
     font-size: 11px;
-    color: var(--text-muted);
+    color: #94a3b8;
+    line-height: 1.3;
 }
 
 .stat-row-btns {

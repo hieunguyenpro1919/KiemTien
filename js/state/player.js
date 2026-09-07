@@ -189,7 +189,9 @@ class Player {
             this.statMau += amount;
             this.statPoints -= amount;
             // Tăng máu tối đa đồng thời tăng máu hiện tại tương ứng
-            this.currentHp += amount * 25;
+            if (this.currentHp !== undefined) {
+                this.currentHp = Math.min(this.getMaxHp(), this.currentHp + amount * 30);
+            }
         } else {
             return false;
         }
@@ -212,6 +214,7 @@ class Player {
 
     /**
      * Tính toán Tổng Chỉ Số Nhân Vật (Base + Thuộc Tính Cộng + 3 Ô Trang Bị)
+     * Áp dụng Phương Án 1: Cơ chế khuếch đại Phần Trăm (%) kết hợp Chỉ Số Phẳng
      */
     getTotalStats() {
         // Chỉ số cơ sở từ cảnh giới và tầng
@@ -223,13 +226,18 @@ class Player {
         const baseKhangPhep = 5 + absTier * 3;
         const baseBaoKich = 5;
 
-        // Chỉ số cộng từ điểm tiềm năng
-        // 1 điểm Máu = +25 HP
-        // 1 điểm Vật Lí = +3 Sát Thương Vật Lí
-        // 1 điểm Phép = +3 Sát Thương Phép
-        const allocatedHp = (this.statMau || 0) * 25;
-        const allocatedVatLi = (this.statVatLi || 0) * 3;
-        const allocatedPhep = (this.statPhep || 0) * 3;
+        // Chỉ số cộng từ điểm tiềm năng (Phương án 1: Scale Phần Trăm + Chỉ Số Phẳng)
+        // 1 điểm Máu = +30 HP phẳng VÀ +0.4% Tổng HP
+        // 1 điểm Vật Lí = +5 Sát Thương Vật Lí phẳng VÀ +0.35% Tổng Sát Thương Vật Lí
+        // 1 điểm Phép = +5 Sát Thương Phép phẳng VÀ +0.35% Tổng Sát Thương Phép
+        const allocatedHp = (this.statMau || 0) * 30;
+        const allocatedVatLi = (this.statVatLi || 0) * 5;
+        const allocatedPhep = (this.statPhep || 0) * 5;
+
+        // Hệ số nhân phần trăm (%) khuếch đại
+        const hpMultiplier = 1 + (this.statMau || 0) * 0.004;
+        const vatLiMultiplier = 1 + (this.statVatLi || 0) * 0.0035;
+        const phepMultiplier = 1 + (this.statPhep || 0) * 0.0035;
 
         // Chỉ số cộng từ 3 Ô Trang Bị
         let equipHp = 0;
@@ -275,12 +283,27 @@ class Player {
             }
         }
 
-        const maxHp = baseHp + allocatedHp + equipHp + titleHp;
-        const totalVatLi = baseVatLi + allocatedVatLi + equipVatLi + titleVatLi;
-        const totalPhep = basePhep + allocatedPhep + equipPhep + titlePhep;
-        const totalPhongThu = basePhongThu + equipPhongThu + titlePhongThu;
-        const totalKhangPhep = baseKhangPhep + equipKhangPhep + titleKhangPhep;
-        const totalBaoKich = Math.min(75, baseBaoKich + equipBaoKich + titleBaoKich);
+        // Tổng chỉ số trước khi nhân hệ số phần trăm
+        const rawHp = baseHp + allocatedHp + equipHp + titleHp;
+        const rawVatLi = baseVatLi + allocatedVatLi + equipVatLi + titleVatLi;
+        const rawPhep = basePhep + allocatedPhep + equipPhep + titlePhep;
+
+        // Áp dụng hệ số nhân phần trăm khuếch đại
+        const maxHp = Math.round(rawHp * hpMultiplier);
+        const totalVatLi = Math.round(rawVatLi * vatLiMultiplier);
+        const totalPhep = Math.round(rawPhep * phepMultiplier);
+
+        // Chỉ số phụ hưởng lợi từ điểm tiềm năng:
+        // - Mỗi 10 điểm Thể Chất (Máu): +1 Phòng Ngự & +1 Kháng Phép
+        // - Mỗi 20 điểm Pháp Cường (Phép): +1 Kháng Phép
+        // - Mỗi 20 điểm Lực Đạo (Vật Lí): +1% Tỉ Lệ Bạo Kích
+        const bonusDefFromMau = Math.floor((this.statMau || 0) / 10);
+        const bonusResFromPhep = Math.floor((this.statPhep || 0) / 20);
+        const bonusCritFromVatLi = Math.floor((this.statVatLi || 0) / 20);
+
+        const totalPhongThu = basePhongThu + equipPhongThu + titlePhongThu + bonusDefFromMau;
+        const totalKhangPhep = baseKhangPhep + equipKhangPhep + titleKhangPhep + bonusDefFromMau + bonusResFromPhep;
+        const totalBaoKich = Math.min(75, baseBaoKich + equipBaoKich + titleBaoKich + bonusCritFromVatLi);
 
         return {
             maxHp,
@@ -289,6 +312,18 @@ class Player {
             phongThu: totalPhongThu,
             khangPhep: totalKhangPhep,
             baoKich: totalBaoKich,
+            // Thống kê chi tiết
+            hpMultiplier,
+            vatLiMultiplier,
+            phepMultiplier,
+            allocatedHp,
+            allocatedVatLi,
+            allocatedPhep,
+            bonusHpPct: ((this.statMau || 0) * 0.4).toFixed(1),
+            bonusVatLiPct: ((this.statVatLi || 0) * 0.35).toFixed(1),
+            bonusPhepPct: ((this.statPhep || 0) * 0.35).toFixed(1),
+            bonusDefFromMau,
+            bonusCritFromVatLi,
             titleHp,
             titleVatLi,
             titlePhep,

@@ -91,17 +91,20 @@ Hệ thống tu tiên gồm **12 Đại Cảnh Giới**:
 
 ## 📊 4. HỆ THỐNG ĐIỂM TIỀM NĂNG & THUỘC TÍNH (STATS SYSTEM)
 
-### Quy Tắc Cộng Điểm
+### Quy Tắc Cộng Điểm & Cơ Chế Khuếch Đại Phần Trăm (%)
 * Mỗi lần đột phá tăng 1 tầng tu vi (kể cả các tầng vô hạn), người chơi nhận đúng **+4 Điểm Tiềm Năng**.
-* Người chơi có thể tự do phân bổ điểm vào 3 thuộc tính chính:
-  * **Sát Thương Vật Lí**: 1 điểm = **+3 Sát thương Vật Lí**.
-  * **Sát Thương Phép**: 1 điểm = **+3 Sát thương Phép**.
-  * **Sinh Mệnh (Máu - HP)**: 1 điểm = **+25 Máu tối đa** (đồng thời hồi ngay +25 máu hiện tại).
-* Hỗ trợ cộng nhanh: `+1`, `+10`, `+50`, và `Toàn Bộ (+Tất Cả)`.
+* Áp dụng **Phương Án 1: Cơ Chế Khuếch Đại Phần Trăm (%) kết hợp Chỉ Số Phẳng**:
+  * **Sát Thương Vật Lí (`statVatLi`)**: Mỗi điểm tăng **+5 Công Vật Lí phẳng** VÀ **+0.35% Tổng Sát Thương Vật Lí**. Mỗi 20 điểm tăng thêm **+1% Tỉ Lệ Bạo Kích**.
+  * **Sát Thương Phép (`statPhep`)**: Mỗi điểm tăng **+5 Công Phép phẳng** VÀ **+0.35% Tổng Sát Thương Phép**. Mỗi 20 điểm tăng thêm **+1 Kháng Phép**.
+  * **Sinh Mệnh (Máu - `statMau`)**: Mỗi điểm tăng **+30 HP phẳng** VÀ **+0.4% Tổng Máu Tối Đa**. Mỗi 10 điểm tăng thêm **+1 Phòng Ngự & +1 Kháng Phép**.
+* Công thức tính tổng:
+  $$\text{Tổng Sức Mạnh} = (\text{Chỉ Số Cơ Bản} + \text{Trang Bị} + \text{Danh Hiệu} + \text{Chỉ Số Phẳng}) \times (1 + \text{Điểm} \times \text{Hệ Số } \%)$$
+* Nhờ cơ chế này, điểm tiềm năng vừa có giá trị tức thì ở đầu game nhờ chỉ số phẳng, vừa tự động khuếch đại bùng nổ hàng triệu đến hàng tỷ sức mạnh ở giai đoạn endgame khi kết hợp cùng trang bị phẩm cấp cao!
+* Hỗ trợ cộng nhanh: `+1`, `+5`, và `Max (+Toàn Bộ)`.
 
-### Chỉ Số Phụ Tự Động
-* **Phòng Ngự Vật Lí & Kháng Phép**: Tự động tăng theo cảnh giới + chỉ số từ Nón, Giáp, Vũ khí và Danh hiệu.
-* **Tỉ Lệ Bạo Kích**: Mặc định 5%, tăng thêm từ trang bị và danh hiệu (giới hạn tối đa 75%).
+### Chỉ Số Phụ Tự Động & Hưởng Lợi Từ Tiềm Năng
+* **Phòng Ngự & Kháng Phép**: Tự động tăng theo cảnh giới + chỉ số từ Nón, Giáp, Vũ khí, Danh hiệu + điểm thưởng từ Thể Chất và Pháp Cường.
+* **Tỉ Lệ Bạo Kích**: Mặc định 5%, tăng thêm từ trang bị, danh hiệu + điểm thưởng từ Lực Đạo (giới hạn tối đa 75%).
 
 ### Tẩy Tủy & Phân Bổ Lại
 * Sử dụng vật phẩm **Tẩy Tủy Đan** để thu hồi 100% điểm tiềm năng đã cộng vào quỹ điểm khả dụng, cho phép thử nghiệm các lối build khác nhau.
