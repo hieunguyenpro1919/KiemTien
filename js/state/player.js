@@ -599,6 +599,55 @@ class Player {
         return { success: true, item, quantity, totalCost };
     }
 
+    /**
+     * Mua số lượng tối đa có thể của một loại đan dược dựa theo số dư Linh Thạch
+     */
+    buyMaxPill(itemId) {
+        const item = (typeof ItemSystem !== "undefined") ? ItemSystem.getItemById(itemId) : null;
+        if (!item || !item.price || item.price <= 0) {
+            return { success: false, reason: "invalid_item", msg: "Vật phẩm không hợp lệ!" };
+        }
+
+        // Chỉ áp dụng cho đan dược thông thường, không áp dụng cho trang bị, Tẩy Tủy Đan hoặc Cuộn Giấy Đổi Tên
+        if (item.slot !== "dan_duoc" || item.isResetPill || item.isRenameScroll) {
+            return { success: false, reason: "not_supported", msg: "Tính năng mua hết chỉ áp dụng cho đan dược tu vi!" };
+        }
+
+        // Kiểm tra điều kiện Cảnh Giới
+        if (item.reqRealm !== undefined && this.realmIndex < item.reqRealm) {
+            const reqRealmObj = (typeof RealmSystem !== "undefined") ? RealmSystem.getRealm(item.reqRealm) : null;
+            const reqRealmName = reqRealmObj ? reqRealmObj.name : `Cảnh giới ${item.reqRealm}`;
+            return {
+                success: false,
+                reason: "realm_locked",
+                reqRealm: item.reqRealm,
+                msg: `Chưa đủ cảnh giới để mua! Cần đạt [${reqRealmName}] trở lên.`
+            };
+        }
+
+        // Tính số lượng tối đa có thể mua theo số dư Linh Thạch
+        const maxAffordable = Math.floor(this.linhThach / item.price);
+        if (maxAffordable <= 0) {
+            return { success: false, reason: "not_enough_money", msg: "Không đủ Linh Thạch để mua!" };
+        }
+
+        const totalCost = maxAffordable * item.price;
+        this.linhThach -= totalCost;
+
+        // Đẩy hàng loạt vào túi đồ
+        for (let i = 0; i < maxAffordable; i++) {
+            this.inventory.push(itemId);
+        }
+
+        return {
+            success: true,
+            count: maxAffordable,
+            totalCost: totalCost,
+            item: item,
+            msg: `Đã mua thành công ${maxAffordable}x [${item.name}]!`
+        };
+    }
+
     sellItem(itemId) {
         const invIndex = this.inventory.indexOf(itemId);
         if (invIndex === -1) return false;

@@ -2184,19 +2184,20 @@ class UIController {
             }
 
             let buyActionsHtml = "";
-            if (item.slot === "dan_duoc" && !item.isResetPill) {
+            if (item.slot === "dan_duoc" && !item.isResetPill && !item.isRenameScroll) {
                 const canAfford5 = this.player.linhThach >= (item.price * 5);
                 const canAfford10 = this.player.linhThach >= (item.price * 10);
+                const maxAffordable = Math.floor(this.player.linhThach / item.price);
                 buyActionsHtml = `
-                    <div style="display: flex; gap: 4px; align-items: center;">
+                    <div class="shop-pill-actions" style="display: flex; gap: 4px; align-items: center; flex-wrap: wrap;">
                         <button class="btn-sm btn-primary" onclick="gameUI.buyShopItem('${item.id}', 1)" ${canAfford ? "" : "disabled"} title="${canAfford ? 'Mua 1 viên' : 'Thiếu Linh Thạch'}">
                             ${canAfford ? "Mua 1" : "Thiếu 💎"}
                         </button>
-                        <button class="btn-sm btn-secondary" onclick="gameUI.buyShopItem('${item.id}', 5)" ${canAfford5 ? "" : "disabled"} title="${canAfford5 ? 'Mua 5 viên (' + this.formatNumber(item.price * 5) + ' 💎)' : 'Không đủ Linh Thạch mua 5'}">
-                            x5
-                        </button>
                         <button class="btn-sm btn-secondary" onclick="gameUI.buyShopItem('${item.id}', 10)" ${canAfford10 ? "" : "disabled"} title="${canAfford10 ? 'Mua 10 viên (' + this.formatNumber(item.price * 10) + ' 💎)' : 'Không đủ Linh Thạch mua 10'}">
                             x10
+                        </button>
+                        <button class="btn-sm btn-gold btn-buy-max" onclick="gameUI.handleBuyMaxPill('${item.id}')" ${canAfford ? "" : "disabled"} title="${canAfford ? 'Mua tối đa ' + this.formatNumber(maxAffordable) + ' viên với Linh Thạch hiện có' : 'Không đủ Linh Thạch'}">
+                            ⚡ Mua Hết
                         </button>
                     </div>
                 `;
@@ -2250,6 +2251,22 @@ class UIController {
             StorageSystem.save(this.player);
         } else {
             this.showToast(res ? res.msg : "Giao dịch thất bại!", "error");
+        }
+    }
+
+    handleBuyMaxPill(itemId) {
+        this.hideItemTooltip();
+        const res = this.player.buyMaxPill(itemId);
+        if (res && res.success) {
+            this.sound.playEquip();
+            this.showToast(`Đã mua tối đa ${this.formatNumber(res.count)}x [${res.item.name}], tiêu hao ${this.formatNumber(res.totalCost)} Linh Thạch!`, "success");
+            this.renderShopTab();
+            this.updateHeaderInfo();
+            if (typeof StorageSystem !== "undefined") {
+                StorageSystem.save(this.player);
+            }
+        } else {
+            this.showToast(res ? res.msg : "Không thể mua hết đan dược!", "error");
         }
     }
 

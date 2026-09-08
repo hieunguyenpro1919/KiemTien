@@ -1274,6 +1274,39 @@
     justify-content: space-between;
     align-items: center;
     margin-top: 6px;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.shop-pill-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.btn-gold {
+    background: linear-gradient(135deg, #ffd700, #ff9100) !important;
+    color: #0f172a !important;
+    font-weight: bold !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.35);
+    transition: all 0.2s ease;
+}
+
+.btn-gold:hover:not(:disabled) {
+    background: linear-gradient(135deg, #ffe066, #ffa726) !important;
+    box-shadow: 0 4px 14px rgba(255, 215, 0, 0.55);
+    transform: translateY(-1px);
+}
+
+.btn-gold:disabled {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #64748b !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 /* ================= TOOLTIP THÔNG TIN TRANG BỊ KHI RÊ CHUỘT ================= */

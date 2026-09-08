@@ -777,6 +777,44 @@ const ITEM_DATABASE = [
         icon: "⚛️",
         desc: "Thánh đan đoạt thiên địa tạo hóa cội nguồn, lập tức gia tăng 3,500,000,000 Tu Vi."
     },
+
+    // ================= ĐAN DƯỢC ĐẠI ĐẠO TỐI CAO (CẢNH GIỚI ĐẠI ĐẠO CHÍ CAO VÔ THƯỢNG) =================
+    {
+        id: "pill_hon_don_ban_nguyen",
+        name: "Hỗn Độn Bản Nguyên Đan",
+        type: "dan_duoc",
+        rarity: "thanh",
+        reqRealm: 11, // Yêu cầu Đại Đạo Chí Cao Vô Thượng
+        tuVi: 15000000000, // +15 Tỷ Tu Vi
+        price: 35000000000, // 35 Tỷ Linh Thạch
+        sellPrice: 10000000000,
+        icon: "🔮",
+        desc: "Đan dược ngưng tụ từ bản nguyên hỗn độn sơ khai, ẩn chứa lực lượng thiên địa phân khai, lập tức gia tăng 15 Tỷ Tu Vi."
+    },
+    {
+        id: "pill_thai_so_than_dan",
+        name: "Thái Sơ Vô Cực Thần Đan",
+        type: "dan_duoc",
+        rarity: "thanh",
+        reqRealm: 11, // Yêu cầu Đại Đạo Chí Cao Vô Thượng
+        tuVi: 60000000000, // +60 Tỷ Tu Vi
+        price: 120000000000, // 120 Tỷ Linh Thạch
+        sellPrice: 35000000000,
+        icon: "🌌",
+        desc: "Luyện hóa từ khí tức Thái Sơ ngàn vạn năm, khai thông thần hải vô tận, lập tức gia tăng 60 Tỷ Tu Vi cho bậc Chí Tôn."
+    },
+    {
+        id: "pill_bat_hu_luan_hoi",
+        name: "Vĩnh Hằng Bất Hủ Luân Hồi Đan",
+        type: "dan_duoc",
+        rarity: "thanh",
+        reqRealm: 11, // Yêu cầu Đại Đạo Chí Cao Vô Thượng
+        tuVi: 250000000000, // +250 Tỷ Tu Vi
+        price: 500000000000, // 500 Tỷ Linh Thạch
+        sellPrice: 150000000000,
+        icon: "⚛️",
+        desc: "Nghịch chuyển luân hồi vĩnh hằng, hấp thu trọn vẹn quy tắc đại đạo tối cao, lập tức gia tăng 250 Tỷ Tu Vi."
+    }
 ];
 
 class ItemSystem {

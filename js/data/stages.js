@@ -589,7 +589,13 @@ const STAGE_DATABASE = [
             tuVi: 35000000000,     // 35 Tỷ Tu Vi
             linhThach: 350000000000, // 350 Tỷ Linh Thạch
             dropChance: 1.0,
-            possibleDrops: ["hat_15", "armor_dai_dao_thanh_bao", "pill_khoi_nguyen_thanh_dan"]
+            possibleDrops: [
+                "hat_15",
+                "armor_dai_dao_thanh_bao",
+                "pill_khoi_nguyen_thanh_dan",
+                "pill_hon_don_ban_nguyen",
+                "pill_thai_so_than_dan"
+            ]
         }
     },
     {
@@ -618,7 +624,13 @@ const STAGE_DATABASE = [
             tuVi: 180000000000,     // 180 Tỷ Tu Vi
             linhThach: 1800000000000, // 1.8 Nghìn Tỷ Linh Thạch (1.8 Trillion)
             dropChance: 1.0,
-            possibleDrops: ["weapon_dai_dao_chi_ton", "weapon_phep_thanh_02", "pill_khoi_nguyen_thanh_dan"]
+            possibleDrops: [
+                "weapon_dai_dao_chi_ton",
+                "weapon_phep_thanh_02",
+                "pill_khoi_nguyen_thanh_dan",
+                "pill_thai_so_than_dan",
+                "pill_bat_hu_luan_hoi"
+            ]
         }
     },
 ];

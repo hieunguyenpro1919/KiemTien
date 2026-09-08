@@ -232,6 +232,7 @@ Danh hiệu được mở khóa khi người chơi hoàn thành các chiến tí
    * Tăng giá bán trong tiệm lên 5,000 Linh Thạch.
    * Giảm tỷ lệ rơi từ các ải xuống mức cực hiếm (3% khi kích hoạt rơi đồ), giữ vững giá trị bảo vật quý giá cho người chơi.
 6. **Cuộn Giấy Đổi Tên**: Pháp bảo đặc biệt cho phép người chơi đặt lại đạo hiệu nhân vật tùy thích (tối đa 20 ký tự) trên Thiên Đạo Bia.
+7. **Tính Năng Mua Hết Đan Dược (`⚡ Mua Hết`)**: Trên mỗi thẻ đan dược tu vi tại Bách Bảo Các, bổ sung nút `⚡ Mua Hết` cho phép người chơi dùng toàn bộ Linh Thạch hiện có mua số lượng tối đa chỉ với 1 thao tác an toàn, tính đúng số dư và không áp dụng nhầm cho trang bị hay vật phẩm đặc thù (Tẩy Tủy Đan, Cuộn Giấy Đổi Tên).
 
 ---
 
