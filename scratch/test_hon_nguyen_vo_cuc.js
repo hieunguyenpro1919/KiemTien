@@ -89,6 +89,30 @@ console.log("Cắn Bất Hủ Luân Hồi Đan (+500 Tỷ Tu Vi):", "Tinh Nguyê
 if (p2.tinhNguyen !== initialTN + 500) {
     throw new Error("TEST 2.4 FAILED: Đan 500 Tỷ phải cho +500 Tinh Nguyên");
 }
+if (p2.inventory.includes("pill_bat_hu_luan_hoi")) {
+    throw new Error("TEST 2.4.0 FAILED: Dùng 1 viên phải xóa 1 viên khỏi túi đồ!");
+}
+
+// Test Dùng Hết đan dược cao cấp trong Vô Cực (kiểm tra trừ sạch trong túi đồ)
+p2.inventory = ["pill_thai_so_than_dan", "pill_thai_so_than_dan", "pill_thai_so_than_dan", "vukhi_thien_ton"];
+let beforeUseAllTN = p2.tinhNguyen;
+let resUseAll = p2.useAllConsumables("pill_thai_so_than_dan");
+console.log("Dùng hết 3x Thái Sơ Vô Cực Thần Đan (+60 Tinh Nguyên/viên):", resUseAll.success, "Count:", resUseAll.count, "TN:", beforeUseAllTN, "->", p2.tinhNguyen);
+if (!resUseAll.success || resUseAll.count !== 3 || p2.tinhNguyen !== beforeUseAllTN + 180) {
+    throw new Error("TEST 2.4.1 FAILED: Dùng hết phải cộng đúng 180 Tinh Nguyên");
+}
+if (p2.inventory.includes("pill_thai_so_than_dan")) {
+    throw new Error("TEST 2.4.2 FAILED (BUG TRỪ ĐỒ): Đan dược chưa bị xóa khỏi túi đồ sau khi dùng hết!");
+}
+if (p2.inventory.length !== 1 || p2.inventory[0] !== "vukhi_thien_ton") {
+    throw new Error("TEST 2.4.3 FAILED: Các trang bị khác trong túi bị ảnh hưởng sai!");
+}
+// Thử dùng lại khi túi đã hết
+let resUseAllAgain = p2.useAllConsumables("pill_thai_so_than_dan");
+if (resUseAllAgain.success) {
+    throw new Error("TEST 2.4.4 FAILED: Không có đan dược mà vẫn cho dùng hết!");
+}
+console.log("✅ Đã kiểm thử sửa lỗi Dùng Hết: Đan dược bị xóa sạch khỏi túi đồ, không thể spam vô hạn!");
 
 // Test đột phá lên Tầng 102 Vô Cực
 let pointsBefore = p2.statPoints;
@@ -105,19 +129,19 @@ if (p2.getMaxTuVi() !== 110) {
 // TEST 3: Endless Tower Tickets & Scaling
 console.log("\n--- TEST 3: HƯ KHÔNG THÁP & LỆNH BÀI ---");
 const p3 = new Player();
-p3.honNguyen = 10000000; // 10M 🌀
+p3.honNguyen = 10000; // 10.000 🌀
 let ticketRes = p3.buyTowerTicket(1);
-console.log("Mua 1 vé bằng Hỗn Nguyên:", ticketRes.success, "HN còn:", p3.honNguyen, "Tickets:", p3.towerData.dailyTickets);
-if (!ticketRes.success || p3.honNguyen !== 5000000 || p3.towerData.dailyTickets !== 4) {
+console.log("Mua 1 vé bằng Hỗn Nguyên (5.000 🌀):", ticketRes.success, "HN còn:", p3.honNguyen, "Tickets:", p3.towerData.dailyTickets);
+if (!ticketRes.success || p3.honNguyen !== 5000 || p3.towerData.dailyTickets !== 4) {
     throw new Error("TEST 3.1 FAILED");
 }
 
-// Test mua vé bằng nén tự động từ Linh Thạch khi thiếu Hỗn Nguyên
+// Test mua vé bằng nén tự động từ Linh Thạch khi thiếu Hỗn Nguyên (5.000 🌀 = 5 Nghìn Tỷ 💎)
 p3.honNguyen = 0;
-p3.linhThach = 6000000000000000; // 6 triệu tỷ Linh Thạch (= 6M Hỗn Nguyên)
+p3.linhThach = 6000000000000; // 6 Nghìn Tỷ Linh Thạch (= 6.000 Hỗn Nguyên)
 let autoConvertTicket = p3.buyTowerTicket(1);
-console.log("Mua 1 vé tự nén từ Linh Thạch:", autoConvertTicket.success, "LT còn:", p3.linhThach, "Tickets:", p3.towerData.dailyTickets);
-if (!autoConvertTicket.success || p3.linhThach !== 1000000000000000 || p3.towerData.dailyTickets !== 5) {
+console.log("Mua 1 vé tự nén từ Linh Thạch (5 Nghìn Tỷ 💎):", autoConvertTicket.success, "LT còn:", p3.linhThach, "Tickets:", p3.towerData.dailyTickets);
+if (!autoConvertTicket.success || p3.linhThach !== 1000000000000 || p3.towerData.dailyTickets !== 5) {
     throw new Error("TEST 3.2 FAILED");
 }
 

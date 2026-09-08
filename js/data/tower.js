@@ -16,12 +16,12 @@ const TOWER_CONFIG = {
     TIME_LIMIT: 60,            // Enrage Timer 60 giây
     MAX_DAILY_TICKETS: 3,      // 3 Lệnh Bài Hư Không miễn phí mỗi ngày
     get TICKET_PRICE() {
-        // Đồng bộ trực tiếp từ item_tower_ticket trong items.js (Single Source of Truth: 5.000.000 🌀)
+        // Đồng bộ trực tiếp từ item_tower_ticket trong items.js (Single Source of Truth: 5.000 🌀)
         if (typeof ItemSystem !== "undefined") {
             const item = ItemSystem.getItemById("item_tower_ticket");
             if (item && item.price) return item.price;
         }
-        return 5000000;
+        return 5000;
     },
     SWEEP_UNLOCK_FLOOR: 10     // Mở tính năng quét nhanh từ tầng 10
 };

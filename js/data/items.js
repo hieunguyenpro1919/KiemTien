@@ -822,10 +822,10 @@ const ITEM_DATABASE = [
         rarity: "tien",
         reqRealm: 0,
         currency: "hon_nguyen",
-        price: 5000000, // 5 Triệu Hỗn Nguyên Thạch
+        price: 5000, // 5 Nghìn Hỗn Nguyên Thạch
         sellPrice: 1000, // 1 Nghìn Hỗn Nguyên Thạch
         icon: "🎫",
-        desc: "Lệnh bài thần bí phong ấn không gian chi lực, dùng để khiêu chiến Hư Không Tháp. Mua bằng Hỗn Nguyên Thạch (5.000.000 🌀). Khi dùng tăng thêm 1 Lệnh Bài Hư Không (không giới hạn số lượng)."
+        desc: "Lệnh bài thần bí phong ấn không gian chi lực, dùng để khiêu chiến Hư Không Tháp. Mua bằng Hỗn Nguyên Thạch (5.000 🌀). Khi dùng tăng thêm 1 Lệnh Bài Hư Không (không giới hạn số lượng)."
     }
 ];
 

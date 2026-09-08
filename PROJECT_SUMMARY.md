@@ -13,7 +13,7 @@ Trò chơi mô phỏng trọn vẹn lộ trình tu chân nghịch thiên cải m
 * **Đồ Họa & Giao Diện Dark Fantasy Đa Nền Tảng**: Thiết kế hiện đại theo phong cách huyền huyễn Á Đông, tối ưu một màn hình dashboard trực quan, hiệu ứng phát sáng Neon, viền kim loại và kính mờ (Glassmorphism). Hỗ trợ responsive toàn diện trên Điện thoại, Máy tính bảng (Tablet) mà vẫn bảo lưu 100% giao diện PC gốc.
 * **Hệ Thống Tiền Tệ Cao Cấp Hỗn Nguyên Thạch**: Đột phá giải quyết triệt để nguy cơ tràn số học của JS bằng đơn vị tiền tệ cao cấp **🌀 Hỗn Nguyên Thạch** ($1 \text{ 🌀} = 1.000.000.000 \text{ 💎}$). Tích hợp Tiệm Quy Đổi 2 chiều và tính năng Nén Toàn Bộ Tỷ Linh Thạch trong 1 nốt nhạc.
 * **Bình Cảnh Tầng 100 & Cảnh Giới Vô Cực (🌌 Tinh Nguyên Đại Đạo)**: Khi đạt Tầng 100 Đại Đạo Chí Cao, người chơi phải trảm sát **Boss Hư Vô Bản Nguyên tại [Ải 22: Hư Vô Bản Nguyên Cảnh]** để ngưng tụ Thần Cách, mở khóa Cảnh Giới Vô Cực. Đơn vị tu vi chuyển sang **🌌 Tinh Nguyên** ($1 \text{ 🌌} = 1 \text{ Tỷ Tu Vi}$), bảo toàn vĩnh cửu cơ chế vô hạn tầng tu vi mà số học luôn an toàn tuyệt đối.
-* **Hệ Thống Hư Không Tháp (Endless Tower)**: Chế độ khiêu chiến vô tận độc lập với 22 ải cốt truyện, thuật toán sinh quái động (Procedural Scaling), cơ chế Enrage Timer 60s, hệ thống Lệnh Bài Hư Không không giới hạn (5.000.000 🌀 Hỗn Nguyên Thạch/vé), tính năng Quét Nhanh (Sweep) và Tự Động Leo Tháp liên tục (3s). Tháp tầng cao $\ge 100$ Tỷ tự động thưởng Hỗn Nguyên Thạch.
+* **Hệ Thống Hư Không Tháp (Endless Tower)**: Chế độ khiêu chiến vô tận độc lập với 22 ải cốt truyện, thuật toán sinh quái động (Procedural Scaling), cơ chế Enrage Timer 60s, hệ thống Lệnh Bài Hư Không không giới hạn (5.000 🌀 Hỗn Nguyên Thạch/vé), tính năng Quét Nhanh (Sweep) và Tự Động Leo Tháp liên tục (3s). Tháp tầng cao $\ge 100$ Tỷ tự động thưởng Hỗn Nguyên Thạch.
 * **Cơ Chế Phá Kim Thân Cho Boss**: Khắc phục nhược điểm Boss quá trâu trước đây bằng cơ chế phá vỡ trần sát thương: đòn Bạo Kích hoặc Kỹ Năng thần thông sẽ kích hoạt hiệu ứng `PHÁ KIM THÂN`, nới rộng trần sát thương lên 30% - 40% máu tối đa.
 * **Tùy Chọn Tốc Độ Trận Đấu (Speed Multiplier x1, x2, x3)**: Nút chuyển đổi tốc độ trận đấu linh hoạt, tăng tốc toàn bộ nhịp đánh, hồi chiêu và đếm ngược lặp ải, lưu trực tiếp vào `localStorage`.
 * **Hiệu Ứng Hạt Canvas (VFX Engine)**: Hệ thống canvas dựng linh khí đả tọa, kiếm khí vung chém, sấm sét lôi kiếp, hỏa cầu bùng nổ, phá kim thân và hiệu ứng số sát thương nảy động (Floating Combat Text).
@@ -261,9 +261,9 @@ Chỉ số quái vật và phần thưởng được tính toán động theo s�
 ### 🎫 Cơ Chế Vé Ngày & Mua Vé Giá Cao Không Giới Hạn
 * **Hồi phục miễn phí**: Mỗi ngày cấp lại 3 vé miễn phí nếu số vé hiện có $< 3$.
 * **Bảo toàn vé đã mua**: Nếu người chơi đã mua nhiều hơn 3 vé (ví dụ 10 vé), khi sang ngày mới **không bị trừ** mà bảo lưu nguyên vẹn 10 vé.
-* **Mua vé giá cao bằng Hỗn Nguyên Thạch**: Có thể mua thêm **Lệnh Bài Hư Không** không giới hạn với giá **5.000.000 🌀 Hỗn Nguyên Thạch (5M 🌀)/vé** (đồng bộ tự động từ `item_tower_ticket` trong `items.js` làm Single Source of Truth):
-  * Mua nhanh trên header Tab Tháp qua nút `➕ Mua Vé (5M 🌀)`.
-  * Hỗ trợ cơ chế tự động nén từ Linh Thạch: Nếu thiếu Hỗn Nguyên nhưng có đủ Linh Thạch tương đương (5 Triệu Tỷ 💎), hệ thống sẽ tự động chuyển đổi giúp người chơi mua vé mượt mà.
+* **Mua vé bằng Hỗn Nguyên Thạch**: Có thể mua thêm **Lệnh Bài Hư Không** không giới hạn với giá **5.000 🌀 Hỗn Nguyên Thạch (5.000 🌀)/vé** (đồng bộ tự động từ `item_tower_ticket` trong `items.js` làm Single Source of Truth):
+  * Mua nhanh trên header Tab Tháp qua nút `➕ Mua Vé (5.000 🌀)`.
+  * Hỗ trợ cơ chế tự động nén từ Linh Thạch: Nếu thiếu Hỗn Nguyên nhưng có đủ Linh Thạch tương đương (5 Nghìn Tỷ 💎), hệ thống sẽ tự động chuyển đổi giúp người chơi mua vé mượt mà.
   * Tự động hỏi mua vé khi người chơi bấm Khiêu Chiến hoặc Quét Nhanh lúc hết vé.
 
 ### ⚡ Tính Năng Quét Nhanh (Sweep) & Thưởng Hỗn Nguyên Tầng Cao
@@ -314,7 +314,7 @@ Danh hiệu được mở khóa khi người chơi hoàn thành các chiến tí
 4. **Đan Dược Siêu Cấp Chí Tôn & Quy Đổi Tinh Nguyên**:
    * **Thái Sơ Hỗn Độn Đan** (`pill_thai_so_hon_don`): Yêu cầu Đại Đạo Chí Cao, tăng ngay **+60 Tỷ Tu Vi** (ở Vô Cực quy đổi thành **+60 🌌 Tinh Nguyên**). Giá: 120 Tỷ Linh Thạch.
    * **Vĩnh Hằng Bất Hủ Luân Hồi Đan** (`pill_bat_hu_luan_hoi`): Yêu cầu Đại Đạo Chí Cao, tăng ngay **+500 Tỷ Tu Vi** (ở Vô Cực quy đổi thành **+500 🌌 Tinh Nguyên**). Giá: 500 Tỷ Linh Thạch.
-5. **Lệnh Bài Hư Không (`item_tower_ticket`)**: Dùng để khiêu chiến Hư Không Tháp, mua với giá **5.000.000 🌀 Hỗn Nguyên Thạch (5M 🌀)**, hỗ trợ nút Dùng (+1) và Dùng Hết (+toàn bộ) trong túi đồ. Giá vé được đồng bộ động khắp hệ thống Tháp.
+5. **Lệnh Bài Hư Không (`item_tower_ticket`)**: Dùng để khiêu chiến Hư Không Tháp, mua với giá **5.000 🌀 Hỗn Nguyên Thạch (5.000 🌀)**, hỗ trợ nút Dùng (+1) và Dùng Hết (+toàn bộ) trong túi đồ. Giá vé được đồng bộ động khắp hệ thống Tháp.
 6. **Cuộn Giấy Đổi Tên (`item_rename_scroll`)**: Cho phép người chơi đặt lại đạo hiệu nhân vật tùy thích (tối đa 20 ký tự) trên Thiên Đạo Bia.
 7. **Tẩy Tủy Đan (`pill_tay_tuy`)**: Thu hồi 100% điểm tiềm năng để phân bổ lại, giá bán 5,000 Linh Thạch và tỉ lệ rơi cực hiếm (3%) khi đánh Boss.
 

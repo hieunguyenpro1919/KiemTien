@@ -636,10 +636,10 @@ class Player {
             if (this.isVoCuc) {
                 const tinhGain = Math.max(1, Math.floor(item.tuViGain / 1000000000));
                 this.addTinhNguyen(tinhGain);
-                return { success: true, item, msg: `Đã dùng 1x ${item.name}, nhận được +${tinhGain} Tinh Nguyên Đại Đạo!` };
+                return { success: true, item, gainAmount: tinhGain, isTinhNguyen: true, msg: `Đã dùng 1x ${item.name}, nhận được +${tinhGain} Tinh Nguyên Đại Đạo!` };
             }
             this.addTuVi(item.tuViGain);
-            return { success: true, item, msg: `Đã dùng 1x ${item.name}, nhận được +${item.tuViGain} điểm Tu Vi!` };
+            return { success: true, item, gainAmount: item.tuViGain, isTinhNguyen: false, msg: `Đã dùng 1x ${item.name}, nhận được +${item.tuViGain} điểm Tu Vi!` };
         } else if (item.isResetPill) {
             const points = this.resetStats();
             return { success: true, item, msg: `Đã tẩy tủy thành công! Thu hồi lại ${points} điểm tiềm năng.` };
@@ -706,6 +706,9 @@ class Player {
             return { success: false, msg: "Không có đan dược này trong túi!" };
         }
 
+        // Xóa toàn bộ số lượng vật phẩm này khỏi túi đồ
+        this.inventory = this.inventory.filter(id => id !== itemId);
+
         // Cộng dồn toàn bộ Tu Vi (hoặc Tinh Nguyên nếu ở Cảnh Giới Vô Cực)
         if (item.tuViGain) {
             this.pillsConsumed = (this.pillsConsumed || 0) + count;
@@ -717,6 +720,7 @@ class Player {
                     success: true,
                     count: count,
                     totalTuVi: totalTinhNguyen,
+                    isTinhNguyen: true,
                     item: item,
                     msg: `Đã dùng hết ${count}x [${item.name}], nhận được +${totalTinhNguyen} Tinh Nguyên Đại Đạo!`
                 };
@@ -727,6 +731,7 @@ class Player {
                 success: true,
                 count: count,
                 totalTuVi: totalTuVi,
+                isTinhNguyen: false,
                 item: item,
                 msg: `Đã dùng hết ${count}x [${item.name}], nhận được +${totalTuVi} Tu Vi!`
             };
@@ -904,7 +909,13 @@ class Player {
      */
     buyTowerTicket(quantity = 1) {
         quantity = Math.max(1, parseInt(quantity, 10) || 1);
-        const ticketPriceHonNguyen = 5000000;
+        let ticketPriceHonNguyen = 5000;
+        if (typeof ItemSystem !== "undefined") {
+            const item = ItemSystem.getItemById("item_tower_ticket");
+            if (item && item.price) ticketPriceHonNguyen = item.price;
+        } else if (typeof TOWER_CONFIG !== "undefined" && TOWER_CONFIG.TICKET_PRICE) {
+            ticketPriceHonNguyen = TOWER_CONFIG.TICKET_PRICE;
+        }
         const totalCostHonNguyen = ticketPriceHonNguyen * quantity;
 
         if ((this.honNguyen || 0) >= totalCostHonNguyen) {
@@ -943,7 +954,11 @@ class Player {
         const sellVal = item ? item.sellPrice : 10;
 
         this.inventory.splice(invIndex, 1);
-        this.linhThach += sellVal;
+        if (item && item.currency === "hon_nguyen") {
+            this.honNguyen = (this.honNguyen || 0) + sellVal;
+        } else {
+            this.linhThach += sellVal;
+        }
         return { success: true, item, gain: sellVal };
     }
 
@@ -961,7 +976,11 @@ class Player {
         const totalGain = unitSellPrice * count;
 
         this.inventory = this.inventory.filter(id => id !== itemId);
-        this.linhThach += totalGain;
+        if (item && item.currency === "hon_nguyen") {
+            this.honNguyen = (this.honNguyen || 0) + totalGain;
+        } else {
+            this.linhThach += totalGain;
+        }
 
         return { success: true, count: count, totalGain: totalGain, item: item };
     }

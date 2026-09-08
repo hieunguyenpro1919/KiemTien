@@ -1152,7 +1152,10 @@ class UIController {
                         rect.top + rect.height / 2,
                         RealmSystem.getRealmColor(this.player.realmIndex)
                     );
-                    this.particles.addFloatingText(`+${this.formatNumber(res.item.tuViGain)} Tu Vi`, rect.left + rect.width / 2, rect.top - 20, "#2ecc71");
+                    const gainTxt = res.isTinhNguyen 
+                        ? `+${this.formatNumber(res.gainAmount)} 🌌 Tinh Nguyên` 
+                        : `+${this.formatNumber(res.gainAmount || res.item.tuViGain)} Tu Vi`;
+                    this.particles.addFloatingText(gainTxt, rect.left + rect.width / 2, rect.top - 20, "#2ecc71");
                 }
             }
             this.showToast(res.msg, "success");
@@ -1203,11 +1206,15 @@ class UIController {
                         rect.top + rect.height / 2,
                         RealmSystem.getRealmColor(this.player.realmIndex)
                     );
-                    this.particles.addFloatingText(`+${this.formatNumber(res.totalTuVi)} Tu Vi`, rect.left + rect.width / 2, rect.top - 20, "#2ecc71");
+                    const gainTxt = res.isTinhNguyen 
+                        ? `+${this.formatNumber(res.totalTuVi)} 🌌 Tinh Nguyên` 
+                        : `+${this.formatNumber(res.totalTuVi)} Tu Vi`;
+                    this.particles.addFloatingText(gainTxt, rect.left + rect.width / 2, rect.top - 20, "#2ecc71");
                 }
             }
 
-            this.showToast(`✨ Đã dùng toàn bộ ${res.count}x [${res.item.name}], tăng +${this.formatNumber(res.totalTuVi)} Tu Vi!`, "breakthrough");
+            const unitMsg = res.isTinhNguyen ? "🌌 Tinh Nguyên Đại Đạo" : "Tu Vi";
+            this.showToast(`✨ Đã dùng toàn bộ ${res.count}x [${res.item.name}], tăng +${this.formatNumber(res.totalTuVi)} ${unitMsg}!`, "breakthrough");
 
             // Kiểm tra mở khóa danh hiệu (đặc biệt: Phê Cỏ khi đạt 10.000 viên)
             if (typeof TitleSystem !== "undefined") {
@@ -1796,7 +1803,7 @@ class UIController {
     }
 
     /**
-     * Lấy giá mua Lệnh Bài Hư Không (Single Source of Truth từ items.js - 5.000.000 🌀)
+     * Lấy giá mua Lệnh Bài Hư Không (Single Source of Truth từ items.js - 5.000 🌀)
      */
     getTowerTicketPrice() {
         if (typeof ItemSystem !== "undefined") {
@@ -1806,11 +1813,11 @@ class UIController {
         if (typeof TOWER_CONFIG !== "undefined" && TOWER_CONFIG.TICKET_PRICE) {
             return TOWER_CONFIG.TICKET_PRICE;
         }
-        return 5000000;
+        return 5000;
     }
 
     /**
-     * Mua trực tiếp Lệnh Bài Hư Không trong tab Tháp (5.000.000 Hỗn Nguyên Thạch)
+     * Mua trực tiếp Lệnh Bài Hư Không trong tab Tháp (5.000 Hỗn Nguyên Thạch)
      */
     handleBuyTowerTicket() {
         const ticketPrice = this.getTowerTicketPrice();
