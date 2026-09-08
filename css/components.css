@@ -1648,6 +1648,14 @@
     animation: pulseThanhGlow 2s infinite alternate;
 }
 
+.title-rarity-cuc_dao {
+    background: linear-gradient(135deg, rgba(255, 42, 133, 0.45), rgba(186, 24, 219, 0.7));
+    border-color: #ff2a85 !important;
+    color: #ffe4f0 !important;
+    box-shadow: 0 0 24px rgba(255, 42, 133, 0.8), 0 0 10px rgba(186, 24, 219, 0.6) !important;
+    animation: pulseCucDaoGlow 1.8s infinite alternate;
+}
+
 @keyframes pulseGlow {
     from {
         box-shadow: 0 0 10px rgba(255, 82, 82, 0.35);
@@ -1675,6 +1683,16 @@
 
     to {
         box-shadow: 0 0 26px rgba(255, 215, 0, 0.9), 0 0 10px rgba(255, 255, 255, 0.8);
+    }
+}
+
+@keyframes pulseCucDaoGlow {
+    from {
+        box-shadow: 0 0 14px rgba(255, 42, 133, 0.6);
+    }
+
+    to {
+        box-shadow: 0 0 32px rgba(255, 42, 133, 1), 0 0 14px rgba(244, 114, 182, 0.9);
     }
 }
 

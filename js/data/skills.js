@@ -481,6 +481,21 @@ const SKILL_DATABASE = [
         icon: "⚛️",
         vfx: "cosmic_crush",
         desc: "Dung hợp ức vạn pháp tắc đạo môn thành một đòn hủy diệt tối hậu. Gây 18,000,000% sát thương Phép."
+    },
+    {
+        id: "skill_cuc_dao_dot_mau",
+        name: "Cực Đạo Hồng Mông Thôn Huyết Quyết",
+        type: "dot_mau",
+        isBurnHp: true,
+        burnPct: 0.08,
+        reqRealm: 11,
+        reqTier: 10,
+        price: 1500000000,
+        cooldown: 11,
+        multiplier: 50000.0,
+        icon: "🔥",
+        vfx: "burn_blood",
+        desc: "Tuyệt kỹ Cực Đạo nghịch thiên thiêu đốt bản nguyên sinh mệnh! Đốt 8% Máu tối đa của Boss kèm sát thương cực đại, HOÀN TOÀN BỎ QUA KIM THÂN VÀ KHIÊN HỘ THỂ!"
     }
 ];
 

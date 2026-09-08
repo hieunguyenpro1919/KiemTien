@@ -17,8 +17,12 @@ class CombatEngine {
         this.playerHp = 0;
         this.playerMaxHp = 0;
         this.playerShield = 0;
+        this.playerStunTimer = 0; // Thời gian bị Choáng còn lại của người chơi (giây)
         this.monsterHp = 0;
         this.monsterMaxHp = 0;
+        this.monsterShield = 0; // Khiên bảo hộ của Boss
+        this.bossSkillTimer = 0; // Bộ đếm hồi chiêu kỹ năng Boss
+        this.bossSkillIndex = 0; // Luân chuyển kỹ năng Boss
 
         // Thời gian hồi của 3 ô kỹ năng (giây còn lại)
         this.skillCooldowns = [0, 0, 0];
@@ -77,6 +81,10 @@ class CombatEngine {
         this.playerMaxHp = pStats.maxHp;
         this.playerHp = pStats.maxHp;
         this.playerShield = 0;
+        this.playerStunTimer = 0;
+        this.monsterShield = 0;
+        this.bossSkillTimer = 0;
+        this.bossSkillIndex = 0;
 
         // Tạo quái vật từ dữ liệu ải
         this.monster = {
@@ -111,6 +119,8 @@ class CombatEngine {
 
     stopBattle() {
         this.isActive = false;
+        this.playerStunTimer = 0;
+        this.bossSkillTimer = 0;
         if (this.combatInterval) {
             clearInterval(this.combatInterval);
             this.combatInterval = null;
@@ -136,6 +146,11 @@ class CombatEngine {
             }
         }
 
+        // Xử lý đếm lùi thời gian Bị Choáng của Người Chơi
+        if (this.playerStunTimer > 0) {
+            this.playerStunTimer = Math.max(0, this.playerStunTimer - effectiveDt);
+        }
+
         // Giảm thời gian hồi chiêu của 3 kỹ năng
         for (let i = 0; i < 3; i++) {
             if (this.skillCooldowns[i] > 0) {
@@ -143,8 +158,8 @@ class CombatEngine {
             }
         }
 
-        // Tự động dùng chiêu nếu bật Auto
-        if (this.isAuto) {
+        // Tự động dùng chiêu nếu bật Auto và KHÔNG bị Choáng
+        if (this.isAuto && this.playerStunTimer <= 0) {
             for (let i = 0; i < 3; i++) {
                 if (this.player.equippedSkills[i] && this.skillCooldowns[i] <= 0) {
                     this.useSkill(i);
@@ -153,11 +168,22 @@ class CombatEngine {
             }
         }
 
-        // Đòn đánh thường của người chơi (mỗi 1.5 giây)
-        this.playerAttackTimer += effectiveDt;
-        if (this.playerAttackTimer >= 1.5) {
-            this.playerAttackTimer = 0;
-            this.playerBasicAttack();
+        // Đòn đánh thường của người chơi (mỗi 1.5 giây, chỉ ra đòn khi KHÔNG bị Choáng)
+        if (this.playerStunTimer <= 0) {
+            this.playerAttackTimer += effectiveDt;
+            if (this.playerAttackTimer >= 1.5) {
+                this.playerAttackTimer = 0;
+                this.playerBasicAttack();
+            }
+        }
+
+        // Kỹ năng đặc biệt của BOSS (Chỉ riêng Boss, quái thường không sở hữu)
+        if (this.monster && this.monster.isBoss && this.monsterHp > 0 && this.playerHp > 0) {
+            this.bossSkillTimer += effectiveDt;
+            if (this.bossSkillTimer >= 6.5) {
+                this.bossSkillTimer = 0;
+                this.bossCastSkill();
+            }
         }
 
         // Đòn đánh của Quái vật
@@ -227,7 +253,29 @@ class CombatEngine {
         const capResult = this.applyDamageCap(actualDmg, isCrit);
         actualDmg = capResult.damage;
 
-        this.monsterHp = Math.max(0, this.monsterHp - actualDmg);
+        // Bào mòn khiên Boss trước nếu Boss có khiên
+        if (this.monsterShield > 0) {
+            if (this.monsterShield >= actualDmg) {
+                this.monsterShield -= actualDmg;
+                if (this.particles) {
+                    const mPos = this.getMonsterCenter();
+                    this.particles.addFloatingText(`Khiên Boss -${actualDmg}`, mPos.x, mPos.y - 25, "#00d2d3");
+                }
+                actualDmg = 0;
+            } else {
+                const absorbed = this.monsterShield;
+                actualDmg -= this.monsterShield;
+                this.monsterShield = 0;
+                if (this.particles) {
+                    const mPos = this.getMonsterCenter();
+                    this.particles.addFloatingText(`Vỡ Khiên Boss -${absorbed}`, mPos.x, mPos.y - 25, "#00d2d3");
+                }
+            }
+        }
+
+        if (actualDmg > 0) {
+            this.monsterHp = Math.max(0, this.monsterHp - actualDmg);
+        }
 
         // Hiệu ứng và âm thanh
         this.sound.playSlash();
@@ -276,6 +324,11 @@ class CombatEngine {
     useSkill(slotIndex) {
         if (!this.isActive || this.monsterHp <= 0) return false;
 
+        // Nếu người chơi đang bị Choáng thì không thể xuất chiêu
+        if (this.playerStunTimer > 0) {
+            return false;
+        }
+
         const skillId = this.player.equippedSkills[slotIndex];
         if (!skillId) return false;
 
@@ -302,7 +355,27 @@ class CombatEngine {
             const capResult = this.applyDamageCap(finalDmg, true);
             finalDmg = capResult.damage;
 
-            this.monsterHp = Math.max(0, this.monsterHp - finalDmg);
+            // Bào mòn khiên Boss trước nếu Boss có khiên
+            if (this.monsterShield > 0) {
+                if (this.monsterShield >= finalDmg) {
+                    this.monsterShield -= finalDmg;
+                    if (this.particles) {
+                        this.particles.addFloatingText(`Khiên Boss -${finalDmg}`, mPos.x, mPos.y - 25, "#00d2d3");
+                    }
+                    finalDmg = 0;
+                } else {
+                    const absorbed = this.monsterShield;
+                    finalDmg -= this.monsterShield;
+                    this.monsterShield = 0;
+                    if (this.particles) {
+                        this.particles.addFloatingText(`Vỡ Khiên Boss -${absorbed}`, mPos.x, mPos.y - 25, "#00d2d3");
+                    }
+                }
+            }
+
+            if (finalDmg > 0) {
+                this.monsterHp = Math.max(0, this.monsterHp - finalDmg);
+            }
             this.sound.playSlash();
             if (capResult.isCapped) {
                 this.sound.playShield();
@@ -335,7 +408,27 @@ class CombatEngine {
             const capResult = this.applyDamageCap(finalDmg, true);
             finalDmg = capResult.damage;
 
-            this.monsterHp = Math.max(0, this.monsterHp - finalDmg);
+            // Bào mòn khiên Boss trước nếu Boss có khiên
+            if (this.monsterShield > 0) {
+                if (this.monsterShield >= finalDmg) {
+                    this.monsterShield -= finalDmg;
+                    if (this.particles) {
+                        this.particles.addFloatingText(`Khiên Boss -${finalDmg}`, mPos.x, mPos.y - 25, "#00d2d3");
+                    }
+                    finalDmg = 0;
+                } else {
+                    const absorbed = this.monsterShield;
+                    finalDmg -= this.monsterShield;
+                    this.monsterShield = 0;
+                    if (this.particles) {
+                        this.particles.addFloatingText(`Vỡ Khiên Boss -${absorbed}`, mPos.x, mPos.y - 25, "#00d2d3");
+                    }
+                }
+            }
+
+            if (finalDmg > 0) {
+                this.monsterHp = Math.max(0, this.monsterHp - finalDmg);
+            }
 
             if (skill.vfx === "divine_thunder" || skill.vfx === "cosmic_crush") {
                 this.sound.playThunder();
@@ -368,6 +461,27 @@ class CombatEngine {
             } else {
                 this.addCombatLog(`Thi triển [${skill.name}]! Pháp thuật bùng nổ gây ${finalDmg} sát thương!`, "skill");
             }
+
+        } else if (skill.type === "dot_mau" || skill.isBurnHp) {
+            // CƠ CHẾ ĐỐT MÁU BOSS: HOÀN TOÀN BỎ QUA KIM THÂN VÀ KHIÊN HỘ THỂ
+            const pct = skill.burnPct || 0.08;
+            const burnBase = Math.floor(this.monsterMaxHp * pct);
+            const bonusScale = Math.floor((pStats.phep + pStats.vatLi) * 50);
+            let burnDmg = Math.max(1, burnBase + bonusScale);
+
+            // Trừ trực tiếp vào máu của Boss (Không qua applyDamageCap, không trừ vào monsterShield)
+            this.monsterHp = Math.max(0, this.monsterHp - burnDmg);
+
+            this.sound.playFireSpell();
+            this.shakeElement("monster-avatar-box");
+
+            if (this.particles) {
+                this.particles.emitFire(mPos.x, mPos.y);
+                this.particles.addFloatingText(`🔥 ĐỐT MÁU! -${burnDmg}`, mPos.x, mPos.y - 35, "#ff3838", true);
+                this.particles.addFloatingText("BỎ QUA KHIÊN & KIM THÂN!", mPos.x, mPos.y - 62, "#ff9f43", true);
+            }
+
+            this.addCombatLog(`🔥 [ĐỐT MÁU CỰC ĐẠO] Thi triển [${skill.name}]! Lửa thiêng hồng mông BỎ QUA KIM THÂN & KHIÊN HỘ THỂ, thiêu đốt ${burnDmg.toLocaleString()} Máu của [${this.monster.name}]!`, "dot-mau");
 
         } else if (skill.type === "ho_the") {
             const shieldAmount = Math.floor(this.playerMaxHp * skill.multiplier);
@@ -451,6 +565,115 @@ class CombatEngine {
             }, delay);
             return;
         }
+    }
+
+    /**
+     * Kỹ năng độc quyền chỉ dành riêng cho Boss (Quái thường không sở hữu)
+     * Bộ 4 cơ chế: Choáng, Sốc sát thương, Tạo khiên, Hút máu (10% HP người chơi bỏ qua khiên thành 10% HP cho Boss)
+     */
+    bossCastSkill() {
+        if (!this.isActive || !this.monster || !this.monster.isBoss || this.monsterHp <= 0 || this.playerHp <= 0) return;
+
+        const skills = ["stun", "burst", "shield", "lifesteal"];
+        const skillType = skills[this.bossSkillIndex % skills.length];
+        this.bossSkillIndex++;
+
+        const pPos = this.getPlayerCenter();
+        const mPos = this.getMonsterCenter();
+        const pStats = this.player.getTotalStats();
+
+        if (skillType === "stun") {
+            // Cơ chế 1: Choáng (2.0s)
+            this.playerStunTimer = 2.0;
+            this.sound.playThunder();
+            this.shakeElement("player-avatar-box");
+            if (this.particles) {
+                this.particles.emitMeditationQi(pPos.x, pPos.y, "#ffd700");
+                this.particles.addFloatingText("💫 CHOÁNG! (2.0s)", pPos.x, pPos.y - 30, "#ffd700", true);
+            }
+            this.addCombatLog(`💫 [BOSS CHOÁNG] [${this.monster.name}] thi triển [Cực Áp Định Thân]! Đạo hữu bị CHOÁNG trong 2.0s, phong tỏa hoàn toàn đòn đánh và xuất chiêu!`, "boss-skill");
+
+        } else if (skillType === "burst") {
+            // Cơ chế 2: Sốc Sát Thương (2.5x đòn công kích)
+            const rawDmg = Math.floor(this.monster.attack * 2.5);
+            let actualDmg = Math.max(1, rawDmg - Math.floor(pStats.phongThu * 0.45));
+
+            // Hấp thụ bằng khiên người chơi nếu có
+            if (this.playerShield > 0) {
+                if (this.playerShield >= actualDmg) {
+                    this.playerShield -= actualDmg;
+                    if (this.particles) {
+                        this.particles.addFloatingText(`Chắn -${actualDmg}`, pPos.x, pPos.y - 20, "#00d2d3");
+                    }
+                    actualDmg = 0;
+                } else {
+                    actualDmg -= this.playerShield;
+                    this.playerShield = 0;
+                }
+            }
+
+            if (actualDmg > 0) {
+                this.playerHp = Math.max(0, this.playerHp - actualDmg);
+                this.shakeElement("player-avatar-box");
+                if (this.particles) {
+                    this.particles.emitThunder(pPos.x, pPos.y);
+                    this.particles.addFloatingText(`⚡ SỐC SÁT THƯƠNG! -${actualDmg}`, pPos.x, pPos.y - 30, "#ff1744", true);
+                }
+            }
+
+            this.sound.playThunder();
+            this.addCombatLog(`⚡ [BOSS SỐC SÁT THƯƠNG] [${this.monster.name}] cuồng nộ giáng [Diệt Thế Thần Nộ], gây ${actualDmg.toLocaleString()} sát thương bộc phát cực mạnh!`, "boss-skill");
+
+            if (this.playerHp <= 0) {
+                this.updateUI();
+                this.stopBattle();
+                const delay = Math.max(180, Math.round(450 / (this.speedMultiplier || 1)));
+                setTimeout(() => this.handleDefeat(), delay);
+                return;
+            }
+
+        } else if (skillType === "shield") {
+            // Cơ chế 3: Tạo Khiên (15% Máu tối đa của Boss)
+            const shieldAmount = Math.floor(this.monsterMaxHp * 0.15);
+            this.monsterShield = (this.monsterShield || 0) + shieldAmount;
+            this.sound.playShield();
+
+            if (this.particles) {
+                this.particles.emitMeditationQi(mPos.x, mPos.y, "#00d2d3");
+                this.particles.addFloatingText(`+${shieldAmount} Khiên Boss`, mPos.x, mPos.y - 30, "#00d2d3", true);
+            }
+            this.addCombatLog(`🛡️ [BOSS TẠO KHIÊN] [${this.monster.name}] ngưng tụ [Hỗn Độn Hộ Thể], nhận lớp khiên bảo hộ ${shieldAmount.toLocaleString()} HP!`, "boss-skill");
+
+        } else if (skillType === "lifesteal") {
+            // Cơ chế 4: Hút Máu (Tối đa 10% HP người chơi BỎ QUA KHIÊN thành 10% HP cho Boss)
+            const drainHp = Math.min(this.playerHp, Math.max(1, Math.floor(this.playerMaxHp * 0.10)));
+            // Trừ trực tiếp vào máu người chơi, bỏ qua hoàn toàn khiên!
+            this.playerHp = Math.max(0, this.playerHp - drainHp);
+
+            // Boss hồi phục đúng 10% HP tối đa của bản thân
+            const healBoss = Math.max(1, Math.floor(this.monsterMaxHp * 0.10));
+            this.monsterHp = Math.min(this.monsterMaxHp, this.monsterHp + healBoss);
+
+            this.sound.playHeal();
+            this.shakeElement("player-avatar-box");
+
+            if (this.particles) {
+                this.particles.emitMeditationQi(mPos.x, mPos.y, "#2ecc71");
+                this.particles.addFloatingText(`🩸 BỊ HÚT MÁU! -${drainHp}`, pPos.x, pPos.y - 30, "#ff3838", true);
+                this.particles.addFloatingText(`💚 HỒI PHỤC +${healBoss}`, mPos.x, mPos.y - 30, "#2ecc71", true);
+            }
+            this.addCombatLog(`🩸 [BOSS HÚT MÁU] [${this.monster.name}] thi triển [Thôn Thiên Ma Công]! Hút ${drainHp.toLocaleString()} HP của đạo hữu (BỎ QUA KHIÊN) và hồi phục ${healBoss.toLocaleString()} HP cho bản thân!`, "boss-skill");
+
+            if (this.playerHp <= 0) {
+                this.updateUI();
+                this.stopBattle();
+                const delay = Math.max(180, Math.round(450 / (this.speedMultiplier || 1)));
+                setTimeout(() => this.handleDefeat(), delay);
+                return;
+            }
+        }
+
+        this.updateUI();
     }
 
     /**
@@ -618,12 +841,34 @@ class CombatEngine {
             playerShieldBar.style.width = `${shieldPercent}%`;
         }
 
+        // Cập nhật trạng thái Choáng của người chơi
+        const playerStatus = document.getElementById("combat-player-status");
+        if (playerStatus) {
+            if (this.playerStunTimer > 0) {
+                playerStatus.style.display = "inline-block";
+                playerStatus.innerText = `💫 CHOÁNG (${this.playerStunTimer.toFixed(1)}s)`;
+            } else {
+                playerStatus.style.display = "none";
+            }
+        }
+
         // Cập nhật thanh máu quái vật
         const monsterHpPercent = Math.max(0, Math.min(100, (this.monsterHp / this.monsterMaxHp) * 100));
         const monsterHpBar = document.getElementById("combat-monster-hp-bar");
         const monsterHpText = document.getElementById("combat-monster-hp-text");
         if (monsterHpBar) monsterHpBar.style.width = `${monsterHpPercent}%`;
-        if (monsterHpText) monsterHpText.innerText = `${formatHp(this.monsterHp)} / ${formatHp(this.monsterMaxHp)}`;
+        if (monsterHpText) {
+            const shieldText = (this.monsterShield > 0) ? ` (+${formatHp(this.monsterShield)} 🛡️)` : "";
+            monsterHpText.innerText = `${formatHp(this.monsterHp)} / ${formatHp(this.monsterMaxHp)}${shieldText}`;
+        }
+
+        // Cập nhật thanh khiên quái vật (Boss)
+        const monsterShieldBar = document.getElementById("combat-monster-shield-bar");
+        if (monsterShieldBar) {
+            const mShieldPercent = Math.min(100, ((this.monsterShield || 0) / this.monsterMaxHp) * 100);
+            monsterShieldBar.style.width = `${mShieldPercent}%`;
+            monsterShieldBar.style.display = (this.monsterShield > 0) ? "block" : "none";
+        }
 
         // Cập nhật 3 nút kỹ năng
         for (let i = 0; i < 3; i++) {
@@ -634,9 +879,12 @@ class CombatEngine {
             if (skillBtn) {
                 if (skillId) {
                     const skill = SkillSystem.getSkillById(skillId);
-                    skillBtn.disabled = this.skillCooldowns[i] > 0;
+                    skillBtn.disabled = (this.skillCooldowns[i] > 0) || (this.playerStunTimer > 0);
                     if (cdOverlay) {
-                        if (this.skillCooldowns[i] > 0) {
+                        if (this.playerStunTimer > 0) {
+                            cdOverlay.style.display = "flex";
+                            cdOverlay.innerText = `💫 ${this.playerStunTimer.toFixed(1)}s`;
+                        } else if (this.skillCooldowns[i] > 0) {
                             cdOverlay.style.display = "flex";
                             cdOverlay.innerText = this.skillCooldowns[i].toFixed(1) + "s";
                         } else {

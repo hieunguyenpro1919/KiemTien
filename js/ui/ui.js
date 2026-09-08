@@ -1074,7 +1074,8 @@ class UIController {
                     vat_li: "VẬT LÍ",
                     phep: "PHÁP THUẬT",
                     ho_the: "HỘ THỂ",
-                    tri_lieu: "TRỊ LIỆU"
+                    tri_lieu: "TRỊ LIỆU",
+                    dot_mau: "ĐỐT MÁU"
                 };
 
                 let effectText = "";
@@ -1082,6 +1083,7 @@ class UIController {
                 else if (skill.type === "phep") effectText = `🔮 ${Math.round(skill.multiplier * 100)}% Công Phép`;
                 else if (skill.type === "ho_the") effectText = `🛡️ Khiên ${Math.round(skill.multiplier * 100)}% Máu`;
                 else if (skill.type === "tri_lieu") effectText = `💚 Hồi ${Math.round(skill.multiplier * 100)}% Công Phép`;
+                else if (skill.type === "dot_mau" || skill.isBurnHp) effectText = `🔥 Đốt ${Math.round((skill.burnPct || 0.08) * 100)}% Máu Boss (Xuyên Khiên & Kim Thân)`;
 
                 const card = document.createElement("div");
                 card.className = `inv-skill-card ${isEquipped ? "equipped-active" : ""}`;
@@ -2533,7 +2535,7 @@ class UIController {
                         <span class="skill-icon">${skill.icon}</span>
                         <div class="skill-meta">
                             <strong>${skill.name}</strong>
-                            <small>${skill.type === "vat_li" ? "Vật Lí" : skill.type === "phep" ? "Pháp Thuật" : skill.type === "ho_the" ? "Hộ Thể" : "Trị Liệu"} • Hồi ${skill.cooldown}s</small>
+                            <small>${skill.type === "vat_li" ? "Vật Lí" : skill.type === "phep" ? "Pháp Thuật" : skill.type === "ho_the" ? "Hộ Thể" : skill.type === "dot_mau" ? "Đốt Máu" : "Trị Liệu"} • Hồi ${skill.cooldown}s</small>
                         </div>
                         <button class="btn-sm btn-danger" onclick="event.stopPropagation(); gameUI.unequipSkill(${i})">Gỡ</button>
                     </div>
@@ -3222,7 +3224,8 @@ class UIController {
             vat_li: { label: "VẬT LÍ", color: "#ff7675", bg: "rgba(255, 118, 117, 0.15)", border: "#ff7675" },
             phep: { label: "PHÁP THUẬT", color: "#a29bfe", bg: "rgba(162, 155, 254, 0.15)", border: "#a29bfe" },
             ho_the: { label: "HỘ THỂ", color: "#ffd700", bg: "rgba(255, 215, 0, 0.15)", border: "#ffd700" },
-            tri_lieu: { label: "TRỊ LIỆU", color: "#4ecca3", bg: "rgba(78, 204, 163, 0.15)", border: "#4ecca3" }
+            tri_lieu: { label: "TRỊ LIỆU", color: "#4ecca3", bg: "rgba(78, 204, 163, 0.15)", border: "#4ecca3" },
+            dot_mau: { label: "ĐỐT MÁU CỰC ĐẠO", color: "#ff3838", bg: "rgba(255, 56, 56, 0.2)", border: "#ff3838" }
         };
         const typeInfo = typeLabels[skill.type] || { label: "KỸ NĂNG", color: "#fff", bg: "rgba(255,255,255,0.1)", border: "#fff" };
 
@@ -3232,7 +3235,9 @@ class UIController {
         const isEquipped = equipSlotIdx !== -1;
 
         let effectHtml = "";
-        if (skill.multiplier) {
+        if (skill.type === "dot_mau" || skill.isBurnHp) {
+            effectHtml = `<div class="tooltip-stat-badge"><span>🔥 Đốt Máu Boss:</span> <strong style="color:#ff3838;">${Math.round((skill.burnPct || 0.08) * 100)}% Máu Tối Đa (BỎ QUA KHIÊN & KIM THÂN)</strong></div>`;
+        } else if (skill.multiplier) {
             if (skill.type === "vat_li") {
                 effectHtml = `<div class="tooltip-stat-badge"><span>⚔️ Uy Lực Sát Thương:</span> <strong>${Math.round(skill.multiplier * 100)}% Công Vật Lí</strong></div>`;
             } else if (skill.type === "phep") {

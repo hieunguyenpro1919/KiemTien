@@ -156,7 +156,7 @@ Nhằm giải quyết triệt để nguy cơ tràn số học của JavaScript (
 2. **Giáp (Armor)**: Trụ cột phòng thủ, cung cấp lượng lớn Phòng Ngự, Kháng Phép và HP.
 3. **Vũ Khí (Weapon)**: Nguồn sát thương chủ lực, tăng mạnh Sát Thương Vật Lí, Sát Thương Phép và Tỉ Lệ Bạo Kích.
 
-### 7 Bậc Phẩm Cấp (Rarity)
+### 8 Bậc Phẩm Cấp (Rarity)
 Mỗi phẩm cấp có màu sắc, khung viền và hiệu ứng hào quang tương ứng:
 * ⚪ **Phàm Phẩm** (`pham`): Trắng xám (`#b0bec5`)
 * 🔵 **Linh Phẩm** (`linh`): Xanh lam (`#4fc3f7`)
@@ -165,6 +165,16 @@ Mỗi phẩm cấp có màu sắc, khung viền và hiệu ứng hào quang tư�
 * 🔴 **Thiên Phẩm** (`thien`): Đỏ kim (`#ff5252`)
 * 🟢 **Tiên Phẩm** (`tien`): Xanh ngọc lục bảo (`#00e676`)
 * 🟡 **Thánh Phẩm** (`thanh`): Vàng kim chí tôn (`#ffd700`)
+* 💖 **Cực Đạo** (`cuc_dao`): **Đỏ tím cực quang neon (`#ff2a85`)** - Phẩm cấp tối thượng mới, hiệu ứng ánh sáng rung chuyển chư thiên.
+
+### 6 Món Trang Bị Cực Đạo Tối Thượng Mới (Giai Đoạn Endgame / Đại Đạo Chí Cao)
+Được bày bán tại Bách Bảo Các bằng **🌀 Hỗn Nguyên Thạch**:
+1. **👑 Cực Đạo Vô Lượng Thần Quán (Nón - Thiên Thủ)**: +2.5 Tỷ HP, +80 Tr Phòng Thủ, +35 Tr Kháng Phép (12.000 🌀).
+2. **🪞 Cực Đạo Hư Không Minh Miện (Nón - Thiên Kháng)**: +2.5 Tỷ HP, +35 Tr Phòng Thủ, +80 Tr Kháng Phép (12.000 🌀).
+3. **🛡️ Cực Đạo Bất Diệt Thánh Giáp (Giáp - Thiên Thủ)**: +4.5 Tỷ HP, +120 Tr Phòng Thủ, +50 Tr Kháng Phép (18.000 🌀).
+4. **👘 Cực Đạo Hỗn Độn Tiên Bào (Giáp - Thiên Kháng)**: +4.5 Tỷ HP, +50 Tr Phòng Thủ, +120 Tr Kháng Phép (18.000 🌀).
+5. **⚔️ Cực Đạo Tru Tiên Thần Kiếm (Vũ Khí - Vật Lí)**: +120 Tr Công Vật Lí, +25 Tr Công Phép, +85 Bạo Kích (15.000 🌀).
+6. **🪄 Cực Đạo Hỗn Độn Thần Trượng (Vũ Khí - Phép)**: +25 Tr Công Vật Lí, +135 Tr Công Phép, +85 Bạo Kích (15.000 🌀).
 
 ### Thuật Toán Sắp Xếp Tự Động Chuẩn Mực
 Tất cả danh sách vật phẩm trong túi đồ, cửa hàng Bách Bảo Các và Tàng Kinh Các đều được sắp xếp chặt chẽ theo thứ tự:
@@ -177,16 +187,38 @@ $$\text{Cảnh Giới Yêu Cầu} \longrightarrow \text{Phẩm Cấp / Tầng} \
 
 ---
 
-## 📜 6. HỆ THỐNG KỸ NĂNG & TÀNG KINH CÁC (SKILL SYSTEM)
+## 📜 6. HỆ THỐNG KỸ NĂNG & CƠ CHẾ ĐỐT MÁU BOSS (SKILL SYSTEM)
 
 ### 3 Ô Kỹ Năng Xuất Trận
 Người chơi có thể tùy biến lắp đặt 3 kỹ năng chủ động vào 3 ô xuất trận để dùng trong Sàn Đấu 2D. Kỹ năng có thời gian hồi chiêu (Cooldown) độc lập.
 
-### 4 Hệ Kỹ Năng Chuyên Biệt
+### 5 Hệ Kỹ Năng Chuyên Biệt
 1. **⚔️ Vật Lí**: Gây sát thương dựa trên % Sát Thương Vật Lí của nhân vật, trừ bớt một phần giáp của mục tiêu. Có khả năng kích hoạt đòn đánh chí mạng (Bạo kích) và kích hoạt hiệu ứng Phá Kim Thân.
 2. **🔮 Pháp Thuật**: Gây sát thương dựa trên % Sát Thương Phép, trừ kháng phép quái vật, đi kèm hiệu ứng hoạt họa hỏa cầu, lôi đình hoặc hắc động thiên thạch; luôn kích hoạt Phá Kim Thân.
 3. **🛡️ Hộ Thể (Khiên)**: Tạo lớp giáp bảo hộ hấp thụ sát thương dựa trên % Máu tối đa của nhân vật. Lớp khiên hiển thị trực tiếp trên thanh máu của nhân vật.
 4. **💚 Trị Liệu**: Khôi phục sinh mệnh tức thì bằng công thức: $\text{Phép} \times \text{Hệ số} + 15\% \text{ Max HP}$.
+5. **🔥 Đốt Máu Cực Đạo (`skill_cuc_dao_dot_mau` - Cực Đạo Hồng Mông Thôn Huyết Quyết)**:
+   * Tuyệt kỹ tối cao tiêu hao sinh lực địch thủ.
+   * **Cơ Chế Độc Nhất**: Thiêu đốt trực tiếp 8% Máu tối đa của Boss kèm sát thương khuếch đại.
+   * **HOÀN TOÀN BỎ QUA KIM THÂN HỘ THỂ (Damage Cap)**: Không bị khống chế bởi bất kỳ trần sát thương nào.
+   * **HOÀN TOÀN BỎ QUA KHIÊN HỘ THỂ CỦA BOSS**: Bỏ qua lớp khiên của Boss, trừ trực tiếp thẳng vào máu gốc!
+
+### Bộ 4 Kỹ Năng Độc Quyền Dành Riêng Cho Boss (Quái Thường Không Sở Hữu)
+Nhằm tăng thử thách và tính chiến thuật cho các trận quyết đấu đỉnh cao, tất cả quái vật mang danh hiệu Boss (`isBoss: true`) được trang bị chu kỳ xuất chiêu (mỗi 6.5 giây) với 4 tuyệt kỹ hung hiểm:
+1. **💫 Cực Áp Định Thân (Choáng / Stun 2.0s)**:
+   * Khiến người chơi rơi vào trạng thái Choáng trong 2.0 giây.
+   * Khóa hoàn toàn đòn đánh thường và ngăn chặn xuất chiêu kỹ năng (cả Auto lẫn thủ công).
+   * Hiển thị huy hiệu `💫 CHOÁNG` nhấp nháy trên avatar đạo hữu.
+2. **⚡ Diệt Thế Thần Nộ (Sốc Sát Thương / Burst Damage)**:
+   * Boss tụ kình lực bộc phát đòn đánh giáng sát thương bằng $2.5 \times$ công kích cơ bản.
+   * Hấp thụ bởi khiên người chơi trước khi trừ vào máu.
+3. **🛡️ Hỗn Độn Hộ Thể (Tạo Khiên / Boss Shield)**:
+   * Boss tạo ra lớp khiên hộ thể bằng 15% Máu tối đa của Boss.
+   * Hiển thị thanh khiên phát sáng trực quan trên thanh máu của quái vật.
+   * Toàn bộ đòn đánh thường và kỹ năng thông thường của người chơi phải phá vỡ lớp khiên này trước khi gây sát thương vào máu Boss (ngoại trừ kỹ năng Đốt Máu Cực Đạo xuyên thủng khiên).
+4. **🩸 Thôn Thiên Ma Công (Hút Máu / Life Steal)**:
+   * Boss hút trực tiếp tối đa 10% Máu tối đa của người chơi (**HOÀN TOÀN BỎ QUA KHIÊN của người chơi**).
+   * Chuyển hóa và hồi phục tương ứng 10% Máu tối đa cho Boss.
 
 ### Tàng Kinh Các (NPC Truyền Công)
 * Cho phép mua bí kíp bằng Linh Thạch khi đạt đủ điều kiện Cảnh giới & Tầng tu vi.

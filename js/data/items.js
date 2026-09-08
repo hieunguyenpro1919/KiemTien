@@ -11,7 +11,8 @@ const RARITY_ORDER = {
     dia: 3,
     thien: 4,
     tien: 5,
-    thanh: 6
+    thanh: 6,
+    cuc_dao: 7
 };
 
 const RARITY_INFO = {
@@ -21,7 +22,8 @@ const RARITY_INFO = {
     dia: { name: "Địa Phẩm", color: "#ffb74d", bg: "rgba(255, 183, 77, 0.15)", border: "#f57c00" },
     thien: { name: "Thiên Phẩm", color: "#ff5252", bg: "rgba(255, 82, 82, 0.2)", border: "#d32f2f" },
     tien: { name: "Tiên Phẩm", color: "#00e676", bg: "rgba(0, 230, 118, 0.2)", border: "#00c853" },
-    thanh: { name: "Thánh Phẩm", color: "#ffd700", bg: "rgba(255, 215, 0, 0.2)", border: "#ffc107" }
+    thanh: { name: "Thánh Phẩm", color: "#ffd700", bg: "rgba(255, 215, 0, 0.2)", border: "#ffc107" },
+    cuc_dao: { name: "Cực Đạo", color: "#ff2a85", bg: "rgba(255, 42, 133, 0.25)", border: "#ff2a85" }
 };
 
 const ITEM_DATABASE = [
@@ -206,6 +208,32 @@ const ITEM_DATABASE = [
         icon: "👑",
         desc: "Thần quan đúc từ bản nguyên thái cực thuở sơ khai, thức hải vĩnh hằng cùng thiên địa."
     },
+    {
+        id: "hat_cuc_dao_01",
+        name: "Cực Đạo Vô Lượng Thần Quán",
+        slot: "non",
+        rarity: "cuc_dao",
+        reqRealm: 11,
+        currency: "hon_nguyen",
+        stats: { mau: 2500000000, phongThu: 80000000, khangPhep: 35000000 },
+        price: 12000,
+        sellPrice: 4000,
+        icon: "👑",
+        desc: "Thần quán Cực Đạo dung hợp khí tức hồng mông nguyên thủy, hộ trì thức hải bất diệt, phòng thủ vật lí trác tuyệt."
+    },
+    {
+        id: "hat_cuc_dao_02",
+        name: "Cực Đạo Hư Không Minh Miện",
+        slot: "non",
+        rarity: "cuc_dao",
+        reqRealm: 11,
+        currency: "hon_nguyen",
+        stats: { mau: 2500000000, phongThu: 35000000, khangPhep: 80000000 },
+        price: 12000,
+        sellPrice: 4000,
+        icon: "🪞",
+        desc: "Đế miện Cực Đạo đúc từ tinh hoa hư không vạn giới, hóa giải vạn loại pháp thuật cấm kỵ chư thiên."
+    },
 
     // ================= GIÁP (ARMOR) - SẮP XẾP TỪ THẤP ĐẾN CAO =================
     {
@@ -375,6 +403,32 @@ const ITEM_DATABASE = [
         sellPrice: 900000000,
         icon: "⚛️",
         desc: "Thánh bào sinh ra trước thuở hỗn độn sơ khai, mọi đòn tấn công chạm vào đều tiêu biến vào cõi hư vô."
+    },
+    {
+        id: "armor_cuc_dao_01",
+        name: "Cực Đạo Bất Diệt Thánh Giáp",
+        slot: "giap",
+        rarity: "cuc_dao",
+        reqRealm: 11,
+        currency: "hon_nguyen",
+        stats: { mau: 4500000000, phongThu: 120000000, khangPhep: 50000000 },
+        price: 18000,
+        sellPrice: 6000,
+        icon: "🛡️",
+        desc: "Thần giáp Cực Đạo tôi luyện từ cốt tủy thần ma viễn cổ, lực phòng ngự vật lí đạt cảnh giới kim cương bất hoại."
+    },
+    {
+        id: "armor_cuc_dao_02",
+        name: "Cực Đạo Hỗn Độn Tiên Bào",
+        slot: "giap",
+        rarity: "cuc_dao",
+        reqRealm: 11,
+        currency: "hon_nguyen",
+        stats: { mau: 4500000000, phongThu: 50000000, khangPhep: 120000000 },
+        price: 18000,
+        sellPrice: 6000,
+        icon: "👘",
+        desc: "Đạo bào Cực Đạo đan dệt từ tơ trời hỗn độn, hấp thu và triệt tiêu toàn bộ uy áp phép thuật cấm chú."
     },
 
     // ================= VŨ KHÍ (WEAPON) - SẮP XẾP TỪ THẤP ĐẾN CAO =================
@@ -630,6 +684,32 @@ const ITEM_DATABASE = [
         sellPrice: 1100000000,
         icon: "🔮",
         desc: "Viên thần châu khởi nguyên chứa đựng vạn pháp quy tắc vũ trụ, uy lực phép thuật đạt tới cực cảnh."
+    },
+    {
+        id: "weapon_cuc_dao_vat_li",
+        name: "Cực Đạo Tru Tiên Thần Kiếm",
+        slot: "vukhi",
+        rarity: "cuc_dao",
+        reqRealm: 11,
+        currency: "hon_nguyen",
+        stats: { vatLi: 120000000, phep: 25000000, baoKich: 85 },
+        price: 15000,
+        sellPrice: 5000,
+        icon: "⚔️",
+        desc: "Thần kiếm Cực Đạo trảm phá càn khôn vũ trụ, sát khí ngập trời, chém đứt sinh cơ của vạn vật."
+    },
+    {
+        id: "weapon_cuc_dao_phep",
+        name: "Cực Đạo Hỗn Độn Thần Trượng",
+        slot: "vukhi",
+        rarity: "cuc_dao",
+        reqRealm: 11,
+        currency: "hon_nguyen",
+        stats: { vatLi: 25000000, phep: 135000000, baoKich: 85 },
+        price: 15000,
+        sellPrice: 5000,
+        icon: "🪄",
+        desc: "Pháp trượng Cực Đạo hiệu triệu quy tắc bản nguyên hỗn độn, dẫn dắt vạn đạo lôi hỏa diệt thế."
     },
 
     // ================= ĐAN DƯỢC & TIÊU HAO - SẮP XẾP TỪ THẤP ĐẾN CAO =================
