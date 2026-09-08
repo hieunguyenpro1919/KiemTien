@@ -33,6 +33,11 @@ class CombatEngine {
 
         this.combatInterval = null;
         this.onCombatEndCallback = null;
+
+        // Trạng thái Hư Không Tháp (Endless Tower)
+        this.isTowerBattle = false;
+        this.towerTimer = 60.0;
+        this.towerTimeLimit = 60.0;
     }
 
     /**
@@ -54,6 +59,10 @@ class CombatEngine {
         this.currentStage = stage;
         this.onCombatEndCallback = onCombatEnd;
         this.isActive = true;
+
+        this.isTowerBattle = !!stage.isTower;
+        this.towerTimeLimit = stage.timeLimit || 60.0;
+        this.towerTimer = this.towerTimeLimit;
 
         // Giới hạn chiến đấu: Danh hiệu "Phê Cỏ" chuyên bế quan cày cấp, cấm mang vào phó bản
         if (this.player.equippedTitle === "title_phe_co") {
@@ -87,7 +96,11 @@ class CombatEngine {
         this.combatInterval = setInterval(() => this.tick(0.1), 100);
 
         this.updateUI();
-        this.addCombatLog(`Bước vào [${stage.name}], tao ngộ [${stage.monster.name}]!`, "info");
+        if (this.isTowerBattle) {
+            this.addCombatLog(`🗼 Bước vào [${stage.name}], tao ngộ [${stage.monster.name}]! (⏳ Enrage Timer: ${this.towerTimeLimit}s)`, "info");
+        } else {
+            this.addCombatLog(`Bước vào [${stage.name}], tao ngộ [${stage.monster.name}]!`, "info");
+        }
         if (this.monster.isBoss) {
             const isSupreme = stage.number >= 16;
             const capPct = this.monster.damageCapPct !== undefined ? this.monster.damageCapPct : (isSupreme ? 0.20 : 0.25);
@@ -112,6 +125,16 @@ class CombatEngine {
 
         // Nhân hệ số tốc độ trận đấu (x1, x2, x3)
         const effectiveDt = dt * (this.speedMultiplier || 1);
+
+        // Đếm lùi thời gian Enrage Timer cho Hư Không Tháp
+        if (this.isTowerBattle && this.isActive) {
+            this.towerTimer -= effectiveDt;
+            if (this.towerTimer <= 0) {
+                this.towerTimer = 0;
+                this.handleDefeat(true); // true = Enrage timeout
+                return;
+            }
+        }
 
         // Giảm thời gian hồi chiêu của 3 kỹ năng
         for (let i = 0; i < 3; i++) {
@@ -237,7 +260,13 @@ class CombatEngine {
         }
 
         if (this.monsterHp <= 0) {
-            this.handleVictory();
+            this.updateUI();
+            this.stopBattle();
+            const delay = Math.max(180, Math.round(450 / (this.speedMultiplier || 1)));
+            setTimeout(() => {
+                this.handleVictory();
+            }, delay);
+            return;
         }
     }
 
@@ -364,7 +393,13 @@ class CombatEngine {
         }
 
         if (this.monsterHp <= 0) {
-            this.handleVictory();
+            this.updateUI();
+            this.stopBattle();
+            const delay = Math.max(180, Math.round(450 / (this.speedMultiplier || 1)));
+            setTimeout(() => {
+                this.handleVictory();
+            }, delay);
+            return true;
         }
 
         this.updateUI();
@@ -408,7 +443,13 @@ class CombatEngine {
         this.addCombatLog(`[${this.monster.name}] ra đòn, đánh trúng đạo hữu ${actualDmg} sát thương!`, "damage");
 
         if (this.playerHp <= 0) {
-            this.handleDefeat();
+            this.updateUI();
+            this.stopBattle();
+            const delay = Math.max(180, Math.round(450 / (this.speedMultiplier || 1)));
+            setTimeout(() => {
+                this.handleDefeat();
+            }, delay);
+            return;
         }
     }
 
@@ -420,16 +461,20 @@ class CombatEngine {
         this.sound.playVictory();
 
         const stage = this.currentStage;
-        const rewards = stage?.rewards || { tuVi: 0, linhThach: 0, dropChance: 0, possibleDrops: [] };
-
-        // Nhận Tu Vi và Linh Thạch an toàn phòng vệ
+        const rewards = stage.rewards || { tuVi: 0, linhThach: 0 };
         this.player.addTuVi(rewards.tuVi || 0);
-        this.player.linhThach = (Number(this.player.linhThach) || 0) + (Number(rewards.linhThach) || 0);
-
-        if (!Array.isArray(this.player.clearedStages)) {
-            this.player.clearedStages = [];
+        this.player.linhThach = (this.player.linhThach || 0) + (rewards.linhThach || 0);
+        if (rewards.honNguyen) {
+            this.player.honNguyen = (this.player.honNguyen || 0) + rewards.honNguyen;
         }
-        if (stage?.id && !this.player.clearedStages.includes(stage.id)) {
+
+        if (this.isTowerBattle) {
+            if (!this.player.towerData) {
+                this.player.towerData = { highestFloor: 0, currentFloor: 1, dailyTickets: 3, lastResetDate: "" };
+            }
+            this.player.towerData.highestFloor = Math.max(this.player.towerData.highestFloor || 0, stage.number);
+            this.player.towerData.currentFloor = stage.number + 1;
+        } else if (stage && !this.player.clearedStages.includes(stage.id)) {
             this.player.clearedStages.push(stage.id);
         }
 
@@ -489,8 +534,10 @@ class CombatEngine {
             this.onCombatEndCallback({
                 victory: true,
                 stage: stage,
+                isTower: this.isTowerBattle,
                 tuViGain: rewards.tuVi,
                 linhThachGain: rewards.linhThach,
+                honNguyenGain: rewards.honNguyen || 0,
                 droppedItem: droppedItem,
                 newTitles: newTitles
             });
@@ -500,15 +547,31 @@ class CombatEngine {
     /**
      * Xử lý khi Đạo Hữu Thất Bại
      */
-    handleDefeat() {
+    handleDefeat(isEnrageTimeout = false) {
         this.stopBattle();
         this.sound.playDefeat();
-        this.addCombatLog(`Đạo hữu trọng thương kiệt sức, lui về trị thương!`, "defeat");
+
+        if (this.isTowerBattle) {
+            if (!this.player.towerData) {
+                this.player.towerData = { highestFloor: 0, currentFloor: 1, dailyTickets: 3, lastResetDate: "" };
+            }
+            this.player.towerData.dailyTickets = Math.max(0, (this.player.towerData.dailyTickets || 0) - 1);
+
+            if (isEnrageTimeout) {
+                this.addCombatLog(`⏳ HẾT THỜI GIAN (60s)! Cuồng bạo hư không cắn nuốt, khiêu chiến thất bại! Tổn thất 1 Lệnh Bài (Còn: ${this.player.towerData.dailyTickets} Lệnh Bài).`, "defeat");
+            } else {
+                this.addCombatLog(`Đạo hữu trọng thương kiệt sức, khiêu chiến tháp thất bại! Tổn thất 1 Lệnh Bài (Còn: ${this.player.towerData.dailyTickets} Lệnh Bài).`, "defeat");
+            }
+        } else {
+            this.addCombatLog(`Đạo hữu trọng thương kiệt sức, lui về trị thương!`, "defeat");
+        }
 
         if (this.onCombatEndCallback) {
             this.onCombatEndCallback({
                 victory: false,
-                stage: this.currentStage
+                stage: this.currentStage,
+                isTower: this.isTowerBattle,
+                isEnrageTimeout: isEnrageTimeout
             });
         }
     }
@@ -518,6 +581,14 @@ class CombatEngine {
     updateUI() {
         const formatHp = (val) => {
             if (val === undefined || val === null || isNaN(val)) return "0";
+            if (val >= 1000000000000000) {
+                const q = val / 1000000000000000;
+                return (q % 1 === 0 ? q : q.toFixed(2)) + " Triệu Tỷ";
+            }
+            if (val >= 1000000000000) {
+                const t = val / 1000000000000;
+                return (t % 1 === 0 ? t : t.toFixed(2)) + " Nghìn Tỷ";
+            }
             if (val >= 1000000000) {
                 const b = val / 1000000000;
                 return (b % 1 === 0 ? b : b.toFixed(2)) + " Tỷ";
@@ -576,6 +647,28 @@ class CombatEngine {
                     skillBtn.disabled = true;
                     if (cdOverlay) cdOverlay.style.display = "none";
                 }
+            }
+        }
+
+        // Cập nhật thanh đếm lùi Enrage Timer (Hư Không Tháp)
+        const enrageBox = document.getElementById("combat-enrage-box");
+        const enrageText = document.getElementById("combat-enrage-timer");
+        const enrageBar = document.getElementById("combat-enrage-bar");
+
+        if (enrageBox) {
+            if (this.isTowerBattle) {
+                enrageBox.style.display = "flex";
+                if (enrageText) {
+                    enrageText.innerText = `⏳ ${this.towerTimer.toFixed(1)}s`;
+                    enrageText.style.color = this.towerTimer <= 15 ? "#ff4757" : "#ffd700";
+                }
+                if (enrageBar) {
+                    const pct = Math.max(0, Math.min(100, (this.towerTimer / (this.towerTimeLimit || 60)) * 100));
+                    enrageBar.style.width = `${pct}%`;
+                    enrageBar.style.backgroundColor = this.towerTimer <= 15 ? "#ff4757" : "#a855f7";
+                }
+            } else {
+                enrageBox.style.display = "none";
             }
         }
     }

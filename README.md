@@ -1,11 +1,11 @@
-# TIÊN ĐẠO TRƯỜNG SINH (KIẾM TIÊN 2.0)
+# TIÊN ĐẠO TRƯỜNG SINH (KIEMTIEN 3.0)
 ### Trò Chơi Tu Tiên 2D Nhàn Rỗi (Idle RPG) • Nghịch Thiên Tu Đạo
 
 ---
 
 ## 📖 1. TỔNG QUAN DỰ ÁN
 
-**Tiên Đạo Trường Sinh** (phiên bản Kiếm Tiên 2.0) là một tựa game web RPG tu tiên nhàn rỗi (Idle RPG) được xây dựng hoàn toàn bằng công nghệ Web thuần túy (**HTML5, Vanilla CSS3, JavaScript ES6+**), không sử dụng bất kỳ thư viện hoặc framework bên thứ ba nào.
+**Tiên Đạo Trường Sinh** (phiên bản Kiemtien 3.0) là một tựa game web RPG tu tiên nhàn rỗi (Idle RPG) được xây dựng hoàn toàn bằng công nghệ Web thuần túy (**HTML5, Vanilla CSS3, JavaScript ES6+**), không sử dụng bất kỳ thư viện hoặc framework bên thứ ba nào.
 
 Trò chơi mô phỏng trọn vẹn lộ trình tu chân nghịch thiên cải mệnh: từ một phàm nhân ngưng tụ Tôi Khí, khai phá Linh Hải, vượt qua cửu đại thiên kiếp, vấn đạo hư không, cho đến khi bước chân lên đỉnh cao nhất của vũ trụ - **Đại Đạo Chí Cao Vô Thượng**.
 
@@ -254,7 +254,7 @@ Game hoàn toàn độc lập và không yêu cầu cài đặt môi trường p
 
 ## 📝 13. TỔNG KẾT & ĐỊNH HƯỚNG PHÁT TRIỂN
 
-Dự án **Tiên Đạo Trường Sinh (Kiếm Tiên 2.0)** đã hoàn thiện toàn diện tất cả các khía cạnh của một tựa game tu tiên hiện đại:
+Dự án **Tiên Đạo Trường Sinh (Kiemtien 3.0)** đã hoàn thiện toàn diện tất cả các khía cạnh của một tựa game tu tiên hiện đại:
 * Lộ trình phát triển nhân vật liền mạch từ sơ cấp đến cực hạn vũ trụ.
 * Hệ thống dữ liệu phong phú, cân bằng chỉ số tốt, logic mở khóa rõ ràng.
 * Mã nguồn thuần khiết, sạch đẹp, phân tách mô-đun rõ ràng giữa Dữ liệu (`data`), Động cơ (`engine`), Trạng thái (`state`) và Giao diện (`ui`).

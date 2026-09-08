@@ -12,7 +12,7 @@
 class StorageSystem {
     static SAVE_KEY = "tu_tien_2d_save_v1";
     static BACKUP_KEY = "tu_tien_2d_save_backup";
-    static CURRENT_SAVE_VERSION = 2;
+    static CURRENT_SAVE_VERSION = 3;
 
     /**
      * Tự động sao lưu dự phòng (Safe Write / Auto-Backup)
@@ -133,6 +133,12 @@ class StorageSystem {
                 linhThach: 200,
                 clearedStages: [],
                 pillsConsumed: 0,
+                towerData: {
+                    highestFloor: 0,
+                    currentFloor: 1,
+                    dailyTickets: 3,
+                    lastResetDate: ""
+                },
                 lastOnlineTime: Date.now()
             };
 
@@ -166,7 +172,13 @@ class StorageSystem {
                 : [...defaultData.unlockedTitles],
             clearedStages: Array.isArray(savedData.clearedStages)
                 ? [...savedData.clearedStages]
-                : [...defaultData.clearedStages]
+                : [...defaultData.clearedStages],
+            towerData: (savedData.towerData && typeof savedData.towerData === "object")
+                ? {
+                    ...defaultData.towerData,
+                    ...savedData.towerData
+                }
+                : { ...defaultData.towerData }
         };
 
         let ver = Number(savedData?.saveVersion) || 1;
@@ -188,6 +200,31 @@ class StorageSystem {
             }
             merged.hasHadRenameScroll = true;
             ver = 2;
+        }
+
+        // V2 -> V3 Migration:
+        // Cập nhật hệ thống Hỗn Nguyên Thạch (honNguyen), Tinh Nguyên Đại Đạo (tinhNguyen), và Cảnh Giới Vô Cực (isVoCuc)
+        if (ver < 3) {
+            if (merged.honNguyen === undefined || isNaN(merged.honNguyen)) {
+                merged.honNguyen = 0;
+            }
+            if (merged.tinhNguyen === undefined || isNaN(merged.tinhNguyen)) {
+                merged.tinhNguyen = 0;
+            }
+            if (merged.isVoCuc === undefined) {
+                merged.isVoCuc = false;
+            }
+            // Nếu người chơi cũ đã ở Tầng >= 100 của Đại Đạo Chí Cao (realmIndex >= 11, tierIndex >= 99)
+            if (merged.realmIndex >= 11 && merged.tierIndex >= 99) {
+                merged.isVoCuc = true;
+                // PHƯƠNG ÁN A: KHÔNG tự động thêm stage_vo_cuc!
+                // Người chơi cũ dù đã vượt Tầng 100 vẫn phải đánh bại Ải 22 mới được tiếp tục đột phá.
+                if (merged.tuVi && merged.tuVi > 0) {
+                    merged.tinhNguyen = Math.floor(merged.tuVi / 1000000000);
+                    merged.tuVi = 0;
+                }
+            }
+            ver = 3;
         }
 
         merged.saveVersion = this.CURRENT_SAVE_VERSION;

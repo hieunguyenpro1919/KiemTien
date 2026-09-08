@@ -48,8 +48,17 @@ class Player {
             unlockedTitles: ["title_so_nhap"],
             hasHadRenameScroll: true,
             linhThach: 200,
+            honNguyen: 0,
+            tinhNguyen: 0,
+            isVoCuc: false,
             clearedStages: [],
             pillsConsumed: 0,
+            towerData: {
+                highestFloor: 0,
+                currentFloor: 1,
+                dailyTickets: 3,
+                lastResetDate: ""
+            },
             lastOnlineTime: Date.now()
         };
     }
@@ -72,16 +81,30 @@ class Player {
         this.unlockedTitles = [...d.unlockedTitles];
         this.hasHadRenameScroll = true;
         this.linhThach = d.linhThach;
+        this.honNguyen = Number(d.honNguyen) || 0;
+        this.tinhNguyen = Number(d.tinhNguyen) || 0;
+        this.isVoCuc = Boolean(d.isVoCuc);
         this.clearedStages = [...d.clearedStages];
         this.pillsConsumed = d.pillsConsumed || 0;
+        this.towerData = d.towerData ? { ...d.towerData } : { highestFloor: 0, currentFloor: 1, dailyTickets: 3, lastResetDate: "" };
+        this.checkTowerReset();
         this.lastOnlineTime = d.lastOnlineTime;
         this.currentHp = this.getMaxHp();
     }
 
+    getFullTitle() {
+        return RealmSystem.getFullRealmTitle(this.realmIndex, this.tierIndex);
+    }
+
     /**
-     * Lấy Tu Vi tối đa của tầng hiện tại
+     * Lấy Tu Vi (hoặc Tinh Nguyên) tối đa của tầng hiện tại
      */
     getMaxTuVi() {
+        if (this.isVoCuc) {
+            // Cảnh giới Vô Cực: Công thức Tinh Nguyên = 100 + (tierIndex - 100) * 10
+            const extraTiers = Math.max(0, (this.tierIndex || 100) - 100);
+            return 100 + extraTiers * 10;
+        }
         return RealmSystem.getMaxTuVi(this.realmIndex, this.tierIndex);
     }
 
@@ -97,11 +120,53 @@ class Player {
     }
 
     /**
+     * Kiểm tra và tự động phục hồi Lệnh Bài Hư Không khi sang ngày mới
+     */
+    checkTowerReset() {
+        if (!this.towerData) {
+            this.towerData = { highestFloor: 0, currentFloor: 1, dailyTickets: 3, lastResetDate: "" };
+        }
+        if (typeof TowerSystem !== "undefined") {
+            return TowerSystem.checkDailyReset(this.towerData);
+        }
+        return false;
+    }
+
+    /**
      * Kiểm tra có đủ điều kiện Đột Phá hay không
-     * Từ Vô Thượng Lộ trở lên hoặc khi ở các cảnh giới cao, tầng tu vi có thể tăng vô hạn!
      */
     canBreakthrough() {
+        // Phương án A: Đối với toàn bộ người chơi ở Tầng >= 100 của Đại Đạo Chí Cao Vô Thượng,
+        // bắt buộc phải đánh bại [Ải 22: Hư Vô Bản Nguyên Cảnh] mới được phép tiếp tục đột phá!
+        if (this.realmIndex >= 11 && this.tierIndex >= 99) {
+            const hasClearedVoCuc = this.clearedStages && this.clearedStages.includes("stage_vo_cuc");
+            if (!hasClearedVoCuc) {
+                return false;
+            }
+        }
+
+        if (this.isVoCuc) {
+            return (this.tinhNguyen || 0) >= this.getMaxTuVi();
+        }
         return this.tuVi >= this.getMaxTuVi();
+    }
+
+    /**
+     * Thêm Tinh Nguyên Đại Đạo (khi đã đạt Cảnh Giới Vô Cực)
+     */
+    addTinhNguyen(amount) {
+        amount = Number(amount);
+        if (isNaN(amount) || amount <= 0) {
+            return { added: 0, canBreakthrough: this.canBreakthrough() };
+        }
+        if (isNaN(this.tinhNguyen) || typeof this.tinhNguyen !== "number") {
+            this.tinhNguyen = 0;
+        }
+        this.tinhNguyen += Math.floor(amount);
+        return {
+            added: Math.floor(amount),
+            canBreakthrough: this.canBreakthrough()
+        };
     }
 
     /**
@@ -111,6 +176,11 @@ class Player {
         amount = Number(amount);
         if (isNaN(amount) || amount <= 0) {
             return { added: 0, canBreakthrough: this.canBreakthrough() };
+        }
+        // Nếu đã ở Cảnh Giới Vô Cực, tự động ngưng tụ thành Tinh Nguyên (1 Tỷ Tu Vi = 1 Tinh Nguyên)
+        if (this.isVoCuc) {
+            const tinhGain = Math.max(1, Math.floor(amount / 1000000000));
+            return this.addTinhNguyen(tinhGain);
         }
         if (isNaN(this.tuVi) || typeof this.tuVi !== "number") {
             this.tuVi = 0;
@@ -127,40 +197,87 @@ class Player {
      * MỖI LẦN TĂNG TU VI SẼ CÓ 4 ĐIỂM TIỀM NĂNG
      */
     breakthrough() {
-        if (!this.canBreakthrough()) return false;
-
         const maxTuVi = this.getMaxTuVi();
+
+        // 1. Kiểm tra điều kiện Ải 22 cho toàn bộ người chơi Tầng >= 100 Đại Đạo Chí Cao Vô Thượng (Phương án A)
+        if (this.realmIndex >= 11 && this.tierIndex >= 99) {
+            const hasClearedVoCuc = this.clearedStages && this.clearedStages.includes("stage_vo_cuc");
+            if (!hasClearedVoCuc) {
+                return {
+                    success: false,
+                    isVoCucBlocked: true,
+                    msg: "Cần đánh bại [Ải 22: Hư Vô Bản Nguyên Cảnh] mới có thể tiếp tục đột phá!"
+                };
+            }
+        }
+
+        // 2. Đang ở Cảnh Giới Vô Cực (Tầng 101+)
+        if (this.isVoCuc) {
+            if ((this.tinhNguyen || 0) < maxTuVi) return false;
+            this.tinhNguyen = Math.max(0, (this.tinhNguyen || 0) - maxTuVi);
+            this.tierIndex = (this.tierIndex || 100) + 1;
+            this.statPoints += STAT_POINTS_PER_TIER;
+            this.currentHp = this.getMaxHp();
+            return {
+                success: true,
+                isMajor: false,
+                isVoCuc: true,
+                blockedReason: null,
+                pointsAdded: STAT_POINTS_PER_TIER,
+                newTitle: this.getFullTitle(),
+                totalPoints: this.statPoints,
+                realm: RealmSystem.getRealm(this.realmIndex)
+            };
+        }
+
+        // 3. Mốc Tầng 100 Đại Đạo Chí Cao (realmIndex 11, tierIndex == 99)
+        if (this.realmIndex >= 11 && this.tierIndex >= 99) {
+            if (this.tuVi < maxTuVi) return false;
+
+            const excessTuVi = Math.max(0, this.tuVi - maxTuVi);
+            this.isVoCuc = true;
+            this.tuVi = 0;
+            this.tinhNguyen = Math.floor(excessTuVi / 1000000000);
+            this.tierIndex = 100; // Thăng hoa lên Tầng 101
+            this.statPoints += STAT_POINTS_PER_TIER;
+            this.currentHp = this.getMaxHp();
+            return {
+                success: true,
+                isMajor: true,
+                isVoCuc: true,
+                blockedReason: null,
+                pointsAdded: STAT_POINTS_PER_TIER,
+                newTitle: this.getFullTitle(),
+                totalPoints: this.statPoints,
+                realm: RealmSystem.getRealm(this.realmIndex)
+            };
+        }
+
+        // 3. Đột phá thông thường (Cảnh giới 0 đến 10 hoặc Đại Đạo Chí Cao < Tầng 100)
+        if (!this.canBreakthrough()) return false;
         this.tuVi = Math.max(0, this.tuVi - maxTuVi);
 
         let isMajor = false;
         let blockedReason = null;
 
-        // Kiểm tra xem cảnh giới tiếp theo yêu cầu ải gì
         const nextRealmIndex = this.realmIndex + 1;
         const reqStageForNext = RealmSystem.getBreakthroughReqStage(nextRealmIndex);
         const hasClearedReqStage = !reqStageForNext || (this.clearedStages && this.clearedStages.includes(reqStageForNext));
 
         if (this.realmIndex < 8) {
-            // Các cảnh giới thông thường (Tôi Khí -> Ngọc Điện: Realm 0 đến 7, mỗi cảnh giới 10 tầng)
             if (this.tierIndex < RealmSystem.getTierCount() - 1) {
                 this.tierIndex++;
             } else {
-                // Đã đạt Đỉnh Phong -> Đột phá đại cảnh giới tiếp theo
                 this.realmIndex++;
                 this.tierIndex = 0;
                 isMajor = true;
             }
         } else {
-            // Từ Đỉnh Cấp Ngai (Realm 8), Vô Thượng Lộ (Realm 9), Vạn Vì Tinh Tú (Realm 10)...
-            // Quy tắc: Muốn đột phá lên đại cảnh giới tiếp theo thì BUỘC PHẢI đánh bại ẢI tương ứng!
-            // Nếu chưa vượt ải tương ứng thì sẽ kẹt ở cảnh giới đó, tầng vẫn tăng và có thể đến vô hạn!
             if (this.realmIndex < RealmSystem.getRealmCount() - 1 && hasClearedReqStage) {
-                // Đã vượt ải yêu cầu -> Đột phá đại cảnh giới thành công!
                 this.realmIndex++;
                 this.tierIndex = 0;
                 isMajor = true;
             } else {
-                // Chưa vượt ải tương ứng (hoặc đã ở cảnh giới chí cao vô thượng cuối cùng) -> Tầng tăng vô hạn!
                 this.tierIndex++;
                 if (reqStageForNext && !hasClearedReqStage) {
                     const reqStageObj = typeof StageSystem !== "undefined" ? StageSystem.getStageById(reqStageForNext) : null;
@@ -169,10 +286,7 @@ class Player {
             }
         }
 
-        // CỘNG 4 ĐIỂM TIỀM NĂNG CHO NGƯỜI CHƠI
         this.statPoints += STAT_POINTS_PER_TIER;
-
-        // Hồi đầy máu khi đột phá
         this.currentHp = this.getMaxHp();
 
         return {
@@ -519,11 +633,22 @@ class Player {
 
         if (item.tuViGain) {
             this.pillsConsumed = (this.pillsConsumed || 0) + 1;
+            if (this.isVoCuc) {
+                const tinhGain = Math.max(1, Math.floor(item.tuViGain / 1000000000));
+                this.addTinhNguyen(tinhGain);
+                return { success: true, item, msg: `Đã dùng 1x ${item.name}, nhận được +${tinhGain} Tinh Nguyên Đại Đạo!` };
+            }
             this.addTuVi(item.tuViGain);
             return { success: true, item, msg: `Đã dùng 1x ${item.name}, nhận được +${item.tuViGain} điểm Tu Vi!` };
         } else if (item.isResetPill) {
             const points = this.resetStats();
             return { success: true, item, msg: `Đã tẩy tủy thành công! Thu hồi lại ${points} điểm tiềm năng.` };
+        } else if (itemId === "item_tower_ticket") {
+            if (!this.towerData) {
+                this.towerData = { highestFloor: 0, currentFloor: 1, dailyTickets: 3, lastResetDate: "" };
+            }
+            this.towerData.dailyTickets = (this.towerData.dailyTickets || 0) + 1;
+            return { success: true, item, msg: `Đã dùng 1x ${item.name}, nhận được +1 Lệnh Bài Hư Không (Hiện có: ${this.towerData.dailyTickets})!` };
         }
 
         return { success: true, item, msg: `Đã sử dụng 1x ${item.name}!` };
@@ -581,12 +706,21 @@ class Player {
             return { success: false, msg: "Không có đan dược này trong túi!" };
         }
 
-        // Xóa toàn bộ vật phẩm itemId khỏi túi đồ
-        this.inventory = this.inventory.filter(id => id !== itemId);
-
-        // Cộng dồn toàn bộ Tu Vi
+        // Cộng dồn toàn bộ Tu Vi (hoặc Tinh Nguyên nếu ở Cảnh Giới Vô Cực)
         if (item.tuViGain) {
             this.pillsConsumed = (this.pillsConsumed || 0) + count;
+            if (this.isVoCuc) {
+                const tinhGainPerPill = Math.max(1, Math.floor(item.tuViGain / 1000000000));
+                const totalTinhNguyen = tinhGainPerPill * count;
+                this.addTinhNguyen(totalTinhNguyen);
+                return {
+                    success: true,
+                    count: count,
+                    totalTuVi: totalTinhNguyen,
+                    item: item,
+                    msg: `Đã dùng hết ${count}x [${item.name}], nhận được +${totalTinhNguyen} Tinh Nguyên Đại Đạo!`
+                };
+            }
             const totalTuVi = item.tuViGain * count;
             this.addTuVi(totalTuVi);
             return {
@@ -595,6 +729,17 @@ class Player {
                 totalTuVi: totalTuVi,
                 item: item,
                 msg: `Đã dùng hết ${count}x [${item.name}], nhận được +${totalTuVi} Tu Vi!`
+            };
+        } else if (itemId === "item_tower_ticket") {
+            if (!this.towerData) {
+                this.towerData = { highestFloor: 0, currentFloor: 1, dailyTickets: 3, lastResetDate: "" };
+            }
+            this.towerData.dailyTickets = (this.towerData.dailyTickets || 0) + count;
+            return {
+                success: true,
+                count: count,
+                item: item,
+                msg: `Đã dùng hết ${count}x [${item.name}], nhận được +${count} Lệnh Bài Hư Không (Hiện có: ${this.towerData.dailyTickets})!`
             };
         }
 
@@ -605,9 +750,24 @@ class Player {
         const item = ItemSystem.getItemById(itemId);
         if (!item) return { success: false, msg: "Vật phẩm không tồn tại!" };
         const totalCost = item.price * quantity;
-        if (this.linhThach < totalCost) return { success: false, msg: "Không đủ Linh Thạch!" };
 
-        this.linhThach -= totalCost;
+        if (item.currency === "hon_nguyen") {
+            if ((this.honNguyen || 0) < totalCost) {
+                const neededHonNguyen = totalCost - (this.honNguyen || 0);
+                const neededLinhThach = neededHonNguyen * 1000000000;
+                if (this.linhThach < neededLinhThach) {
+                    return { success: false, msg: `Không đủ Hỗn Nguyên Thạch! Cần ${totalCost.toLocaleString("vi-VN")} 🌀 Hỗn Nguyên.` };
+                }
+                this.linhThach -= neededLinhThach;
+                this.honNguyen = 0;
+            } else {
+                this.honNguyen -= totalCost;
+            }
+        } else {
+            if (this.linhThach < totalCost) return { success: false, msg: "Không đủ Linh Thạch!" };
+            this.linhThach -= totalCost;
+        }
+
         for (let i = 0; i < quantity; i++) {
             this.inventory.push(itemId);
         }
@@ -640,14 +800,24 @@ class Player {
             };
         }
 
-        // Tính số lượng tối đa có thể mua theo số dư Linh Thạch
-        const maxAffordable = Math.floor(this.linhThach / item.price);
+        // Tính số lượng tối đa có thể mua theo số dư Linh Thạch / Hỗn Nguyên
+        const isHonNguyen = item.currency === "hon_nguyen";
+        const currentBalance = isHonNguyen ? (this.honNguyen || 0) : (this.linhThach || 0);
+        const maxAffordable = Math.floor(currentBalance / item.price);
         if (maxAffordable <= 0) {
-            return { success: false, reason: "not_enough_money", msg: "Không đủ Linh Thạch để mua!" };
+            return { 
+                success: false, 
+                reason: "not_enough_money", 
+                msg: isHonNguyen ? "Không đủ Hỗn Nguyên Thạch để mua!" : "Không đủ Linh Thạch để mua!" 
+            };
         }
 
         const totalCost = maxAffordable * item.price;
-        this.linhThach -= totalCost;
+        if (isHonNguyen) {
+            this.honNguyen -= totalCost;
+        } else {
+            this.linhThach -= totalCost;
+        }
 
         // Đẩy hàng loạt vào túi đồ
         for (let i = 0; i < maxAffordable; i++) {
@@ -658,8 +828,110 @@ class Player {
             success: true,
             count: maxAffordable,
             totalCost: totalCost,
+            currency: isHonNguyen ? "hon_nguyen" : "linh_thach",
             item: item,
             msg: `Đã mua thành công ${maxAffordable}x [${item.name}]!`
+        };
+    }
+
+    /**
+     * Đổi Linh Thạch sang Hỗn Nguyên Thạch (1 Tỷ Linh Thạch = 1 Hỗn Nguyên)
+     */
+    exchangeLinhThachToHonNguyen(amount = 1) {
+        amount = Math.max(1, parseInt(amount, 10) || 1);
+        const cost = amount * 1000000000;
+        if (this.linhThach < cost) {
+            return {
+                success: false,
+                msg: `Không đủ Linh Thạch! Cần ${cost.toLocaleString("vi-VN")} Linh Thạch để đổi ${amount} Hỗn Nguyên Thạch.`
+            };
+        }
+        this.linhThach -= cost;
+        this.honNguyen = (this.honNguyen || 0) + amount;
+        return {
+            success: true,
+            amount: amount,
+            msg: `Đã quy đổi thành công ${cost.toLocaleString("vi-VN")} Linh Thạch thành +${amount} 🌀 Hỗn Nguyên Thạch!`
+        };
+    }
+
+    /**
+     * Đổi Hỗn Nguyên Thạch sang Linh Thạch (1 Hỗn Nguyên = 1 Tỷ Linh Thạch)
+     */
+    exchangeHonNguyenToLinhThach(amount = 1) {
+        amount = Math.max(1, parseInt(amount, 10) || 1);
+        if ((this.honNguyen || 0) < amount) {
+            return {
+                success: false,
+                msg: `Không đủ Hỗn Nguyên Thạch! Hiện chỉ có ${this.honNguyen || 0} 🌀 Hỗn Nguyên.`
+            };
+        }
+        const gain = amount * 1000000000;
+        this.honNguyen -= amount;
+        this.linhThach = (this.linhThach || 0) + gain;
+        return {
+            success: true,
+            amount: amount,
+            gain: gain,
+            msg: `Đã đổi thành công ${amount} 🌀 Hỗn Nguyên thành +${gain.toLocaleString("vi-VN")} 💎 Linh Thạch!`
+        };
+    }
+
+    /**
+     * Quy đổi toàn bộ Linh Thạch khả dụng thành Hỗn Nguyên Thạch (Nén Tỷ Linh Thạch)
+     */
+    exchangeAllLinhThachToHonNguyen() {
+        const canExchange = Math.floor((this.linhThach || 0) / 1000000000);
+        if (canExchange <= 0) {
+            return {
+                success: false,
+                msg: `Chưa đủ 1 Tỷ Linh Thạch để quy đổi sang Hỗn Nguyên Thạch (Cần tối thiểu 1.000.000.000 💎).`
+            };
+        }
+        const cost = canExchange * 1000000000;
+        this.linhThach -= cost;
+        this.honNguyen = (this.honNguyen || 0) + canExchange;
+        return {
+            success: true,
+            amount: canExchange,
+            cost: cost,
+            msg: `Đã nén quy đổi toàn bộ ${cost.toLocaleString("vi-VN")} Linh Thạch thành +${canExchange.toLocaleString("vi-VN")} 🌀 Hỗn Nguyên Thạch!`
+        };
+    }
+
+    /**
+     * Mua Lệnh Bài Hư Không trực tiếp bằng Hỗn Nguyên Thạch (hoặc tự động đổi từ Linh Thạch)
+     */
+    buyTowerTicket(quantity = 1) {
+        quantity = Math.max(1, parseInt(quantity, 10) || 1);
+        const ticketPriceHonNguyen = 5000000;
+        const totalCostHonNguyen = ticketPriceHonNguyen * quantity;
+
+        if ((this.honNguyen || 0) >= totalCostHonNguyen) {
+            this.honNguyen -= totalCostHonNguyen;
+        } else {
+            const neededHonNguyen = totalCostHonNguyen - (this.honNguyen || 0);
+            const neededLinhThach = neededHonNguyen * 1000000000;
+            if (this.linhThach < neededLinhThach) {
+                return {
+                    success: false,
+                    msg: `Không đủ Hỗn Nguyên Thạch! Cần ${totalCostHonNguyen.toLocaleString("vi-VN")} 🌀 Hỗn Nguyên để mua ${quantity} Lệnh Bài Hư Không.`
+                };
+            }
+            this.linhThach -= neededLinhThach;
+            this.honNguyen = 0;
+        }
+
+        if (!this.towerData) {
+            this.towerData = { highestFloor: 0, currentFloor: 1, dailyTickets: 3, lastResetDate: "" };
+        }
+        this.towerData.dailyTickets = (this.towerData.dailyTickets || 0) + quantity;
+        return {
+            success: true,
+            quantity: quantity,
+            totalCost: totalCostHonNguyen,
+            tickets: this.towerData.dailyTickets,
+            msg: `Đã mua thành công ${quantity} Lệnh Bài Hư Không với giá ${totalCostHonNguyen.toLocaleString("vi-VN")} 🌀 Hỗn Nguyên!`
         };
     }
 
@@ -760,38 +1032,40 @@ class Player {
             }
         });
 
+        const equippedIds = new Set([
+            this.equipped?.non,
+            this.equipped?.giap,
+            this.equipped?.vukhi
+        ].filter(Boolean));
+
         const duplicates = [];
         let totalCount = 0;
         let totalGain = 0;
 
         counts.forEach((count, id) => {
-            const item = ItemSystem.getItemById(id);
-            if (!item) return;
-
-            const isEquipped = (this.equipped?.non === id || this.equipped?.giap === id || this.equipped?.vukhi === id);
-            const keepCount = (keepOneUnused && !isEquipped) ? 1 : 0;
+            const isEquipped = equippedIds.has(id);
+            const keepCount = isEquipped ? 0 : (keepOneUnused ? 1 : 0);
             const dupsCount = Math.max(0, count - keepCount);
 
             if (dupsCount > 0) {
-                const gain = (item.sellPrice || 10) * dupsCount;
-                totalCount += dupsCount;
-                totalGain += gain;
+                const item = ItemSystem.getItemById(id);
+                const unitPrice = item ? (item.sellPrice || 10) : 10;
+                const gain = unitPrice * dupsCount;
+
                 duplicates.push({
                     item,
-                    inInvCount: count,
-                    dupsCount,
-                    keepCount,
                     isEquipped,
-                    unitPrice: item.sellPrice || 10,
+                    keepCount,
+                    totalInInv: count,
+                    dupsCount,
+                    unitPrice,
                     totalGain: gain
                 });
+
+                totalCount += dupsCount;
+                totalGain += gain;
             }
         });
-
-        // Sắp xếp danh sách từ thấp đến cao (cảnh giới, phẩm cấp, giá)
-        if (typeof ItemSystem !== "undefined" && ItemSystem.compareItems) {
-            duplicates.sort((a, b) => ItemSystem.compareItems(a.item, b.item));
-        }
 
         return {
             duplicates,
@@ -801,19 +1075,13 @@ class Player {
     }
 
     /**
-     * Bán toàn bộ trang bị trùng lặp trong túi đồ (Nón, Giáp, Vũ khí)
-     * @param {boolean} keepOneUnused - Giữ lại 1 bản cho mỗi loại trang bị chưa mặc trên người (mặc định: true)
+     * Bán nhanh toàn bộ trang bị trùng lặp trong túi đồ
+     * @param {boolean} keepOneUnused - Giữ lại 1 bản cho mỗi loại trang bị chưa mặc trên người
      */
     sellAllDuplicateEquipment(keepOneUnused = true) {
         const summary = this.getDuplicateEquipmentSummary(keepOneUnused);
         if (summary.totalCount === 0) {
-            return {
-                success: false,
-                msg: "Không có trang bị trùng lặp nào trong túi!",
-                totalCount: 0,
-                totalGain: 0,
-                summary
-            };
+            return { success: false, msg: "Không có trang bị trùng lặp để bán!" };
         }
 
         const toRemoveMap = new Map();
@@ -848,7 +1116,7 @@ class Player {
 
     toJSON() {
         return {
-            saveVersion: (typeof StorageSystem !== "undefined" && StorageSystem.CURRENT_SAVE_VERSION) ? StorageSystem.CURRENT_SAVE_VERSION : 2,
+            saveVersion: (typeof StorageSystem !== "undefined" && StorageSystem.CURRENT_SAVE_VERSION) ? StorageSystem.CURRENT_SAVE_VERSION : 3,
             name: (typeof this.name === "string" && this.name.trim()) ? this.name.trim() : "Tiêu Viêm",
             equippedTitle: this.equippedTitle || "title_so_nhap",
             unlockedTitles: (Array.isArray(this.unlockedTitles) && this.unlockedTitles.length > 0) ? [...this.unlockedTitles] : ["title_so_nhap"],
@@ -871,8 +1139,17 @@ class Player {
             inventory: Array.isArray(this.inventory) ? [...this.inventory] : [],
             hasHadRenameScroll: true,
             linhThach: isNaN(this.linhThach) ? 0 : Number(this.linhThach),
+            honNguyen: isNaN(this.honNguyen) ? 0 : Number(this.honNguyen),
+            tinhNguyen: isNaN(this.tinhNguyen) ? 0 : Number(this.tinhNguyen),
+            isVoCuc: Boolean(this.isVoCuc),
             clearedStages: Array.isArray(this.clearedStages) ? [...this.clearedStages] : [],
             pillsConsumed: Number(this.pillsConsumed) || 0,
+            towerData: {
+                highestFloor: Number(this.towerData?.highestFloor) || 0,
+                currentFloor: Math.max(1, Number(this.towerData?.currentFloor) || 1),
+                dailyTickets: (typeof this.towerData?.dailyTickets === "number") ? this.towerData.dailyTickets : 3,
+                lastResetDate: typeof this.towerData?.lastResetDate === "string" ? this.towerData.lastResetDate : ""
+            },
             lastOnlineTime: Date.now()
         };
     }
@@ -917,8 +1194,19 @@ class Player {
         this.hasHadRenameScroll = true;
 
         this.linhThach = (typeof data.linhThach === "number" && !isNaN(data.linhThach)) ? Math.max(0, data.linhThach) : defaults.linhThach;
+        this.honNguyen = (typeof data.honNguyen === "number" && !isNaN(data.honNguyen)) ? Math.max(0, data.honNguyen) : (defaults.honNguyen || 0);
+        this.tinhNguyen = (typeof data.tinhNguyen === "number" && !isNaN(data.tinhNguyen)) ? Math.max(0, data.tinhNguyen) : (defaults.tinhNguyen || 0);
+        this.isVoCuc = Boolean(data.isVoCuc);
+
         this.clearedStages = Array.isArray(data.clearedStages) ? [...data.clearedStages] : [];
         this.pillsConsumed = (typeof data.pillsConsumed === "number" && !isNaN(data.pillsConsumed)) ? Math.max(0, data.pillsConsumed) : (defaults.pillsConsumed || 0);
+        this.towerData = (data.towerData && typeof data.towerData === "object") ? {
+            highestFloor: Number(data.towerData.highestFloor) || 0,
+            currentFloor: Math.max(1, Number(data.towerData.currentFloor) || 1),
+            dailyTickets: (typeof data.towerData?.dailyTickets === "number") ? Math.max(0, data.towerData.dailyTickets) : 3,
+            lastResetDate: typeof data.towerData.lastResetDate === "string" ? data.towerData.lastResetDate : ""
+        } : { highestFloor: 0, currentFloor: 1, dailyTickets: 3, lastResetDate: "" };
+        this.checkTowerReset();
         this.lastOnlineTime = (typeof data.lastOnlineTime === "number" && !isNaN(data.lastOnlineTime)) ? data.lastOnlineTime : Date.now();
         this.currentHp = this.getMaxHp();
     }

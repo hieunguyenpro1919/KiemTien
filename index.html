@@ -3,10 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tiên Đạo Trường Sinh - Game Tu Tiên 2D</title>
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Kiếm Tiên 3.0 - Tiên Đạo Trường Sinh</title>
     <meta name="description"
-        content="Trò chơi Tu Tiên 2D trực quan bằng JavaScript với 9 Đại Cảnh Giới, hệ thống chọn Ải, 3 ô trang bị, bảng cộng điểm tiềm năng và 3 ô kỹ năng thần thông.">
+        content="Trò chơi Tu Tiên 2D trực quan bằng JavaScript với 12 Cảnh Giới, hệ thống chọn Ải, Hư Không Tháp, Hỗn Nguyên Thạch và Tinh Nguyên.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -29,7 +30,7 @@
                 <div class="brand-icon">☯️</div>
                 <div class="brand-title">
                     <h1>TIÊN ĐẠO TRƯỜNG SINH</h1>
-                    <span class="brand-sub">NGHỊCH THIÊN TU ĐẠO • 2D RPG</span>
+                    <span class="brand-sub">NGHỊCH THIÊN TU ĐẠO • KIEMTIEN 3.0</span>
                 </div>
             </div>
 
@@ -46,6 +47,12 @@
                     <span>💎</span>
                     <span id="header-linh-thach">200</span>
                     <small style="font-size: 10px; color: #cbd5e1;">Linh Thạch</small>
+                </div>
+
+                <div class="header-currency hon-nguyen" id="header-hon-nguyen-box" style="display: none;">
+                    <span>🌀</span>
+                    <span id="header-hon-nguyen">0</span>
+                    <small style="font-size: 10px; color: #a5b4fc;">Hỗn Nguyên</small>
                 </div>
 
                 <div class="header-controls">
@@ -70,6 +77,11 @@
                 <span class="nav-icon">🗺️</span>
                 <span class="nav-text-full">Chọn Ải Vượt Cảnh</span>
                 <span class="nav-text-short">Chọn Ải</span>
+            </button>
+            <button class="nav-tab-btn" data-tab="tower">
+                <span class="nav-icon">🗼</span>
+                <span class="nav-text-full">Hư Không Tháp</span>
+                <span class="nav-text-short">Hư Tháp</span>
             </button>
             <button class="nav-tab-btn" data-tab="skills">
                 <span class="nav-icon">📜</span>
@@ -434,6 +446,44 @@
                     </div>
                 </div>
 
+                <!-- TIỆM QUY ĐỔI HỖN NGUYÊN (1 TỶ LINH THẠCH = 1 HỖN NGUYÊN) -->
+                <div class="hon-nguyen-exchange-panel" id="hon-nguyen-exchange-panel">
+                    <div class="exchange-header">
+                        <div class="exchange-title">
+                            <span class="exchange-icon">🌀</span>
+                            <div>
+                                <strong style="color: #c7d2fe;">QUY ĐỔI TIỀN TỆ CAO CẤP: HỖN NGUYÊN THẠCH</strong>
+                                <div class="exchange-desc">Tỷ giá chuẩn thiên địa: 1 Hỗn Nguyên Thạch = 1.000.000.000 (1
+                                    Tỷ) Linh Thạch</div>
+                            </div>
+                        </div>
+                        <div class="exchange-current-balances">
+                            <span>💎 <strong id="exchange-lt-val">0</strong> Linh Thạch</span>
+                            <span>🌀 <strong id="exchange-hn-val">0</strong> Hỗn Nguyên</span>
+                        </div>
+                    </div>
+                    <div class="exchange-actions-row">
+                        <button type="button" class="btn-sm btn-outline-gold"
+                            onclick="gameUI.handleExchangeLinhThach(1)"
+                            title="Đổi 1.000.000.000 Linh Thạch lấy 1 Hỗn Nguyên Thạch">
+                            Đổi 1 🌀 (1 Tỷ 💎)
+                        </button>
+                        <button type="button" class="btn-sm btn-outline-gold"
+                            onclick="gameUI.handleExchangeLinhThach(10)"
+                            title="Đổi 10.000.000.000 Linh Thạch lấy 10 Hỗn Nguyên Thạch">
+                            Đổi 10 🌀 (10 Tỷ 💎)
+                        </button>
+                        <button type="button" class="btn-sm btn-primary" onclick="gameUI.handleExchangeAllLinhThach()"
+                            title="Tự động nén toàn bộ số dư hàng tỷ Linh Thạch thành Hỗn Nguyên Thạch">
+                            ⚡ Nén Toàn Bộ (💎 ➔ 🌀)
+                        </button>
+                        <button type="button" class="btn-sm btn-secondary" onclick="gameUI.handleExchangeHonNguyen(1)"
+                            title="Phân giải 1 Hỗn Nguyên Thạch thành 1.000.000.000 Linh Thạch">
+                            Đổi 1 🌀 ➔ 1 Tỷ 💎
+                        </button>
+                    </div>
+                </div>
+
                 <!-- BỘ LỌC PHÂN LOẠI BÁCH BẢO CÁC -->
                 <div class="shop-filter-bar">
                     <!-- Hàng 1: Nút phân loại theo Loại Item -->
@@ -512,12 +562,102 @@
             </div>
         </section>
 
+        <!-- ================= TAB: HƯ KHÔNG THÁP (ENDLESS TOWER) ================= -->
+        <section class="tab-page" id="tab-tower" style="display: none;">
+            <div class="tower-container">
+                <!-- Header Banner Tháp -->
+                <div class="tower-header-banner">
+                    <div class="tower-header-left">
+                        <h2 class="tower-main-title">🗼 HƯ KHÔNG THÁP</h2>
+                        <p class="tower-subtitle">Tháp cổ vô tận trôi dạt nơi khe nứt hư không. Thử thách cực hạn đạo
+                            hạnh, trảm ma đoạt bảo!</p>
+                    </div>
+                    <div class="tower-header-stats">
+                        <div class="tower-stat-card">
+                            <span class="tower-stat-icon">🏆</span>
+                            <div class="tower-stat-info">
+                                <span class="tower-stat-label">Kỷ Lục Tầng</span>
+                                <strong class="tower-stat-value text-gold" id="tower-highest-floor">Tầng 0</strong>
+                            </div>
+                        </div>
+                        <div class="tower-stat-card">
+                            <span class="tower-stat-icon">🎫</span>
+                            <div class="tower-stat-info">
+                                <span class="tower-stat-label">Lệnh Bài Hư Không (Hồi 3/ngày)</span>
+                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <strong class="tower-stat-value text-purple" id="tower-tickets-count">3 Lệnh
+                                        Bài</strong>
+                                    <button class="btn-xs btn-outline-gold" id="btn-buy-tower-ticket"
+                                        onclick="gameUI.handleBuyTowerTicket()"
+                                        title="Mua thêm Lệnh Bài Hư Không với giá 5.000.000.000.000.000 (5 Triệu Tỷ) Linh Thạch">
+                                        ➕ Mua Vé (5 Triệu Tỷ 💎)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thẻ Khiêu Chiến Tầng Hiện Tại -->
+                <div class="tower-current-card-wrapper" id="tower-current-card-box">
+                    <!-- Rendered dynamically -->
+                </div>
+
+                <!-- Các Tùy Chọn Quét Nhanh & Chia Sẻ -->
+                <div class="tower-actions-grid">
+                    <div class="tower-sweep-panel">
+                        <div class="tower-action-header">
+                            <span class="action-title">⚡ QUÉT NHANH (SWEEP)</span>
+                            <span class="sweep-badge" id="tower-sweep-status">Yêu cầu Tầng 10+</span>
+                        </div>
+                        <p class="tower-action-desc" id="tower-sweep-desc">
+                            Tiêu hao 1 Lệnh Bài Hư Không để nhận ngay toàn bộ phần thưởng Tu Vi & Linh Thạch tích lũy từ
+                            Tầng 1 đến Tầng (Cao Nhất - 5).
+                        </p>
+                        <div class="tower-sweep-rewards-preview" id="tower-sweep-preview" style="display: none;">
+                            <!-- Dynamic preview -->
+                        </div>
+                        <button class="btn-primary btn-sweep" id="btn-tower-sweep" onclick="gameUI.handleTowerSweep()">
+                            ⚡ Quét Nhanh Ngay
+                        </button>
+                    </div>
+
+                    <div class="tower-share-panel">
+                        <div class="tower-action-header">
+                            <span class="action-title">📢 KHOE CHIẾN TÍCH</span>
+                        </div>
+                        <p class="tower-action-desc">
+                            Sao chép huy hiệu chiến tích Hư Không Tháp để luận đạo và so tài cùng các đạo hữu chư thiên!
+                        </p>
+                        <div class="tower-share-preview-box">
+                            <div class="tower-share-quote" id="tower-share-preview-text">
+                                🗡️ Ta vừa đột phá Hư Không Tháp Tầng 1 trong Kiemtien 3.0! Ngươi dám khiêu chiến không?
+                            </div>
+                        </div>
+                        <button class="btn-secondary btn-share" id="btn-tower-share"
+                            onclick="gameUI.handleTowerShare()">
+                            📋 Sao Chép Chiến Tích
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- ================= TAB 6: SÀN ĐẤU 2D (COMBAT) ================= -->
         <section class="tab-page" id="tab-combat">
             <div class="combat-arena-container">
                 <!-- Thanh tiêu đề ải -->
                 <div class="combat-top-bar">
-                    <div class="combat-stage-name" id="combat-stage-title">Đang Tiến Vào Ải...</div>
+                    <div class="combat-stage-name-box">
+                        <div class="combat-stage-name" id="combat-stage-title">Đang Tiến Vào Ải...</div>
+                        <div id="combat-enrage-box" class="combat-enrage-box" style="display: none;">
+                            <span class="enrage-badge">⏳ ENRAGE:</span>
+                            <span id="combat-enrage-timer" class="enrage-timer-text">60.0s</span>
+                            <div class="enrage-bar-outer">
+                                <div id="combat-enrage-bar" class="enrage-bar-fill" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="combat-controls-top">
                         <button class="btn-sm btn-speed" id="btn-combat-speed"
                             title="Tăng tốc độ trận đấu (x1, x2, x3)">⚡ Tốc Độ: x1</button>
@@ -694,9 +834,11 @@
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <span style="font-size: 26px;">⚡</span>
                     <div>
-                        <h3 style="font-family: var(--font-heading); font-size: 18px; color: var(--text-gold); margin: 0;">
+                        <h3
+                            style="font-family: var(--font-heading); font-size: 18px; color: var(--text-gold); margin: 0;">
                             BÁN NHANH TRANG BỊ TRÙNG LẶP</h3>
-                        <small style="color: var(--text-muted); font-size: 11px;">Thanh lý nón, giáp, vũ khí dư thừa thu hồi Linh Thạch</small>
+                        <small style="color: var(--text-muted); font-size: 11px;">Thanh lý nón, giáp, vũ khí dư thừa thu
+                            hồi Linh Thạch</small>
                     </div>
                 </div>
                 <button class="modal-close-btn" onclick="gameUI.closeQuickSellDupsModal()">&times;</button>
@@ -710,8 +852,10 @@
                 <!-- Tùy chọn an toàn -->
                 <div class="quick-sell-option-wrapper">
                     <label class="quick-sell-option-label" for="chk-keep-one-unused">
-                        <input type="checkbox" id="chk-keep-one-unused" checked onchange="gameUI.toggleQuickSellKeepOne(this.checked)">
-                        <span><strong>🛡️ Giữ lại 1 bản</strong> cho mỗi loại trang bị chưa mặc trên người (Khuyên dùng)</span>
+                        <input type="checkbox" id="chk-keep-one-unused" checked
+                            onchange="gameUI.toggleQuickSellKeepOne(this.checked)">
+                        <span><strong>🛡️ Giữ lại 1 bản</strong> cho mỗi loại trang bị chưa mặc trên người (Khuyên
+                            dùng)</span>
                     </label>
                 </div>
 
@@ -722,7 +866,8 @@
 
                 <!-- Nút hành động -->
                 <div class="modal-actions mt-3">
-                    <button class="btn-primary btn-quick-sell-confirm" id="btn-confirm-quick-sell" onclick="gameUI.confirmQuickSellDups()">
+                    <button class="btn-primary btn-quick-sell-confirm" id="btn-confirm-quick-sell"
+                        onclick="gameUI.confirmQuickSellDups()">
                         ⚡ Xác Nhận Bán Nhanh
                     </button>
                     <button class="btn-secondary" onclick="gameUI.closeQuickSellDupsModal()">Đóng</button>
@@ -740,6 +885,7 @@
     <script src="js/data/items.js"></script>
     <script src="js/data/titles.js"></script>
     <script src="js/data/stages.js"></script>
+    <script src="js/data/tower.js"></script>
     <script src="js/engine/audio.js"></script>
     <script src="js/engine/particles.js"></script>
     <script src="js/engine/storage.js"></script>

@@ -813,7 +813,19 @@ const ITEM_DATABASE = [
         price: 500000000000, // 500 Tỷ Linh Thạch
         sellPrice: 150000000000,
         icon: "⚛️",
-        desc: "Nghịch chuyển luân hồi vĩnh hằng, hấp thu trọn vẹn quy tắc đại đạo tối cao, lập tức gia tăng 250 Tỷ Tu Vi."
+        desc: "Nghịch chuyển luân hồi vĩnh hằng, hấp thu trọn vẹn quy tắc đại đạo tối cao, lập tức gia tăng 500 Tỷ Tu Vi."
+    },
+    {
+        id: "item_tower_ticket",
+        name: "Lệnh Bài Hư Không",
+        slot: "dan_duoc",
+        rarity: "tien",
+        reqRealm: 0,
+        currency: "hon_nguyen",
+        price: 5000000, // 5 Triệu Hỗn Nguyên Thạch
+        sellPrice: 1000, // 1 Nghìn Hỗn Nguyên Thạch
+        icon: "🎫",
+        desc: "Lệnh bài thần bí phong ấn không gian chi lực, dùng để khiêu chiến Hư Không Tháp. Mua bằng Hỗn Nguyên Thạch (5.000.000 🌀). Khi dùng tăng thêm 1 Lệnh Bài Hư Không (không giới hạn số lượng)."
     }
 ];
 

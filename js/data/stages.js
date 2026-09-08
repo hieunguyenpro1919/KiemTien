@@ -633,6 +633,39 @@ const STAGE_DATABASE = [
             ]
         }
     },
+    {
+        id: "stage_vo_cuc",
+        number: 22,
+        name: "Ải 22: Hư Vô Bản Nguyên Cảnh",
+        area: "Hư Vô Thần Vực",
+        difficulty: "Vô Cực",
+        diffColor: "#00f2fe",
+        reqRealm: 11, // Đại Đạo Chí Cao Vô Thượng
+        reqTier: 99,  // Yêu cầu Tầng 100
+        desc: "Cực hạn bản nguyên của vũ trụ nơi mọi quy tắc tan biến. Đánh bại Hư Vô Bản Nguyên để phá vỡ bình cảnh Tầng 100, chính thức bước chân vào Cảnh Giới Vô Cực.",
+        monster: {
+            name: "Hư Vô Bản Nguyên",
+            title: "Chí Tôn Hư Vô Tối Thượng",
+            avatar: "🌌",
+            hp: 200000000000000, // 200.000 Tỷ Máu
+            attack: 3500000000,  // 3.5 Tỷ Sát Thương
+            defense: 80000000,
+            attackSpeed: 1.2,
+            isBoss: true,
+            damageCapPct: 0.20,
+            breakCapPct: 0.30
+        },
+        rewards: {
+            tuVi: 1000000000000,       // 1.000 Tỷ Tu Vi (1.000 Tinh Nguyên)
+            linhThach: 0,
+            honNguyen: 50000,          // +50.000 Hỗn Nguyên Thạch
+            dropChance: 1.0,
+            possibleDrops: [
+                "weapon_dai_dao_chi_ton",
+                "pill_bat_hu_luan_hoi"
+            ]
+        }
+    }
 ];
 
 class StageSystem {

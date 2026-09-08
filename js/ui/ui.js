@@ -35,6 +35,10 @@ class UIController {
         // Tự động đánh lại ải (3s)
         this.isAutoRepeat = localStorage.getItem("tu_tien_auto_repeat") === "true";
         this.autoRepeatInterval = null;
+
+        // Tự động leo tháp tiếp theo (3s)
+        this.isTowerAutoClimb = false;
+        this.towerAutoClimbInterval = null;
     }
 
     init() {
@@ -109,10 +113,13 @@ class UIController {
         const btnFlee = document.getElementById("btn-combat-flee");
         if (btnFlee) {
             btnFlee.addEventListener("click", () => {
-                if (confirm("Đạo hữu có chắc muốn rút lui khỏi ải?")) {
+                const targetTab = this.combat.isTowerBattle ? "tower" : "stages";
+                const locName = this.combat.isTowerBattle ? "Hư Không Tháp" : "ải";
+                if (confirm(`Đạo hữu có chắc muốn rút lui khỏi ${locName}?`)) {
                     this.clearAutoRepeatTimer();
+                    this.clearTowerAutoClimbTimer();
                     this.combat.stopBattle();
-                    this.switchTab("stages");
+                    this.switchTab(targetTab);
                 }
             });
         }
@@ -312,6 +319,7 @@ class UIController {
         else if (tabName === "stages") this.renderStagesTab();
         else if (tabName === "skills") this.renderSkillsTab();
         else if (tabName === "shop") this.renderShopTab();
+        else if (tabName === "tower") this.renderTowerTab();
     }
 
     renderAll() {
@@ -321,6 +329,7 @@ class UIController {
         this.renderCharacterTab();
         this.renderSkillsTab();
         this.renderShopTab();
+        this.renderTowerTab();
     }
 
     // ================= THANH THÔNG TIN ĐỈNH (HEADER) =================
@@ -330,7 +339,7 @@ class UIController {
         const titleEl = document.getElementById("header-player-realm");
         if (titleEl) {
             titleEl.innerText = this.player.getFullTitle();
-            titleEl.style.color = realmColor;
+            titleEl.style.color = this.player.isVoCuc ? "#a855f7" : realmColor;
         }
 
         const tuViCur = document.getElementById("header-tu-vi-cur");
@@ -338,15 +347,40 @@ class UIController {
         const tuViProgress = document.getElementById("header-tu-vi-progress");
         const maxTuVi = this.player.getMaxTuVi();
 
-        if (tuViCur) tuViCur.innerText = this.formatNumber(this.player.tuVi);
-        if (tuViMax) tuViMax.innerText = this.formatNumber(maxTuVi);
-        if (tuViProgress) {
-            const percent = Math.min(100, (this.player.tuVi / maxTuVi) * 100);
-            tuViProgress.style.width = `${percent}%`;
+        if (this.player.isVoCuc) {
+            const currentTinhNguyen = this.player.tinhNguyen || 0;
+            if (tuViCur) tuViCur.innerText = `${this.formatNumber(currentTinhNguyen)} 🌌`;
+            if (tuViMax) tuViMax.innerText = `${this.formatNumber(maxTuVi)} 🌌`;
+            if (tuViProgress) {
+                const percent = Math.min(100, (currentTinhNguyen / maxTuVi) * 100);
+                tuViProgress.style.width = `${percent}%`;
+            }
+        } else {
+            if (tuViCur) tuViCur.innerText = this.formatNumber(this.player.tuVi);
+            if (tuViMax) tuViMax.innerText = this.formatNumber(maxTuVi);
+            if (tuViProgress) {
+                const percent = Math.min(100, (this.player.tuVi / maxTuVi) * 100);
+                tuViProgress.style.width = `${percent}%`;
+            }
         }
 
         const stonesEl = document.getElementById("header-linh-thach");
         if (stonesEl) stonesEl.innerText = this.formatNumber(this.player.linhThach);
+
+        const honNguyenBox = document.getElementById("header-hon-nguyen-box");
+        const honNguyenEl = document.getElementById("header-hon-nguyen");
+        const hasHonNguyen = (this.player.honNguyen || 0) > 0 || (this.player.linhThach || 0) >= 1e9 || this.player.isVoCuc;
+        if (honNguyenBox) {
+            honNguyenBox.style.display = hasHonNguyen ? "flex" : "none";
+        }
+        if (honNguyenEl) {
+            honNguyenEl.innerText = this.formatNumber(this.player.honNguyen || 0);
+        }
+
+        const exLt = document.getElementById("exchange-lt-val");
+        if (exLt) exLt.innerText = this.formatNumber(this.player.linhThach || 0);
+        const exHn = document.getElementById("exchange-hn-val");
+        if (exHn) exHn.innerText = this.formatNumber(this.player.honNguyen || 0);
 
         const statPointsBadge = document.getElementById("header-stat-points-badge");
         if (statPointsBadge) {
@@ -390,22 +424,117 @@ class UIController {
             }
         }
 
-        if (realmNameEl) {
-            realmNameEl.innerText = `${realm.name} - ${tierName}`;
-            realmNameEl.style.color = realm.color;
-        }
-        if (realmHanziEl) realmHanziEl.innerText = realm.hanzi;
-        if (realmDescEl) {
-            realmDescEl.innerHTML = `${realm.desc}${reqStageNote}`;
-        }
-        if (afkRateEl) {
-            const isPheCo = this.player.equippedTitle === "title_phe_co";
-            afkRateEl.innerText = `+${this.formatNumber(afkRate)} Tu Vi/giây ${isPheCo ? "(🌿 +50% Phê Cỏ)" : "(Tự nhiên)"}`;
-        }
+        // Trường hợp đặc biệt: Cảnh Giới Vô Cực hoặc Bình Cảnh Tầng 100
+        const isAtVoCucBottleneck = !this.player.isVoCuc && this.player.realmIndex >= 11 && this.player.tierIndex >= 99;
+        const hasClearedVoCuc = this.player.clearedStages && this.player.clearedStages.includes("stage_vo_cuc");
 
-        const percent = Math.min(100, (this.player.tuVi / maxTuVi) * 100);
-        if (tuViTextEl) tuViTextEl.innerText = `${this.formatNumber(this.player.tuVi)} / ${this.formatNumber(maxTuVi)} (${percent.toFixed(1)}%)`;
-        if (progressBarEl) progressBarEl.style.width = `${percent}%`;
+        if (this.player.isVoCuc) {
+            const hasClearedVoCuc = this.player.clearedStages && this.player.clearedStages.includes("stage_vo_cuc");
+            let reqVoCucNote = "";
+            if (!hasClearedVoCuc) {
+                reqVoCucNote = `<div style="font-size:12px; color:#ff3d00; margin-top:4px; font-weight:bold; background:rgba(255,61,0,0.1); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,61,0,0.3);">⚠️ BÌNH CẢNH: Cần trảm sát [Ải 22: Hư Vô Bản Nguyên Cảnh] mới có thể tiếp tục đột phá!</div>`;
+            }
+
+            if (realmNameEl) {
+                realmNameEl.innerText = this.player.getFullTitle();
+                realmNameEl.style.color = "#c084fc";
+            }
+            if (realmHanziEl) realmHanziEl.innerText = realm.hanzi || "大道至高";
+            if (realmDescEl) {
+                realmDescEl.innerHTML = `
+                    <div style="color: #a5b4fc; font-weight: 500;">
+                        🌌 <strong>Đại Đạo Vô Thượng:</strong> Tu vi đã hóa thành Tinh Nguyên, vượt thoát trần thế, ngạo thị hoàn vũ. Mỗi 1 🌌 Tinh Nguyên tương đương 1.000.000.000 (1 Tỷ) Tu Vi.
+                    </div>${reqVoCucNote}
+                `;
+            }
+            if (afkRateEl) {
+                const isPheCo = this.player.equippedTitle === "title_phe_co";
+                afkRateEl.innerText = `+${this.formatNumber(afkRate)} Tu Vi/giây ${isPheCo ? "(🌿 +50% Phê Cỏ)" : "(Tự nhiên)"} • Tự nén thành Tinh Nguyên khi đủ 1 Tỷ`;
+            }
+
+            const currentTinhNguyen = this.player.tinhNguyen || 0;
+            const percent = Math.min(100, (currentTinhNguyen / maxTuVi) * 100);
+            if (tuViTextEl) {
+                tuViTextEl.innerText = `🌌 Tiến Độ Tinh Nguyên: ${this.formatNumber(currentTinhNguyen)} / ${this.formatNumber(maxTuVi)} (${percent.toFixed(1)}%)`;
+            }
+            if (progressBarEl) progressBarEl.style.width = `${percent}%`;
+
+            if (btnBreakthrough) {
+                if (!hasClearedVoCuc) {
+                    btnBreakthrough.disabled = false;
+                    btnBreakthrough.classList.add("glow-btn");
+                    btnBreakthrough.innerText = "⚔️ KHIÊU CHIẾN ẢI ĐỘT PHÁ (ẢI 22)";
+                } else {
+                    const can = this.player.canBreakthrough();
+                    btnBreakthrough.disabled = !can;
+                    btnBreakthrough.classList.toggle("glow-btn", can);
+                    btnBreakthrough.innerText = can 
+                        ? `⚡ ĐỘT PHÁ (TẦNG ${this.player.tierIndex + 2}) (+4 ĐIỂM) ⚡` 
+                        : `Tích Lũy Tinh Nguyên Để Đột Phá (Cần ${this.formatNumber(maxTuVi)} 🌌)`;
+                }
+            }
+        } else if (isAtVoCucBottleneck) {
+            if (realmNameEl) {
+                realmNameEl.innerText = `${realm.name} - ${tierName}`;
+                realmNameEl.style.color = realm.color;
+            }
+            if (realmHanziEl) realmHanziEl.innerText = realm.hanzi;
+
+            if (hasClearedVoCuc) {
+                reqStageNote = `<div style="font-size:12px; color:#00e676; margin-top:4px; font-weight:bold;">✨ ĐÃ TRẢM SÁT HƯ VÔ BẢN NGUYÊN! Đủ điều kiện thăng hoa Tầng 101!</div>`;
+            } else {
+                reqStageNote = `<div style="font-size:12px; color:#ff3d00; margin-top:4px; font-weight:bold; background:rgba(255,61,0,0.1); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,61,0,0.3);">⚠️ BÌNH CẢNH TẦNG 100: Cần trảm sát [Ải 22: Hư Vô Bản Nguyên Cảnh] mới có thể tiếp tục đột phá!</div>`;
+            }
+
+            if (realmDescEl) {
+                realmDescEl.innerHTML = `${realm.desc}${reqStageNote}`;
+            }
+            if (afkRateEl) {
+                const isPheCo = this.player.equippedTitle === "title_phe_co";
+                afkRateEl.innerText = `+${this.formatNumber(afkRate)} Tu Vi/giây ${isPheCo ? "(🌿 +50% Phê Cỏ)" : "(Tự nhiên)"}`;
+            }
+
+            const percent = Math.min(100, (this.player.tuVi / maxTuVi) * 100);
+            if (tuViTextEl) tuViTextEl.innerText = `${this.formatNumber(this.player.tuVi)} / ${this.formatNumber(maxTuVi)} (${percent.toFixed(1)}%)`;
+            if (progressBarEl) progressBarEl.style.width = `${percent}%`;
+
+            if (btnBreakthrough) {
+                if (!hasClearedVoCuc) {
+                    btnBreakthrough.disabled = false;
+                    btnBreakthrough.classList.add("glow-btn");
+                    btnBreakthrough.innerText = "⚔️ KHIÊU CHIẾN ẢI ĐỘT PHÁ (ẢI 22)";
+                } else {
+                    const can = this.player.canBreakthrough();
+                    btnBreakthrough.disabled = !can;
+                    btnBreakthrough.classList.toggle("glow-btn", can);
+                    btnBreakthrough.innerText = can ? "⚡ ĐỘT PHÁ TẦNG 101 (+4 ĐIỂM) ⚡" : "Tích Lũy Tu Vi Để Đột Phá";
+                }
+            }
+        } else {
+            if (realmNameEl) {
+                realmNameEl.innerText = `${realm.name} - ${tierName}`;
+                realmNameEl.style.color = realm.color;
+            }
+            if (realmHanziEl) realmHanziEl.innerText = realm.hanzi;
+            if (realmDescEl) {
+                realmDescEl.innerHTML = `${realm.desc}${reqStageNote}`;
+            }
+            if (afkRateEl) {
+                const isPheCo = this.player.equippedTitle === "title_phe_co";
+                afkRateEl.innerText = `+${this.formatNumber(afkRate)} Tu Vi/giây ${isPheCo ? "(🌿 +50% Phê Cỏ)" : "(Tự nhiên)"}`;
+            }
+
+            const percent = Math.min(100, (this.player.tuVi / maxTuVi) * 100);
+            if (tuViTextEl) tuViTextEl.innerText = `${this.formatNumber(this.player.tuVi)} / ${this.formatNumber(maxTuVi)} (${percent.toFixed(1)}%)`;
+            if (progressBarEl) progressBarEl.style.width = `${percent}%`;
+
+            if (btnBreakthrough) {
+                const can = this.player.canBreakthrough();
+                btnBreakthrough.disabled = !can;
+                btnBreakthrough.classList.toggle("glow-btn", can);
+                btnBreakthrough.innerText = can ? "⚡ ĐỘT PHÁ CẢNH GIỚI (+4 ĐIỂM) ⚡" : "Tích Lũy Tu Vi Để Đột Phá";
+            }
+        }
 
         // Render Tên Nhân Vật và Danh Hiệu
         const charNameEl = document.getElementById("character-display-name");
@@ -428,16 +557,18 @@ class UIController {
                 titleBadgeEl.innerHTML = `<span>🎖️</span> <span>Chọn Danh Hiệu</span>`;
             }
         }
-
-        if (btnBreakthrough) {
-            const can = this.player.canBreakthrough();
-            btnBreakthrough.disabled = !can;
-            btnBreakthrough.classList.toggle("glow-btn", can);
-            btnBreakthrough.innerText = can ? "⚡ ĐỘT PHÁ CẢNH GIỚI (+4 ĐIỂM) ⚡" : "Tích Lũy Tu Vi Để Đột Phá";
-        }
     }
 
     handleBreakthrough() {
+        if (this.player.realmIndex >= 11 && this.player.tierIndex >= 99) {
+            const hasClearedVoCuc = this.player.clearedStages && this.player.clearedStages.includes("stage_vo_cuc");
+            if (!hasClearedVoCuc) {
+                this.showToast("⚠️ Cần đánh bại [Ải 22: Hư Vô Bản Nguyên Cảnh] mới có thể tiếp tục đột phá!", "warning");
+                this.switchTab("stages");
+                return;
+            }
+        }
+
         const result = this.player.breakthrough();
         if (result && result.success) {
             this.sound.playBreakthrough();
@@ -447,7 +578,11 @@ class UIController {
                     this.particles.emitBreakthrough(rect.left + rect.width / 2, rect.top + rect.height / 2);
                 }
             }
-            if (result.isMajor) {
+            if (result.isVoCuc && result.isMajor) {
+                this.showToast(`🌌 THĂNG HOA THÀNH CÔNG! Chúc mừng đạo hữu đạt [${result.newTitle}]! Tu vi hóa thành Tinh Nguyên, nhận 4 ĐIỂM TIỀM NĂNG!`, "breakthrough");
+            } else if (result.isVoCuc) {
+                this.showToast(`🎉 ĐỘT PHÁ THÀNH CÔNG! Đạt [${result.newTitle}], nhận 4 ĐIỂM TIỀM NĂNG!`, "breakthrough");
+            } else if (result.isMajor) {
                 this.showToast(`🌌 ĐỘT PHÁ ĐẠI CẢNH GIỚI! Chúc mừng đạo hữu bước vào [${result.realm.name}], nhận 4 ĐIỂM TIỀM NĂNG!`, "breakthrough");
             } else if (result.blockedReason) {
                 this.showToast(`⚡ Thăng lên [${result.newTitle}], nhận 4 ĐIỂM TIỀM NĂNG! (Cần vượt [${result.blockedReason}] để thăng đại cảnh giới)`, "info");
@@ -458,6 +593,9 @@ class UIController {
             this.renderCultivateTab();
             this.renderCharacterTab();
             StorageSystem.save(this.player);
+        } else if (result && result.isVoCucBlocked) {
+            this.showToast(result.msg, "warning");
+            this.switchTab("stages");
         } else {
             this.showToast("Chưa tích tụ đủ linh lực để đột phá!", "warning");
         }
@@ -1399,10 +1537,10 @@ class UIController {
                 </div>
 
                 <div class="title-condition-text">
-                    ${isUnlocked 
-                        ? `✅ <em>Đã đạt được:</em> ${title.conditionDesc}` 
-                        : `🔒 <em>Điều kiện:</em> ${title.conditionDesc}${title.id === "title_phe_co" ? ` <span style="color:#00e676; font-weight:600;">(Đã cắn: ${this.formatNumber(this.player.pillsConsumed || 0)}/10.000 viên)</span>` : ""}`
-                    }
+                    ${isUnlocked
+                    ? `✅ <em>Đã đạt được:</em> ${title.conditionDesc}`
+                    : `🔒 <em>Điều kiện:</em> ${title.conditionDesc}${title.id === "title_phe_co" ? ` <span style="color:#00e676; font-weight:600;">(Đã cắn: ${this.formatNumber(this.player.pillsConsumed || 0)}/10.000 viên)</span>` : ""}`
+                }
                 </div>
 
                 <div class="title-card-footer">
@@ -1483,7 +1621,10 @@ class UIController {
 
                 <div class="stage-rewards">
                     <span>✨ +${this.formatNumber(stage.rewards.tuVi)} Tu Vi</span>
-                    <span>💎 +${this.formatNumber(stage.rewards.linhThach)} Linh Thạch</span>
+                    ${stage.rewards.honNguyen 
+                        ? `<span style="color:#c7d2fe;">🌀 +${this.formatNumber(stage.rewards.honNguyen)} Hỗn Nguyên</span>` 
+                        : `<span>💎 +${this.formatNumber(stage.rewards.linhThach)} Linh Thạch</span>`
+                    }
                 </div>
 
                 <div class="stage-req">
@@ -1501,6 +1642,490 @@ class UIController {
             `;
             stageListEl.appendChild(card);
         });
+    }
+
+    // ================= TAB HƯ KHÔNG THÁP (ENDLESS TOWER) =================
+
+    renderTowerTab() {
+        this.player.checkTowerReset();
+
+        const highestFloorEl = document.getElementById("tower-highest-floor");
+        const ticketsEl = document.getElementById("tower-tickets-count");
+        const currentCardBox = document.getElementById("tower-current-card-box");
+        const sweepStatusEl = document.getElementById("tower-sweep-status");
+        const sweepPreviewEl = document.getElementById("tower-sweep-preview");
+        const btnSweep = document.getElementById("btn-tower-sweep");
+        const sharePreviewText = document.getElementById("tower-share-preview-text");
+
+        const tower = this.player.towerData || { highestFloor: 0, currentFloor: 1, dailyTickets: 3, lastResetDate: "" };
+
+        if (highestFloorEl) highestFloorEl.innerText = `Tầng ${tower.highestFloor || 0}`;
+        if (ticketsEl) ticketsEl.innerText = `${tower.dailyTickets ?? 3} Lệnh Bài`;
+
+        // Đồng bộ giá vé động từ ItemSystem / TOWER_CONFIG (5.000.000 Hỗn Nguyên)
+        const ticketPrice = this.getTowerTicketPrice();
+        const formattedTicketPrice = this.formatNumber(ticketPrice);
+        const btnBuyTicket = document.getElementById("btn-buy-tower-ticket");
+        if (btnBuyTicket) {
+            btnBuyTicket.innerText = `➕ Mua Vé (${formattedTicketPrice} 🌀)`;
+            btnBuyTicket.title = `Mua thêm Lệnh Bài Hư Không với giá ${ticketPrice.toLocaleString("vi-VN")} Hỗn Nguyên Thạch (hỗ trợ tự động nén từ Linh Thạch)`;
+        }
+
+        // Render quái tầng hiện tại
+        const floor = tower.currentFloor || 1;
+        const stage = typeof TowerSystem !== "undefined" ? TowerSystem.generateTowerStage(floor) : null;
+
+        if (currentCardBox && stage) {
+            const isBoss = (floor % 10 === 0);
+            const isElite = (!isBoss && floor % 5 === 0);
+            const badgeClass = isBoss ? "boss" : (isElite ? "elite" : "normal");
+            const badgeText = isBoss ? "👑 BOSS CỔ ĐẠI" : (isElite ? "⚔️ TINH ANH" : "🛡️ THƯỜNG");
+
+            let specialMechanicHtml = "";
+            if (isBoss) {
+                specialMechanicHtml = `
+                    <div class="tower-special-mechanic">
+                        🛡️ <strong>Kim Thân Boss:</strong> Đòn thường nhận tối đa 20% Máu. Đòn Bạo Kích & Kỹ Năng phá trần 30% Máu!
+                    </div>
+                `;
+            } else if (isElite) {
+                specialMechanicHtml = `
+                    <div class="tower-special-mechanic" style="border-left-color: #ff9800; color: #fed7aa; background: rgba(255, 152, 0, 0.1);">
+                        🛡️ <strong>Kim Thân Tinh Anh:</strong> Đòn thường nhận tối đa 25% Máu. Đòn Bạo Kích & Kỹ Năng phá trần 40% Máu!
+                    </div>
+                `;
+            }
+
+            const canBattle = tower.dailyTickets > 0;
+            const battleBtnText = canBattle 
+                ? `⚔️ Khiêu Chiến Tầng ${floor}` 
+                : `➕ Mua Vé (${formattedTicketPrice} 🌀) & Khiêu Chiến Tầng ${floor}`;
+
+            currentCardBox.innerHTML = `
+                <div class="tower-stage-card ${badgeClass}">
+                    <div class="tower-card-header">
+                        <span class="tower-card-title">
+                            <span>🗼 TẦNG ${floor}</span>
+                            <span style="font-size: 13px; color: var(--text-muted); font-weight: normal;">(${stage.area})</span>
+                        </span>
+                        <span class="tower-badge ${badgeClass}">${badgeText}</span>
+                    </div>
+
+                    <div class="tower-monster-row">
+                        <div class="tower-monster-avatar-box">
+                            <span>${stage.monster.avatar}</span>
+                        </div>
+                        <div class="tower-monster-details">
+                            <span class="tower-monster-name" style="color: ${stage.diffColor}">${stage.monster.name}</span>
+                            <span class="tower-monster-title">${stage.monster.title}</span>
+                            <span style="font-size: 11px; color: #ff5252;">⏳ Thời gian Enrage: 60 Giây</span>
+                        </div>
+                    </div>
+
+                    <div class="tower-stats-grid">
+                        <div class="tower-stat-item"><span>Sinh Mệnh:</span> <strong>${this.formatNumber(stage.monster.hp)}</strong></div>
+                        <div class="tower-stat-item"><span>Sát Thương:</span> <strong>${this.formatNumber(stage.monster.attack)}</strong></div>
+                        <div class="tower-stat-item"><span>Phòng Thủ:</span> <strong>${this.formatNumber(stage.monster.defense)}</strong></div>
+                        <div class="tower-stat-item"><span>Tốc Đánh:</span> <strong>${stage.monster.attackSpeed}s/đòn</strong></div>
+                    </div>
+
+                    ${specialMechanicHtml}
+
+                    <div class="tower-rewards-box">
+                        <span style="color: var(--text-gold); font-weight: 600;">🎁 Thưởng Tầng:</span>
+                        <span>✨ +${this.formatNumber(stage.rewards.tuVi)} Tu Vi</span>
+                        ${stage.rewards.honNguyen 
+                            ? `<span style="color:#c7d2fe;">🌀 +${this.formatNumber(stage.rewards.honNguyen)} Hỗn Nguyên</span>`
+                            : `<span>💎 +${this.formatNumber(stage.rewards.linhThach)} Linh Thạch</span>`
+                        }
+                    </div>
+
+                    <button class="btn-tower-battle" onclick="gameUI.startTowerBattle(${floor})">
+                        ${battleBtnText}
+                    </button>
+                </div>
+            `;
+        }
+
+        // Render Quét Nhanh (Sweep)
+        const canSweep = (tower.highestFloor || 0) >= 10;
+        if (sweepStatusEl) {
+            sweepStatusEl.innerText = canSweep ? "✅ Khả Dụng" : `Yêu cầu Tầng 10+ (Đã đạt: Tầng ${tower.highestFloor || 0})`;
+            sweepStatusEl.className = `sweep-badge ${canSweep ? "active" : ""}`;
+        }
+
+        if (btnSweep) {
+            btnSweep.disabled = !canSweep;
+            if (!canSweep) {
+                btnSweep.innerText = "🔒 Chưa Đủ Cấp Tầng (Cần Tầng 10+)";
+            } else if (tower.dailyTickets <= 0) {
+                btnSweep.innerText = `⚡ Mua Vé & Quét Nhanh (${formattedTicketPrice} 🌀)`;
+            } else {
+                btnSweep.innerText = "⚡ Quét Nhanh Ngay (Tốn 1 Lệnh Bài)";
+            }
+        }
+
+        if (sweepPreviewEl) {
+            if (canSweep && typeof TowerSystem !== "undefined") {
+                const sweepData = TowerSystem.calculateSweepRewards(tower.highestFloor);
+                if (sweepData) {
+                    sweepPreviewEl.style.display = "block";
+                    let sweepLinhThachText = "";
+                    if (sweepData.totalHonNguyen > 0) {
+                        sweepLinhThachText = `<strong>+${this.formatNumber(sweepData.totalHonNguyen)} 🌀 Hỗn Nguyên</strong> • <strong>+${this.formatNumber(sweepData.totalLinhThach)} 💎 Linh Thạch</strong>`;
+                    } else {
+                        sweepLinhThachText = `<strong>+${this.formatNumber(sweepData.totalLinhThach)} Linh Thạch</strong>`;
+                    }
+                    sweepPreviewEl.innerHTML = `
+                        ✨ Quét Tầng 1 -> ${sweepData.toFloor}: 
+                        <strong>+${this.formatNumber(sweepData.totalTuVi)} Tu Vi</strong> • 
+                        ${sweepLinhThachText}
+                    `;
+                } else {
+                    sweepPreviewEl.style.display = "none";
+                }
+            } else {
+                sweepPreviewEl.style.display = "none";
+            }
+        }
+
+        // Cập nhật chia sẻ
+        if (sharePreviewText && typeof TowerSystem !== "undefined") {
+            sharePreviewText.innerText = TowerSystem.getShareText(tower.highestFloor || 1);
+        }
+    }
+
+    /**
+     * Lấy giá mua Lệnh Bài Hư Không (Single Source of Truth từ items.js - 5.000.000 🌀)
+     */
+    getTowerTicketPrice() {
+        if (typeof ItemSystem !== "undefined") {
+            const item = ItemSystem.getItemById("item_tower_ticket");
+            if (item && item.price) return item.price;
+        }
+        if (typeof TOWER_CONFIG !== "undefined" && TOWER_CONFIG.TICKET_PRICE) {
+            return TOWER_CONFIG.TICKET_PRICE;
+        }
+        return 5000000;
+    }
+
+    /**
+     * Mua trực tiếp Lệnh Bài Hư Không trong tab Tháp (5.000.000 Hỗn Nguyên Thạch)
+     */
+    handleBuyTowerTicket() {
+        const ticketPrice = this.getTowerTicketPrice();
+        const formattedPrice = this.formatNumber(ticketPrice);
+        const totalHN = (this.player.honNguyen || 0) + Math.floor((this.player.linhThach || 0) / 1000000000);
+        if (totalHN < ticketPrice) {
+            this.showToast(`⚠️ Không đủ Hỗn Nguyên Thạch! Cần ${ticketPrice.toLocaleString("vi-VN")} (${formattedPrice}) 🌀 Hỗn Nguyên (hoặc Linh Thạch tương đương) để mua 1 Lệnh Bài Hư Không.`, "error");
+            return;
+        }
+
+        if (confirm(`Đạo hữu có chắc muốn tiêu hao ${ticketPrice.toLocaleString("vi-VN")} (${formattedPrice}) 🌀 Hỗn Nguyên (hoặc tự động nén từ Linh Thạch) để mua thêm 1 Lệnh Bài Hư Không?`)) {
+            const res = this.player.buyTowerTicket(1);
+            if (res.success) {
+                this.sound.playClick();
+                this.showToast(`🎫 ${res.msg}`, "success");
+                this.renderTowerTab();
+                this.updateHeaderInfo();
+                StorageSystem.save(this.player);
+            } else {
+                this.showToast(res.msg, "error");
+            }
+        }
+    }
+
+    /**
+     * Tự động hỏi mua vé khi hết vé và bắt đầu khiêu chiến
+     */
+    promptBuyTicketAndBattle(floor) {
+        const ticketPrice = this.getTowerTicketPrice();
+        const formattedPrice = this.formatNumber(ticketPrice);
+        const totalHN = (this.player.honNguyen || 0) + Math.floor((this.player.linhThach || 0) / 1000000000);
+        if (totalHN < ticketPrice) {
+            this.showToast(`⚠️ Đạo hữu đã hết Lệnh Bài Hư Không và không đủ ${ticketPrice.toLocaleString("vi-VN")} (${formattedPrice}) 🌀 Hỗn Nguyên (hoặc Linh Thạch tương đương) để mua thêm!`, "error");
+            return;
+        }
+
+        if (confirm(`⚠️ Đạo hữu đã hết Lệnh Bài Hư Không miễn phí.\n\nĐạo hữu có muốn tiêu hao ${ticketPrice.toLocaleString("vi-VN")} (${formattedPrice}) 🌀 Hỗn Nguyên để mua 1 Lệnh Bài và khiêu chiến Tầng ${floor} ngay không?`)) {
+            const res = this.player.buyTowerTicket(1);
+            if (res.success) {
+                this.sound.playClick();
+                this.showToast(`🎫 ${res.msg}`, "success");
+                this.updateHeaderInfo();
+                StorageSystem.save(this.player);
+                this.startTowerBattle(floor);
+            } else {
+                this.showToast(res.msg, "error");
+            }
+        }
+    }
+
+    startTowerBattle(floor) {
+        this.clearAutoRepeatTimer();
+        this.clearTowerAutoClimbTimer();
+        this.player.checkTowerReset();
+
+        if (this.player.towerData.dailyTickets <= 0) {
+            this.promptBuyTicketAndBattle(floor);
+            return;
+        }
+
+        const stage = TowerSystem.generateTowerStage(floor);
+        if (!stage) return;
+
+        // Giới hạn chiến đấu: Tự động tháo danh hiệu Phê Cỏ khi khiêu chiến
+        if (this.player.equippedTitle === "title_phe_co") {
+            this.player.equippedTitle = null;
+            this.showToast("⚠️ Đang 'Phê Cỏ' không thể chiến đấu! Danh hiệu đã tự động tháo gỡ.", "warning");
+            this.renderCultivateTab();
+            this.renderCharacterTab();
+            this.updateHeaderInfo();
+            StorageSystem.save(this.player);
+        }
+
+        this.sound.playSlash();
+        this.switchTab("combat");
+
+        // Thiết lập giao diện đấu trường
+        const mNameEl = document.getElementById("combat-monster-name");
+        const mAvatarEl = document.getElementById("combat-monster-avatar");
+        const pAvatarEl = document.getElementById("combat-player-avatar");
+        const pNameEl = document.getElementById("combat-player-name");
+        const stageTitleEl = document.getElementById("combat-stage-title");
+
+        if (mNameEl) {
+            const isBoss = (floor % 10 === 0);
+            const isElite = (!isBoss && floor % 5 === 0);
+            const bossCapStr = isBoss ? " 👑 (BOSS CỔ ĐẠI - Kim Thân 20% • Phá 30%)" : (isElite ? " ⚔️ (TINH ANH - Kim Thân 25% • Phá 40%)" : "");
+            mNameEl.innerText = `${stage.monster.name}${bossCapStr}`;
+        }
+        if (mAvatarEl) mAvatarEl.innerText = stage.monster.avatar;
+        if (pAvatarEl) pAvatarEl.innerText = "🧘‍♂️";
+        if (pNameEl) {
+            let titlePrefix = "";
+            if (this.player.equippedTitle && typeof TitleSystem !== "undefined") {
+                const title = TitleSystem.getTitleById(this.player.equippedTitle);
+                if (title) titlePrefix = `[${title.name}] `;
+            }
+            pNameEl.innerText = `${titlePrefix}${this.player.name} (${this.player.getFullTitle()})`;
+        }
+        if (stageTitleEl) stageTitleEl.innerText = stage.name;
+
+        // Render 3 nút kỹ năng trong trận
+        this.renderCombatSkillsUI();
+
+        // Xóa log cũ
+        const logBox = document.getElementById("combat-log-list");
+        if (logBox) logBox.innerHTML = "";
+
+        // Bắt đầu trận
+        this.combat.startBattle(stage, (result) => {
+            this.handleBattleEnd(result);
+        });
+    }
+
+    /**
+     * Chuyển tiếp ngay sang Tầng Tháp tiếp theo mà không bị giật về tab Tháp
+     */
+    nextTowerBattle(floor) {
+        this.clearTowerAutoClimbTimer();
+        const modal = document.getElementById("battle-result-modal");
+        if (modal) modal.style.display = "none";
+
+        if (this.player.towerData.dailyTickets <= 0) {
+            this.promptBuyTicketAndBattle(floor);
+            return;
+        }
+
+        this.startTowerBattle(floor);
+    }
+
+    /**
+     * Đánh lại tầng tháp hiện tại sau thất bại
+     */
+    retryTowerBattle(floor) {
+        this.clearTowerAutoClimbTimer();
+        const modal = document.getElementById("battle-result-modal");
+        if (modal) modal.style.display = "none";
+
+        if (this.player.towerData.dailyTickets <= 0) {
+            this.promptBuyTicketAndBattle(floor);
+            return;
+        }
+
+        this.startTowerBattle(floor);
+    }
+
+    /**
+     * Đóng modal kết quả và quay về tab Hư Không Tháp
+     */
+    closeTowerBattle() {
+        this.clearTowerAutoClimbTimer();
+        const modal = document.getElementById("battle-result-modal");
+        if (modal) modal.style.display = "none";
+        this.switchTab("tower");
+    }
+
+    /**
+     * Bật / Tắt chế độ tự động leo tháp tiếp theo (3s)
+     */
+    toggleTowerAutoClimb(forceState = null) {
+        if (forceState !== null) {
+            this.isTowerAutoClimb = forceState;
+        } else {
+            this.isTowerAutoClimb = !this.isTowerAutoClimb;
+        }
+
+        if (this.isTowerAutoClimb) {
+            this.sound.playClick();
+            this.showToast("Đã BẬT tự động leo tháp tiếp theo trong 3s!", "info");
+            const modal = document.getElementById("battle-result-modal");
+            if (modal && modal.style.display === "flex") {
+                const nextFloor = (this.combat?.currentStage?.number || 1) + 1;
+                this.startTowerAutoClimbCountdown(nextFloor);
+            }
+        } else {
+            this.sound.playClick();
+            this.showToast("Đã TẮT tự động leo tháp!", "info");
+            this.clearTowerAutoClimbTimer();
+            const container = document.getElementById("tower-auto-climb-countdown-container");
+            if (container && this.combat?.currentStage) {
+                const nextFloor = (this.combat.currentStage.number || 1) + 1;
+                container.innerHTML = `
+                    <div class="modal-actions mt-3">
+                        <button class="btn-primary" onclick="gameUI.nextTowerBattle(${nextFloor})">⚔️ Leo Tiếp Tầng ${nextFloor}</button>
+                        <button class="btn-secondary" onclick="gameUI.toggleTowerAutoClimb(true)">🔁 Tự Động Leo Tiếp (3s)</button>
+                        <button class="btn-secondary" onclick="gameUI.closeTowerBattle()">🏰 Quay Về Tháp</button>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    clearTowerAutoClimbTimer() {
+        if (this.towerAutoClimbInterval) {
+            clearInterval(this.towerAutoClimbInterval);
+            this.towerAutoClimbInterval = null;
+        }
+    }
+
+    startTowerAutoClimbCountdown(nextFloor) {
+        this.clearTowerAutoClimbTimer();
+        const container = document.getElementById("tower-auto-climb-countdown-container");
+        if (!container) return;
+
+        const speed = this.combat?.speedMultiplier || 1;
+        const totalTime = Math.max(1.0, +(3.0 / speed).toFixed(1));
+        let timeLeft = totalTime;
+
+        container.innerHTML = `
+            <div class="auto-repeat-countdown-box" style="border-color: rgba(224, 64, 251, 0.5); background: rgba(74, 20, 140, 0.2);">
+                <div class="countdown-header" style="color: #e040fb;">
+                    <span class="countdown-spinner">🗼</span>
+                    <span>Tự động leo <strong>Tầng ${nextFloor}</strong> sau: <strong class="countdown-timer" id="tower-autoclimb-timer" style="color: #f5d0fe;">${totalTime.toFixed(1)}</strong>s</span>
+                </div>
+                <div class="countdown-bar-outer">
+                    <div class="countdown-bar-fill" id="tower-autoclimb-bar" style="width: 100%; background: linear-gradient(90deg, #7b1fa2, #e040fb); box-shadow: 0 0 8px rgba(224, 64, 251, 0.6);"></div>
+                </div>
+                <div class="countdown-actions">
+                    <button class="btn-sm btn-warning" onclick="gameUI.nextTowerBattle(${nextFloor})">⚡ Leo Ngay</button>
+                    <button class="btn-sm btn-secondary" onclick="gameUI.toggleTowerAutoClimb(false)">🛑 Dừng Tự Động</button>
+                    <button class="btn-sm btn-secondary" onclick="gameUI.closeTowerBattle()">🏰 Về Tháp</button>
+                </div>
+            </div>
+        `;
+
+        const timerEl = document.getElementById("tower-autoclimb-timer");
+        const barEl = document.getElementById("tower-autoclimb-bar");
+
+        const updateInterval = 100;
+        this.towerAutoClimbInterval = setInterval(() => {
+            timeLeft -= (updateInterval / 1000);
+            if (timeLeft <= 0) {
+                this.clearTowerAutoClimbTimer();
+                if (timerEl) timerEl.innerText = "0.0";
+                if (barEl) barEl.style.width = "0%";
+                this.nextTowerBattle(nextFloor);
+            } else {
+                if (timerEl) timerEl.innerText = Math.max(0, timeLeft).toFixed(1);
+                if (barEl) {
+                    const percent = Math.max(0, (timeLeft / totalTime) * 100);
+                    barEl.style.width = `${percent}%`;
+                }
+            }
+        }, updateInterval);
+    }
+
+    handleTowerSweep() {
+        this.player.checkTowerReset();
+        if (!this.player.towerData || (this.player.towerData.highestFloor || 0) < 10) {
+            this.showToast("⚠️ Cần vượt qua tối thiểu Tầng 10 mới có thể mở khóa tính năng Quét Nhanh!", "warning");
+            return;
+        }
+
+        if (this.player.towerData.dailyTickets <= 0) {
+            const ticketPrice = this.getTowerTicketPrice();
+            const formattedPrice = this.formatNumber(ticketPrice);
+            const totalHN = (this.player.honNguyen || 0) + Math.floor((this.player.linhThach || 0) / 1000000000);
+            if (totalHN < ticketPrice) {
+                this.showToast(`⚠️ Đạo hữu đã hết Lệnh Bài Hư Không và không đủ ${ticketPrice.toLocaleString("vi-VN")} (${formattedPrice}) 🌀 Hỗn Nguyên (hoặc Linh Thạch tương đương) để mua thêm!`, "error");
+                return;
+            }
+            if (!confirm(`⚠️ Đạo hữu đã hết Lệnh Bài Hư Không.\n\nCó muốn tiêu hao ${ticketPrice.toLocaleString("vi-VN")} (${formattedPrice}) 🌀 Hỗn Nguyên để mua 1 Lệnh Bài và Quét Nhanh ngay không?`)) {
+                return;
+            }
+            const buyRes = this.player.buyTowerTicket(1);
+            if (!buyRes.success) {
+                this.showToast(buyRes.msg, "error");
+                return;
+            }
+            this.showToast(`🎫 ${buyRes.msg}`, "success");
+        }
+
+        const sweepData = TowerSystem.calculateSweepRewards(this.player.towerData.highestFloor);
+        if (!sweepData) return;
+
+        let rewardPrompt = `✨ Tu Vi: +${this.formatNumber(sweepData.totalTuVi)}\n`;
+        if (sweepData.totalHonNguyen > 0) {
+            rewardPrompt += `🌀 Hỗn Nguyên: +${this.formatNumber(sweepData.totalHonNguyen)}\n`;
+        }
+        rewardPrompt += `💎 Linh Thạch: +${this.formatNumber(sweepData.totalLinhThach)}`;
+
+        if (!confirm(`Đạo hữu có chắc muốn tiêu hao 1 Lệnh Bài Hư Không để quét nhanh từ Tầng 1 đến Tầng ${sweepData.toFloor}?\n\nPhần thưởng ước tính:\n${rewardPrompt}`)) {
+            return;
+        }
+
+        this.player.towerData.dailyTickets = Math.max(0, this.player.towerData.dailyTickets - 1);
+        this.player.addTuVi(sweepData.totalTuVi);
+        this.player.linhThach = (this.player.linhThach || 0) + sweepData.totalLinhThach;
+        if (sweepData.totalHonNguyen) {
+            this.player.honNguyen = (this.player.honNguyen || 0) + sweepData.totalHonNguyen;
+        }
+
+        this.sound.playVictory();
+        let toastMsg = `⚡ Quét nhanh thành công Tầng 1 -> ${sweepData.toFloor}! Nhận +${this.formatNumber(sweepData.totalTuVi)} Tu Vi`;
+        if (sweepData.totalHonNguyen > 0) {
+            toastMsg += `, +${this.formatNumber(sweepData.totalHonNguyen)} 🌀 Hỗn Nguyên`;
+        }
+        toastMsg += ` & +${this.formatNumber(sweepData.totalLinhThach)} 💎 Linh Thạch!`;
+        this.showToast(toastMsg, "breakthrough");
+        this.renderTowerTab();
+        this.updateHeaderInfo();
+        StorageSystem.save(this.player);
+    }
+
+    handleTowerShare() {
+        const text = TowerSystem.getShareText(this.player.towerData?.highestFloor || 1);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                this.showToast("📋 Đã sao chép chiến tích Hư Không Tháp vào bộ nhớ tạm!", "success");
+            }).catch(() => {
+                prompt("Sao chép chiến tích này:", text);
+            });
+        } else {
+            prompt("Sao chép chiến tích này:", text);
+        }
     }
 
     startBattle(stageId) {
@@ -1598,6 +2223,61 @@ class UIController {
 
         if (!modal || !titleEl || !contentEl) return;
 
+        // Xử lý kết thúc trận Hư Không Tháp (Endless Tower)
+        if (result.isTower) {
+            if (result.victory) {
+                titleEl.innerText = `🗼 ĐẠI THẮNG TẦNG ${result.stage.number}!`;
+                titleEl.style.color = "#e040fb";
+
+                contentEl.innerHTML = `
+                    <p style="color: #c084fc; font-weight: 600;">Đạo hữu đã dũng mãnh trảm sát ma vật Hư Không, phá tan cấm chế tiến lên tầng cao hơn!</p>
+                    <div class="result-rewards-box" style="border-color: rgba(224, 64, 251, 0.4); background: rgba(74, 20, 140, 0.15);">
+                        <div>✨ Tu Vi Nhận Được: <strong>+${this.formatNumber(result.tuViGain)}</strong></div>
+                        ${result.honNguyenGain > 0 ? `<div>🌀 Hỗn Nguyên: <strong style="color: #c7d2fe;">+${this.formatNumber(result.honNguyenGain)}</strong></div>` : ""}
+                        <div>💎 Linh Thạch: <strong>+${this.formatNumber(result.linhThachGain)}</strong></div>
+                        <div>🏆 Kỷ Lục Đạt Được: <strong>Tầng ${this.player.towerData.highestFloor}</strong></div>
+                    </div>
+                    <div id="tower-auto-climb-countdown-container">
+                        <div class="modal-actions mt-3">
+                            <button class="btn-primary" onclick="gameUI.nextTowerBattle(${result.stage.number + 1})">⚔️ Leo Tiếp Tầng ${result.stage.number + 1}</button>
+                            <button class="btn-secondary" onclick="gameUI.toggleTowerAutoClimb(true)">🔁 Tự Động Leo Tiếp (3s)</button>
+                            <button class="btn-secondary" onclick="gameUI.closeTowerBattle()">🏰 Quay Về Tháp</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                titleEl.innerText = result.isEnrageTimeout ? "⏳ HẾT THỜI GIAN ENRAGE (60s)!" : "💀 KHIÊU CHIẾN THẤT BẠI!";
+                titleEl.style.color = "#ff5252";
+
+                const failMsg = result.isEnrageTimeout
+                    ? "Cuồng bạo hư không nuốt chửng khiêu chiến! Đạo hữu không thể hạ gục quái vật trong vòng 60 giây."
+                    : "Đạo hữu kiệt sức trước uy áp ma vật Hư Không!";
+
+                contentEl.innerHTML = `
+                    <p>${failMsg}</p>
+                    <div class="result-rewards-box" style="border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08);">
+                        <div style="color: #f87171;">⚠️ Tổn thất: <strong>1 Lệnh Bài Hư Không</strong></div>
+                        <div>🎫 Lệnh Bài Còn Lại: <strong>${this.player.towerData.dailyTickets} Lệnh Bài</strong></div>
+                    </div>
+                    <div class="modal-actions mt-3">
+                        ${this.player.towerData.dailyTickets > 0
+                        ? `<button class="btn-primary" onclick="gameUI.retryTowerBattle(${result.stage.number})">⚔️ Thử Lại Tầng Này</button>`
+                        : `<button class="btn-warning" onclick="gameUI.promptBuyTicketAndBattle(${result.stage.number})">➕ Mua Vé (${this.formatNumber(this.getTowerTicketPrice())} 🌀) & Đánh Lại</button>`}
+                        <button class="btn-secondary" onclick="gameUI.closeTowerBattle()">🏰 Quay Về Tháp</button>
+                    </div>
+                `;
+            }
+            modal.style.display = "flex";
+            this.updateHeaderInfo();
+            StorageSystem.save(this.player);
+
+            // Nếu đang bật Tự Động Leo Tiếp (và chiến thắng), kích hoạt đếm ngược 3s
+            if (this.isTowerAutoClimb && result.victory) {
+                this.startTowerAutoClimbCountdown(result.stage.number + 1);
+            }
+            return;
+        }
+
         if (result.victory) {
             titleEl.innerText = "🏆 ĐẠI THẮNG VƯỢT ẢI!";
             titleEl.style.color = "#ffd700";
@@ -1622,6 +2302,7 @@ class UIController {
                 <p>Đạo hữu đã uy phong trảm sát yêu tà!</p>
                 <div class="result-rewards-box">
                     <div>✨ Tu Vi Nhận Được: <strong>+${this.formatNumber(result.tuViGain)}</strong></div>
+                    ${result.honNguyenGain > 0 ? `<div>🌀 Hỗn Nguyên: <strong style="color: #c7d2fe;">+${this.formatNumber(result.honNguyenGain)}</strong></div>` : ""}
                     <div>💎 Linh Thạch: <strong>+${this.formatNumber(result.linhThachGain)}</strong></div>
                     <div>🎁 Chiến Lợi Phẩm: ${dropHtml}</div>
                     ${titleHtml}
@@ -1660,9 +2341,14 @@ class UIController {
 
     closeBattleResult(gotoStages = false) {
         this.clearAutoRepeatTimer();
+        this.clearTowerAutoClimbTimer();
         const modal = document.getElementById("battle-result-modal");
         if (modal) modal.style.display = "none";
-        this.switchTab(gotoStages ? "stages" : "character");
+        if (this.combat.isTowerBattle) {
+            this.switchTab("tower");
+        } else {
+            this.switchTab(gotoStages ? "stages" : "character");
+        }
     }
 
     replayBattle() {
@@ -1670,7 +2356,11 @@ class UIController {
         const modal = document.getElementById("battle-result-modal");
         if (modal) modal.style.display = "none";
         if (this.combat.currentStage) {
-            this.startBattle(this.combat.currentStage.id);
+            if (this.combat.isTowerBattle) {
+                this.startTowerBattle(this.combat.currentStage.number);
+            } else {
+                this.startBattle(this.combat.currentStage.id);
+            }
         }
     }
 
@@ -2196,7 +2886,8 @@ class UIController {
         filtered.sort((a, b) => ItemSystem.compareItems(a, b));
         filtered.forEach(item => {
             const rarity = ItemSystem.getRarity(item.rarity);
-            const canAfford = this.player.linhThach >= item.price;
+            const isHonNguyen = item.currency === "hon_nguyen";
+            const canAfford = isHonNguyen ? (this.player.honNguyen || 0) >= item.price : (this.player.linhThach >= item.price);
             const reqRealmObj = RealmSystem.getRealm(item.reqRealm);
             const reqRealmTitle = reqRealmObj ? reqRealmObj.name : "Phàm Nhân";
             const isRealmOk = this.player.realmIndex >= item.reqRealm;
@@ -2221,28 +2912,32 @@ class UIController {
                 statsDesc = "Tẩy lại toàn bộ điểm tiềm năng";
             }
 
+            const currIcon = isHonNguyen ? "🌀" : "💎";
+            const currName = isHonNguyen ? "Hỗn Nguyên" : "Linh Thạch";
+
             let buyActionsHtml = "";
             if (item.slot === "dan_duoc" && !item.isResetPill && !item.isRenameScroll) {
-                const canAfford5 = this.player.linhThach >= (item.price * 5);
-                const canAfford10 = this.player.linhThach >= (item.price * 10);
-                const maxAffordable = Math.floor(this.player.linhThach / item.price);
+                const balance = isHonNguyen ? (this.player.honNguyen || 0) : this.player.linhThach;
+                const canAfford5 = balance >= (item.price * 5);
+                const canAfford10 = balance >= (item.price * 10);
+                const maxAffordable = Math.floor(balance / item.price);
                 buyActionsHtml = `
                     <div class="shop-pill-actions" style="display: flex; gap: 4px; align-items: center; flex-wrap: wrap;">
-                        <button class="btn-sm btn-primary" onclick="gameUI.buyShopItem('${item.id}', 1)" ${canAfford ? "" : "disabled"} title="${canAfford ? 'Mua 1 viên' : 'Thiếu Linh Thạch'}">
-                            ${canAfford ? "Mua 1" : "Thiếu 💎"}
+                        <button class="btn-sm btn-primary" onclick="gameUI.buyShopItem('${item.id}', 1)" ${canAfford ? "" : "disabled"} title="${canAfford ? 'Mua 1 viên' : 'Thiếu ' + currName}">
+                            ${canAfford ? "Mua 1" : "Thiếu " + currIcon}
                         </button>
-                        <button class="btn-sm btn-secondary" onclick="gameUI.buyShopItem('${item.id}', 10)" ${canAfford10 ? "" : "disabled"} title="${canAfford10 ? 'Mua 10 viên (' + this.formatNumber(item.price * 10) + ' 💎)' : 'Không đủ Linh Thạch mua 10'}">
+                        <button class="btn-sm btn-secondary" onclick="gameUI.buyShopItem('${item.id}', 10)" ${canAfford10 ? "" : "disabled"} title="${canAfford10 ? 'Mua 10 viên (' + this.formatNumber(item.price * 10) + ' ' + currIcon + ')' : 'Không đủ ' + currName + ' mua 10'}">
                             x10
                         </button>
-                        <button class="btn-sm btn-gold btn-buy-max" onclick="gameUI.handleBuyMaxPill('${item.id}')" ${canAfford ? "" : "disabled"} title="${canAfford ? 'Mua tối đa ' + this.formatNumber(maxAffordable) + ' viên với Linh Thạch hiện có' : 'Không đủ Linh Thạch'}">
+                        <button class="btn-sm btn-gold btn-buy-max" onclick="gameUI.handleBuyMaxPill('${item.id}')" ${canAfford ? "" : "disabled"} title="${canAfford ? 'Mua tối đa ' + this.formatNumber(maxAffordable) + ' viên với số dư hiện có' : 'Không đủ ' + currName}">
                             ⚡ Mua Hết
                         </button>
                     </div>
                 `;
             } else {
                 buyActionsHtml = `
-                    <button class="btn-sm btn-primary" onclick="gameUI.buyShopItem('${item.id}', 1)" ${canAfford ? "" : "disabled"} title="${canAfford ? 'Mua vật phẩm này' : 'Không đủ Linh Thạch'}">
-                        ${canAfford ? "Mua" : "Thiếu 💎"}
+                    <button class="btn-sm btn-primary" onclick="gameUI.buyShopItem('${item.id}', 1)" ${canAfford ? "" : "disabled"} title="${canAfford ? 'Mua vật phẩm này' : 'Không đủ ' + currName}">
+                        ${canAfford ? "Mua" : "Thiếu " + currIcon}
                     </button>
                 `;
             }
@@ -2266,7 +2961,7 @@ class UIController {
                         ${!isRealmOk ? `<span style="color:#ff7675; font-size:10px; margin-left:4px;">(Chưa đủ tu vi mặc)</span>` : ""}
                     </div>
                     <div class="shop-card-bottom">
-                        <span class="price-tag">💎 ${this.formatNumber(item.price)} Linh Thạch</span>
+                        <span class="price-tag" ${isHonNguyen ? 'style="color: #c7d2fe;"' : ''}>${currIcon} ${this.formatNumber(item.price)} ${currName}</span>
                         ${buyActionsHtml}
                     </div>
                 `;
@@ -2297,7 +2992,8 @@ class UIController {
         const res = this.player.buyMaxPill(itemId);
         if (res && res.success) {
             this.sound.playEquip();
-            this.showToast(`Đã mua tối đa ${this.formatNumber(res.count)}x [${res.item.name}], tiêu hao ${this.formatNumber(res.totalCost)} Linh Thạch!`, "success");
+            const currencyName = res.currency === "hon_nguyen" ? "🌀 Hỗn Nguyên Thạch" : "💎 Linh Thạch";
+            this.showToast(`Đã mua tối đa ${this.formatNumber(res.count)}x [${res.item.name}], tiêu hao ${this.formatNumber(res.totalCost)} ${currencyName}!`, "success");
             this.renderShopTab();
             this.updateHeaderInfo();
             if (typeof StorageSystem !== "undefined") {
@@ -2305,6 +3001,47 @@ class UIController {
             }
         } else {
             this.showToast(res ? res.msg : "Không thể mua hết đan dược!", "error");
+        }
+    }
+
+    // ================= TIỆM QUY ĐỔI HỖN NGUYÊN THẠCH =================
+
+    handleExchangeLinhThach(amount = 1) {
+        const res = this.player.exchangeLinhThachToHonNguyen(amount);
+        if (res.success) {
+            this.sound.playBreakthrough();
+            this.showToast(res.msg, "success");
+            this.updateHeaderInfo();
+            this.renderShopTab();
+            StorageSystem.save(this.player);
+        } else {
+            this.showToast(res.msg, "warning");
+        }
+    }
+
+    handleExchangeHonNguyen(amount = 1) {
+        const res = this.player.exchangeHonNguyenToLinhThach(amount);
+        if (res.success) {
+            this.sound.playEquip();
+            this.showToast(res.msg, "success");
+            this.updateHeaderInfo();
+            this.renderShopTab();
+            StorageSystem.save(this.player);
+        } else {
+            this.showToast(res.msg, "warning");
+        }
+    }
+
+    handleExchangeAllLinhThach() {
+        const res = this.player.exchangeAllLinhThachToHonNguyen();
+        if (res.success) {
+            this.sound.playBreakthrough();
+            this.showToast(res.msg, "success");
+            this.updateHeaderInfo();
+            this.renderShopTab();
+            StorageSystem.save(this.player);
+        } else {
+            this.showToast(res.msg, "warning");
         }
     }
 
@@ -2327,6 +3064,14 @@ class UIController {
 
     formatNumber(num) {
         if (num === undefined || num === null || isNaN(num)) return "0";
+        if (num >= 1000000000000000) {
+            const q = num / 1000000000000000;
+            return (q % 1 === 0 ? q : q.toFixed(2)) + " Triệu Tỷ";
+        }
+        if (num >= 1000000000000) {
+            const t = num / 1000000000000;
+            return (t % 1 === 0 ? t : t.toFixed(2)) + " Nghìn Tỷ";
+        }
         if (num >= 1000000000) {
             const b = num / 1000000000;
             return (b % 1 === 0 ? b : b.toFixed(2)) + " Tỷ";

@@ -252,6 +252,24 @@ const TITLE_DATABASE = [
         },
         checkUnlocked: (p) => p.clearedStages && p.clearedStages.includes("stage_21")
     },
+    {
+        id: "title_hu_vo",
+        name: "Hư Vô Chúa Tể",
+        icon: "🌌",
+        rarity: "thanh",
+        desc: "Trảm sát Hư Vô Bản Nguyên tại Ải 22, đánh sập gông cùm vũ trụ, thăng hoa cảnh giới Vô Cực tối cao.",
+        conditionDesc: "Đánh bại Hư Vô Bản Nguyên (Vượt Ải 22)",
+        category: "boss",
+        buffs: {
+            vatLi: 80000000,
+            phep: 80000000,
+            mau: 6000000000,
+            phongThu: 30000000,
+            khangPhep: 30000000,
+            baoKich: 55
+        },
+        checkUnlocked: (p) => p.clearedStages && p.clearedStages.includes("stage_vo_cuc")
+    },
 
 
     {
