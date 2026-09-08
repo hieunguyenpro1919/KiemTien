@@ -198,10 +198,11 @@ Người chơi có thể tùy biến lắp đặt 3 kỹ năng chủ động và
 3. **🛡️ Hộ Thể (Khiên)**: Tạo lớp giáp bảo hộ hấp thụ sát thương dựa trên % Máu tối đa của nhân vật. Lớp khiên hiển thị trực tiếp trên thanh máu của nhân vật.
 4. **💚 Trị Liệu**: Khôi phục sinh mệnh tức thì bằng công thức: $\text{Phép} \times \text{Hệ số} + 15\% \text{ Max HP}$.
 5. **🔥 Đốt Máu Cực Đạo (`skill_cuc_dao_dot_mau` - Cực Đạo Hồng Mông Thôn Huyết Quyết)**:
-   * Tuyệt kỹ tối cao tiêu hao sinh lực địch thủ.
-   * **Cơ Chế Độc Nhất**: Thiêu đốt trực tiếp 8% Máu tối đa của Boss kèm sát thương khuếch đại.
-   * **HOÀN TOÀN BỎ QUA KIM THÂN HỘ THỂ (Damage Cap)**: Không bị khống chế bởi bất kỳ trần sát thương nào.
-   * **HOÀN TOÀN BỎ QUA KHIÊN HỘ THỂ CỦA BOSS**: Bỏ qua lớp khiên của Boss, trừ trực tiếp thẳng vào máu gốc!
+   * Tuyệt kỹ tối cao tiêu hao sinh lực địch thủ theo thời gian (Damage over Time - DoT).
+   * **Cơ Chế Độc Nhất (DoT Định Kỳ)**: Sau khi tung chiêu, cứ **mỗi 1 giây** lại thiêu đốt **3% Máu tối đa của Boss** liên tục trong **5 giây** (Tổng cộng **15% Máu tối đa**).
+   * **HOÀN TOÀN BỎ QUA KIM THÂN HỘ THỂ (Damage Cap)**: Mỗi nhịp đốt 1s đều không bị khống chế bởi bất kỳ trần sát thương nào.
+   * **HOÀN TOÀN BỎ QUA KHIÊN HỘ THỂ CỦA BOSS**: Xuyên thấu toàn bộ khiên của Boss, trừ trực tiếp thẳng vào máu gốc!
+   * **Chỉ Báo Trực Quan**: Hiển thị hiệu ứng ánh lửa bùng cháy, text bay `🔥 -X (ĐỐT MÁU)`, nhật ký chiến đấu `dot-mau` và huy hiệu `🔥 THIÊU ĐỐT (Xs)` trên đầu Boss.
 
 ### Bộ 4 Kỹ Năng Độc Quyền Dành Riêng Cho Boss (Quái Thường Không Sở Hữu)
 Nhằm tăng thử thách và tính chiến thuật cho các trận quyết đấu đỉnh cao, tất cả quái vật mang danh hiệu Boss (`isBoss: true`) được trang bị chu kỳ xuất chiêu (mỗi 6.5 giây) với 4 tuyệt kỹ hung hiểm:

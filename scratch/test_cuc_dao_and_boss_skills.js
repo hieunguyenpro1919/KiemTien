@@ -90,13 +90,14 @@ assert.strictEqual(player.honNguyen, 40000, "Số dư Hỗn Nguyên sau khi bán
 console.log("✓ Mua và bán trang bị Cực Đạo bằng 🌀 Hỗn Nguyên Thạch hoạt động chính xác 100%");
 
 // -------------------------------------------------------------
-// TEST 3: Kỹ năng Đốt Máu người chơi (Bỏ qua Kim Thân và Khiên)
+// TEST 3: Kỹ năng Đốt Máu định kỳ mỗi 1s (Bỏ qua Kim Thân & Khiên)
 // -------------------------------------------------------------
-console.log("\n--- TEST 3: Kỹ năng Đốt Máu người chơi (Bỏ qua Kim Thân & Khiên) ---");
+console.log("\n--- TEST 3: Kỹ năng Đốt Máu định kỳ mỗi 1s (Bỏ qua Kim Thân & Khiên) ---");
 const burnSkill = SkillSystem.getSkillById("skill_cuc_dao_dot_mau");
 assert.ok(burnSkill, "Kỹ năng [skill_cuc_dao_dot_mau] phải tồn tại");
 assert.strictEqual(burnSkill.isBurnHp, true, "Kỹ năng phải có cờ isBurnHp: true");
-assert.strictEqual(burnSkill.burnPct, 0.08, "Tỉ lệ đốt máu phải là 8% Max HP");
+assert.strictEqual(burnSkill.burnDuration, 5, "Thời gian duy trì thiêu đốt là 5 giây");
+assert.strictEqual(burnSkill.burnPctPerTick, 0.03, "Mỗi 1 giây đốt 3% Max HP");
 
 const mockParticles = {
     emitSlash() {}, emitFire() {}, emitThunder() {}, emitMeditationQi() {},
@@ -128,27 +129,49 @@ const bossStage = {
 };
 
 combat.isAuto = false; // Tắt auto để tránh người chơi tự vung kiếm giết Boss khi đang test
+combat.playerAttackTimer = -999; // Tạm khóa đòn đánh thường để test riêng biệt sát thương thiêu đốt DoT
 combat.startBattle(bossStage, null);
+combat.playerAttackTimer = -999;
 combat.monsterShield = 500000; // Boss đang có 500k khiên
 
-const hpBeforeBurn = combat.monsterHp;
+const hpInitial = combat.monsterHp;
 const shieldBeforeBurn = combat.monsterShield;
 
-// Thi triển kỹ năng Đốt Máu
+// 1. Thi triển kỹ năng Đốt Máu
 const used = combat.useSkill(0);
 assert.strictEqual(used, true, "Thi triển kỹ năng Đốt Máu thành công");
+assert.strictEqual(combat.monsterBurnDuration, 5.0, "Thời gian thiêu đốt bắt đầu đếm từ 5 giây");
 
-const hpLost = hpBeforeBurn - combat.monsterHp;
-console.log(`Máu Boss ban đầu: ${hpBeforeBurn.toLocaleString()}, Máu sau khi đốt: ${combat.monsterHp.toLocaleString()}, Sát thương đốt: ${hpLost.toLocaleString()}`);
-
-// Xác nhận:
-// 1. Khiên của Boss KHÔNG bị giảm (đốt máu xuyên qua khiên!)
+// 2. Chạy 1 giây (1 nhịp đốt)
+combat.tick(1.0);
 assert.strictEqual(combat.monsterShield, shieldBeforeBurn, "Khiên của Boss KHÔNG được giảm (bỏ qua khiên!)");
-// 2. Máu của Boss bị giảm trực tiếp
-assert.ok(hpLost >= 800000, "Sát thương đốt máu phải >= 8% Max HP (800.000)");
+const hpAfter1s = combat.monsterHp;
+const tick1Dmg = hpInitial - hpAfter1s;
+console.log(`[Giây 1] Máu Boss sau 1s: ${hpAfter1s.toLocaleString()}, Sát thương đốt: ${tick1Dmg.toLocaleString()}`);
+assert.ok(tick1Dmg >= 300000000, "Sau 1 giây, sát thương đốt máu phải >= 3% Max HP (300.000.000)");
+
+// 3. Chạy tiếp 4 giây nữa (tổng 5 nhịp đốt trong 5 giây)
+for (let sec = 2; sec <= 5; sec++) {
+    const hpBeforeTick = combat.monsterHp;
+    combat.tick(1.0);
+    const tickDmg = hpBeforeTick - combat.monsterHp;
+    console.log(`[Giây ${sec}] Sát thương đốt: ${tickDmg.toLocaleString()}, Máu Boss còn: ${combat.monsterHp.toLocaleString()}`);
+    assert.ok(tickDmg >= 300000000, `Sau giây ${sec}, sát thương đốt phải >= 3% Max HP`);
+}
+
+const totalBurnDmg = hpInitial - combat.monsterHp;
+console.log(`Tổng sát thương thiêu đốt sau 5 giây: ${totalBurnDmg.toLocaleString()} (Máu ban đầu: ${hpInitial.toLocaleString()})`);
+assert.ok(totalBurnDmg >= 1500000000, "Tổng sát thương thiêu đốt sau 5 giây phải >= 15% Max HP (1.5 Tỷ HP)");
+assert.strictEqual(combat.monsterShield, shieldBeforeBurn, "Khiên của Boss vẫn nguyên vẹn 500k suốt quá trình đốt máu!");
+assert.strictEqual(combat.monsterBurnDuration, 0, "Sau 5 giây, hiệu ứng thiêu đốt kết thúc (duration = 0)");
+
+// 4. Giây thứ 6: Không còn hiệu ứng đốt máu, máu không giảm nữa
+const hpAfterEnd = combat.monsterHp;
+combat.tick(1.0);
+assert.strictEqual(combat.monsterHp, hpAfterEnd, "Sau khi hết hiệu ứng thiêu đốt, quái không bị trừ máu nữa");
 
 combat.stopBattle();
-console.log("✓ Kỹ năng Đốt Máu đã hoàn toàn BỎ QUA Khiên Hộ Thể và Kim Thân của Boss!");
+console.log("✓ Cơ chế Đốt Máu định kỳ mỗi 1 giây đã hoạt động chuẩn xác, HOÀN TOÀN BỎ QUA Khiên và Kim Thân!");
 
 // -------------------------------------------------------------
 // TEST 4: Bộ 4 kỹ năng độc quyền của Boss

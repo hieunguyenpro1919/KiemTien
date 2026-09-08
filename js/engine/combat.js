@@ -23,6 +23,10 @@ class CombatEngine {
         this.monsterShield = 0; // Khiên bảo hộ của Boss
         this.bossSkillTimer = 0; // Bộ đếm hồi chiêu kỹ năng Boss
         this.bossSkillIndex = 0; // Luân chuyển kỹ năng Boss
+        this.monsterBurnDuration = 0; // Thời gian hiệu ứng Đốt Máu còn lại (giây)
+        this.monsterBurnTickTimer = 0; // Bộ đếm nhịp đốt 1 giây
+        this.monsterBurnPctPerTick = 0.03; // % máu đốt mỗi giây
+        this.monsterBurnBonus = 0; // Sát thương cộng thêm từ chỉ số người chơi
 
         // Thời gian hồi của 3 ô kỹ năng (giây còn lại)
         this.skillCooldowns = [0, 0, 0];
@@ -85,6 +89,10 @@ class CombatEngine {
         this.monsterShield = 0;
         this.bossSkillTimer = 0;
         this.bossSkillIndex = 0;
+        this.monsterBurnDuration = 0;
+        this.monsterBurnTickTimer = 0;
+        this.monsterBurnPctPerTick = 0.03;
+        this.monsterBurnBonus = 0;
 
         // Tạo quái vật từ dữ liệu ải
         this.monster = {
@@ -121,6 +129,8 @@ class CombatEngine {
         this.isActive = false;
         this.playerStunTimer = 0;
         this.bossSkillTimer = 0;
+        this.monsterBurnDuration = 0;
+        this.monsterBurnTickTimer = 0;
         if (this.combatInterval) {
             clearInterval(this.combatInterval);
             this.combatInterval = null;
@@ -149,6 +159,19 @@ class CombatEngine {
         // Xử lý đếm lùi thời gian Bị Choáng của Người Chơi
         if (this.playerStunTimer > 0) {
             this.playerStunTimer = Math.max(0, this.playerStunTimer - effectiveDt);
+        }
+
+        // Xử lý hiệu ứng Đốt Máu định kỳ cứ mỗi 1 giây lên Quái/Boss (BỎ QUA KIM THÂN & KHIÊN)
+        if (this.monsterBurnDuration > 0 && this.monsterHp > 0) {
+            this.monsterBurnDuration = Math.max(0, this.monsterBurnDuration - effectiveDt);
+            this.monsterBurnTickTimer += effectiveDt;
+            while (this.monsterBurnTickTimer >= 1.0 && this.monsterHp > 0) {
+                this.monsterBurnTickTimer -= 1.0;
+                this.applyMonsterBurnTick();
+            }
+            if (this.monsterHp <= 0) return; // Quái chết do đốt máu thì dừng chu kỳ tick hiện tại
+        } else {
+            this.monsterBurnTickTimer = 0;
         }
 
         // Giảm thời gian hồi chiêu của 3 kỹ năng
@@ -463,25 +486,24 @@ class CombatEngine {
             }
 
         } else if (skill.type === "dot_mau" || skill.isBurnHp) {
-            // CƠ CHẾ ĐỐT MÁU BOSS: HOÀN TOÀN BỎ QUA KIM THÂN VÀ KHIÊN HỘ THỂ
-            const pct = skill.burnPct || 0.08;
-            const burnBase = Math.floor(this.monsterMaxHp * pct);
-            const bonusScale = Math.floor((pStats.phep + pStats.vatLi) * 50);
-            let burnDmg = Math.max(1, burnBase + bonusScale);
-
-            // Trừ trực tiếp vào máu của Boss (Không qua applyDamageCap, không trừ vào monsterShield)
-            this.monsterHp = Math.max(0, this.monsterHp - burnDmg);
+            // CƠ CHẾ ĐỐT MÁU BOSS ĐỊNH KỲ: CỨ MỖI 1S ĐỐT %HP BOSS, HOÀN TOÀN BỎ QUA KIM THÂN VÀ KHIÊN
+            const duration = skill.burnDuration || 5.0;
+            const pct = skill.burnPctPerTick || 0.03;
+            this.monsterBurnDuration = duration;
+            this.monsterBurnTickTimer = 0.0;
+            this.monsterBurnPctPerTick = pct;
+            this.monsterBurnBonus = Math.floor((pStats.phep + pStats.vatLi) * 20);
 
             this.sound.playFireSpell();
             this.shakeElement("monster-avatar-box");
 
             if (this.particles) {
                 this.particles.emitFire(mPos.x, mPos.y);
-                this.particles.addFloatingText(`🔥 ĐỐT MÁU! -${burnDmg}`, mPos.x, mPos.y - 35, "#ff3838", true);
+                this.particles.addFloatingText(`🔥 THIÊU ĐỐT (${duration}s)!`, mPos.x, mPos.y - 35, "#ff3838", true);
                 this.particles.addFloatingText("BỎ QUA KHIÊN & KIM THÂN!", mPos.x, mPos.y - 62, "#ff9f43", true);
             }
 
-            this.addCombatLog(`🔥 [ĐỐT MÁU CỰC ĐẠO] Thi triển [${skill.name}]! Lửa thiêng hồng mông BỎ QUA KIM THÂN & KHIÊN HỘ THỂ, thiêu đốt ${burnDmg.toLocaleString()} Máu của [${this.monster.name}]!`, "dot-mau");
+            this.addCombatLog(`🔥 [ĐỐT MÁU CỰC ĐẠO] Thi triển [${skill.name}]! Lửa thiêng hồng mông bám chặt lên [${this.monster.name}], liên tục thiêu đốt ${Math.round(pct * 100)}% Máu mỗi giây trong ${duration}s (HOÀN TOÀN BỎ QUA KHIÊN & KIM THÂN)!`, "dot-mau");
 
         } else if (skill.type === "ho_the") {
             const shieldAmount = Math.floor(this.playerMaxHp * skill.multiplier);
@@ -564,6 +586,43 @@ class CombatEngine {
                 this.handleDefeat();
             }, delay);
             return;
+        }
+    }
+
+    /**
+     * Kích hoạt 1 nhịp Đốt Máu định kỳ (cứ mỗi 1 giây sau khi tung chiêu)
+     * HOÀN TOÀN BỎ QUA KIM THÂN VÀ KHIÊN HỘ THỂ CỦA BOSS!
+     */
+    applyMonsterBurnTick() {
+        if (!this.isActive || !this.monster || this.monsterHp <= 0) return;
+
+        const pct = this.monsterBurnPctPerTick || 0.03;
+        const tickBase = Math.floor(this.monsterMaxHp * pct);
+        const tickDmg = Math.max(1, tickBase + (this.monsterBurnBonus || 0));
+
+        // Trừ trực tiếp vào máu quái/Boss, bỏ qua Kim Thân và Khiên Hộ Thể
+        this.monsterHp = Math.max(0, this.monsterHp - tickDmg);
+
+        if (this.sound) this.sound.playFireSpell();
+        this.shakeElement("monster-avatar-box");
+
+        const mPos = this.getMonsterCenter();
+        if (this.particles) {
+            this.particles.emitFire(mPos.x, mPos.y);
+            this.particles.addFloatingText(`🔥 -${tickDmg} (ĐỐT MÁU)`, mPos.x, mPos.y - 30, "#ff3838", true);
+        }
+
+        const remainSeconds = Math.ceil(this.monsterBurnDuration);
+        const remainText = remainSeconds > 0 ? ` (Còn ${remainSeconds}s)` : " (Hết)";
+        this.addCombatLog(`🔥 [ĐỐT MÁU] Lửa thiêng thiêu đốt, [${this.monster.name}] mất ${tickDmg.toLocaleString()} Máu (BỎ QUA KHIÊN & KIM THÂN)${remainText}!`, "dot-mau");
+
+        if (this.monsterHp <= 0) {
+            this.updateUI();
+            this.stopBattle();
+            const delay = Math.max(180, Math.round(450 / (this.speedMultiplier || 1)));
+            setTimeout(() => {
+                this.handleVictory();
+            }, delay);
         }
     }
 
@@ -868,6 +927,17 @@ class CombatEngine {
             const mShieldPercent = Math.min(100, ((this.monsterShield || 0) / this.monsterMaxHp) * 100);
             monsterShieldBar.style.width = `${mShieldPercent}%`;
             monsterShieldBar.style.display = (this.monsterShield > 0) ? "block" : "none";
+        }
+
+        // Cập nhật trạng thái Thiêu Đốt / Đốt Máu của quái vật / Boss
+        const monsterStatus = document.getElementById("combat-monster-status");
+        if (monsterStatus) {
+            if (this.monsterBurnDuration > 0 && this.monsterHp > 0) {
+                monsterStatus.style.display = "inline-block";
+                monsterStatus.innerText = `🔥 THIÊU ĐỐT (${this.monsterBurnDuration.toFixed(1)}s)`;
+            } else {
+                monsterStatus.style.display = "none";
+            }
         }
 
         // Cập nhật 3 nút kỹ năng

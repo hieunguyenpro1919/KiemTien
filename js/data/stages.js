@@ -27,7 +27,7 @@ const STAGE_DATABASE = [
         },
         rewards: {
             tuVi: 120,
-            linhThach: 50,
+            linhThach: 5000000000000,
             dropChance: 0.5,
             possibleDrops: ["hat_01", "armor_01", "pill_tu_khi_tieu"]
         }

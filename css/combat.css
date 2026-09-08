@@ -345,6 +345,19 @@
     to { transform: scale(1.05); box-shadow: 0 0 16px rgba(255, 215, 0, 1); }
 }
 
+/* Huy hiệu trạng thái Thiêu Đốt / Đốt Máu của Quái / Boss */
+.combat-burn-badge {
+    background: linear-gradient(135deg, #ff4757, #ff6b81) !important;
+    color: #fff !important;
+    box-shadow: 0 0 12px rgba(255, 71, 87, 0.8) !important;
+    animation: burnBadgePulse 0.8s infinite alternate !important;
+}
+
+@keyframes burnBadgePulse {
+    from { transform: scale(0.95); box-shadow: 0 0 6px rgba(255, 71, 87, 0.5); }
+    to { transform: scale(1.05); box-shadow: 0 0 16px rgba(255, 71, 87, 1); }
+}
+
 #combat-monster-shield-bar {
     background: rgba(0, 210, 211, 0.7);
     box-shadow: 0 0 12px #00d2d3;

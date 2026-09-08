@@ -487,7 +487,8 @@ const SKILL_DATABASE = [
         name: "Cực Đạo Hồng Mông Thôn Huyết Quyết",
         type: "dot_mau",
         isBurnHp: true,
-        burnPct: 0.08,
+        burnDuration: 5,
+        burnPctPerTick: 0.08,
         reqRealm: 11,
         reqTier: 10,
         price: 1500000000,
@@ -495,7 +496,7 @@ const SKILL_DATABASE = [
         multiplier: 50000.0,
         icon: "🔥",
         vfx: "burn_blood",
-        desc: "Tuyệt kỹ Cực Đạo nghịch thiên thiêu đốt bản nguyên sinh mệnh! Đốt 8% Máu tối đa của Boss kèm sát thương cực đại, HOÀN TOÀN BỎ QUA KIM THÂN VÀ KHIÊN HỘ THỂ!"
+        desc: "Tuyệt kỹ Cực Đạo nghịch thiên thiêu đốt bản nguyên sinh mệnh! Sau khi thi triển, cứ mỗi 1 giây lại thiêu đốt 3% Máu tối đa của Boss liên tục trong 5 giây (Tổng cộng 15% Máu), HOÀN TOÀN BỎ QUA KIM THÂN VÀ KHIÊN HỘ THỂ!"
     }
 ];
 
