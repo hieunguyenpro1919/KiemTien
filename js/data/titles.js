@@ -307,6 +307,20 @@ const TITLE_DATABASE = [
             khangPhep: 120
         },
         checkUnlocked: (p) => p.realmIndex >= 3
+    },
+    {
+        id: "title_phe_co",
+        name: "Phê Cỏ",
+        icon: "🌿",
+        rarity: "huyen",
+        desc: "Cắn đan dược như nhai kẹo, dược lực tràn trề khiến thần trí lâng lâng. Danh hiệu chuyên bế quan cày cấp, cấm mang vào phó bản chiến đấu!",
+        conditionDesc: "Tiêu thụ lũy kế từ 10.000 viên đan dược trở lên.",
+        category: "special",
+        buffs: {
+            cultivationBonusPct: 50,
+            noCombat: true
+        },
+        checkUnlocked: (p) => (p.pillsConsumed || 0) >= 10000
     }
 ];
 
@@ -389,7 +403,9 @@ class TitleSystem {
         if (buffs.phongThu) parts.push(`Thủ +${buffs.phongThu.toLocaleString()}`);
         if (buffs.khangPhep) parts.push(`K.Phép +${buffs.khangPhep.toLocaleString()}`);
         if (buffs.baoKich) parts.push(`Bạo +${buffs.baoKich}%`);
-        return parts.join(" • ");
+        if (buffs.cultivationBonusPct) parts.push(`🌿 Tốc độ Tu Vi +${buffs.cultivationBonusPct}% (Đả tọa/Treo máy)`);
+        if (buffs.noCombat) parts.push(`⚠️ Cấm chiến đấu`);
+        return parts.length > 0 ? parts.join(" • ") : "Không có hiệu ứng";
     }
 }
 

@@ -809,7 +809,7 @@ const ITEM_DATABASE = [
         slot: "dan_duoc",
         rarity: "thanh",
         reqRealm: 11, // Yêu cầu Đại Đạo Chí Cao Vô Thượng
-        tuViGain: 250000000000, // +250 Tỷ Tu Vi
+        tuViGain: 500000000000, // +500 Tỷ Tu Vi
         price: 500000000000, // 500 Tỷ Linh Thạch
         sellPrice: 150000000000,
         icon: "⚛️",

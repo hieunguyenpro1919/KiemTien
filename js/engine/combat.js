@@ -55,6 +55,15 @@ class CombatEngine {
         this.onCombatEndCallback = onCombatEnd;
         this.isActive = true;
 
+        // Giới hạn chiến đấu: Danh hiệu "Phê Cỏ" chuyên bế quan cày cấp, cấm mang vào phó bản
+        if (this.player.equippedTitle === "title_phe_co") {
+            this.player.equippedTitle = null;
+            if (typeof window !== "undefined" && window.gameUI) {
+                window.gameUI.showToast("⚠️ Đang 'Phê Cỏ' không thể chiến đấu! Danh hiệu đã tự động tháo gỡ.", "warning");
+                window.gameUI.renderCultivateTab();
+            }
+        }
+
         const pStats = this.player.getTotalStats();
         this.playerMaxHp = pStats.maxHp;
         this.playerHp = pStats.maxHp;

@@ -40,7 +40,7 @@ window.addEventListener("DOMContentLoaded", () => {
         // Nếu người chơi rời game trên 10 giây (giới hạn tối đa 24 giờ = 86,400 giây)
         if (offlineSec >= 10) {
             const cappedSec = Math.min(86400, offlineSec);
-            const afkRate = RealmSystem.getAfkTuViRate(player.realmIndex, player.tierIndex);
+            const afkRate = player.getAfkTuViRate();
             const offlineTuVi = cappedSec * afkRate;
             player.addTuVi(offlineTuVi);
 
@@ -73,7 +73,7 @@ window.addEventListener("DOMContentLoaded", () => {
         avatarBox.style.cursor = "pointer";
         avatarBox.title = "Nhấp liên tục để gia tốc đả tọa ngưng tụ tu vi!";
         avatarBox.addEventListener("click", (e) => {
-            const afkRate = RealmSystem.getAfkTuViRate(player.realmIndex, player.tierIndex);
+            const afkRate = player.getAfkTuViRate();
             player.addTuVi(afkRate);
             sound.playClick();
             
@@ -99,7 +99,7 @@ window.addEventListener("DOMContentLoaded", () => {
         lastTick = now;
         player.lastOnlineTime = now;
 
-        const afkRate = RealmSystem.getAfkTuViRate(player.realmIndex, player.tierIndex);
+        const afkRate = player.getAfkTuViRate();
         player.addTuVi(afkRate * elapsedSec);
 
         // Hiệu ứng hạt linh khí và cập nhật thanh tiến độ nếu đang ở tab nhân vật / động phủ
@@ -127,7 +127,7 @@ window.addEventListener("DOMContentLoaded", () => {
             if (elapsedSec >= 2) {
                 lastTick = now;
                 player.lastOnlineTime = now;
-                const afkRate = RealmSystem.getAfkTuViRate(player.realmIndex, player.tierIndex);
+                const afkRate = player.getAfkTuViRate();
                 player.addTuVi(afkRate * Math.min(3600, elapsedSec));
                 ui.updateHeaderInfo();
                 if (ui.currentTab === "character" || ui.currentTab === "cultivate") {

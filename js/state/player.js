@@ -49,6 +49,7 @@ class Player {
             hasHadRenameScroll: true,
             linhThach: 200,
             clearedStages: [],
+            pillsConsumed: 0,
             lastOnlineTime: Date.now()
         };
     }
@@ -72,6 +73,7 @@ class Player {
         this.hasHadRenameScroll = true;
         this.linhThach = d.linhThach;
         this.clearedStages = [...d.clearedStages];
+        this.pillsConsumed = d.pillsConsumed || 0;
         this.lastOnlineTime = d.lastOnlineTime;
         this.currentHp = this.getMaxHp();
     }
@@ -81,6 +83,17 @@ class Player {
      */
     getMaxTuVi() {
         return RealmSystem.getMaxTuVi(this.realmIndex, this.tierIndex);
+    }
+
+    /**
+     * Tốc độ nhận Tu Vi tự nhiên khi đả tọa (mỗi giây), áp dụng buff danh hiệu nếu có
+     */
+    getAfkTuViRate() {
+        let rate = RealmSystem.getAfkTuViRate(this.realmIndex, this.tierIndex);
+        if (this.equippedTitle === "title_phe_co") {
+            rate = Math.floor(rate * 1.5);
+        }
+        return rate;
     }
 
     /**
@@ -505,6 +518,7 @@ class Player {
         this.inventory.splice(invIndex, 1);
 
         if (item.tuViGain) {
+            this.pillsConsumed = (this.pillsConsumed || 0) + 1;
             this.addTuVi(item.tuViGain);
             return { success: true, item, msg: `Đã dùng 1x ${item.name}, nhận được +${item.tuViGain} điểm Tu Vi!` };
         } else if (item.isResetPill) {
@@ -572,6 +586,7 @@ class Player {
 
         // Cộng dồn toàn bộ Tu Vi
         if (item.tuViGain) {
+            this.pillsConsumed = (this.pillsConsumed || 0) + count;
             const totalTuVi = item.tuViGain * count;
             this.addTuVi(totalTuVi);
             return {
@@ -857,6 +872,7 @@ class Player {
             hasHadRenameScroll: true,
             linhThach: isNaN(this.linhThach) ? 0 : Number(this.linhThach),
             clearedStages: Array.isArray(this.clearedStages) ? [...this.clearedStages] : [],
+            pillsConsumed: Number(this.pillsConsumed) || 0,
             lastOnlineTime: Date.now()
         };
     }
@@ -902,6 +918,7 @@ class Player {
 
         this.linhThach = (typeof data.linhThach === "number" && !isNaN(data.linhThach)) ? Math.max(0, data.linhThach) : defaults.linhThach;
         this.clearedStages = Array.isArray(data.clearedStages) ? [...data.clearedStages] : [];
+        this.pillsConsumed = (typeof data.pillsConsumed === "number" && !isNaN(data.pillsConsumed)) ? Math.max(0, data.pillsConsumed) : (defaults.pillsConsumed || 0);
         this.lastOnlineTime = (typeof data.lastOnlineTime === "number" && !isNaN(data.lastOnlineTime)) ? data.lastOnlineTime : Date.now();
         this.currentHp = this.getMaxHp();
     }

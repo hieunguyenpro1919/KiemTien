@@ -365,7 +365,7 @@ class UIController {
         const realm = RealmSystem.getRealm(this.player.realmIndex);
         const tierName = RealmSystem.getTierName(this.player.tierIndex, this.player.realmIndex);
         const maxTuVi = this.player.getMaxTuVi();
-        const afkRate = RealmSystem.getAfkTuViRate(this.player.realmIndex, this.player.tierIndex);
+        const afkRate = this.player.getAfkTuViRate();
 
         const realmNameEl = document.getElementById("cultivate-realm-name");
         const realmHanziEl = document.getElementById("cultivate-realm-hanzi");
@@ -398,7 +398,10 @@ class UIController {
         if (realmDescEl) {
             realmDescEl.innerHTML = `${realm.desc}${reqStageNote}`;
         }
-        if (afkRateEl) afkRateEl.innerText = `+${afkRate} Tu Vi/giây (Tự nhiên)`;
+        if (afkRateEl) {
+            const isPheCo = this.player.equippedTitle === "title_phe_co";
+            afkRateEl.innerText = `+${this.formatNumber(afkRate)} Tu Vi/giây ${isPheCo ? "(🌿 +50% Phê Cỏ)" : "(Tự nhiên)"}`;
+        }
 
         const percent = Math.min(100, (this.player.tuVi / maxTuVi) * 100);
         if (tuViTextEl) tuViTextEl.innerText = `${this.formatNumber(this.player.tuVi)} / ${this.formatNumber(maxTuVi)} (${percent.toFixed(1)}%)`;
@@ -1015,6 +1018,17 @@ class UIController {
                 }
             }
             this.showToast(res.msg, "success");
+
+            // Kiểm tra mở khóa danh hiệu (đặc biệt: Phê Cỏ khi đạt 10.000 viên)
+            if (typeof TitleSystem !== "undefined") {
+                const newTitles = TitleSystem.checkAndUnlockTitles(this.player);
+                if (newTitles.length > 0) {
+                    newTitles.forEach(t => {
+                        this.showToast(`🎖️ CHÚC MỪNG! Đạo hữu đã đạt Danh Hiệu: [${t.name}]!`, "breakthrough");
+                    });
+                }
+            }
+
             this.renderCharacterTab();
             this.renderCultivateTab();
             this.updateHeaderInfo();
@@ -1056,6 +1070,17 @@ class UIController {
             }
 
             this.showToast(`✨ Đã dùng toàn bộ ${res.count}x [${res.item.name}], tăng +${this.formatNumber(res.totalTuVi)} Tu Vi!`, "breakthrough");
+
+            // Kiểm tra mở khóa danh hiệu (đặc biệt: Phê Cỏ khi đạt 10.000 viên)
+            if (typeof TitleSystem !== "undefined") {
+                const newTitles = TitleSystem.checkAndUnlockTitles(this.player);
+                if (newTitles.length > 0) {
+                    newTitles.forEach(t => {
+                        this.showToast(`🎖️ CHÚC MỪNG! Đạo hữu đã đạt Danh Hiệu: [${t.name}]!`, "breakthrough");
+                    });
+                }
+            }
+
             this.renderCharacterTab();
             this.renderCultivateTab();
             this.updateHeaderInfo();
@@ -1374,7 +1399,10 @@ class UIController {
                 </div>
 
                 <div class="title-condition-text">
-                    ${isUnlocked ? `✅ <em>Đã đạt được:</em> ${title.conditionDesc}` : `🔒 <em>Điều kiện:</em> ${title.conditionDesc}`}
+                    ${isUnlocked 
+                        ? `✅ <em>Đã đạt được:</em> ${title.conditionDesc}` 
+                        : `🔒 <em>Điều kiện:</em> ${title.conditionDesc}${title.id === "title_phe_co" ? ` <span style="color:#00e676; font-weight:600;">(Đã cắn: ${this.formatNumber(this.player.pillsConsumed || 0)}/10.000 viên)</span>` : ""}`
+                    }
                 </div>
 
                 <div class="title-card-footer">
@@ -1483,6 +1511,16 @@ class UIController {
         if (!StageSystem.isStageUnlocked(this.player.realmIndex, this.player.tierIndex, stage)) {
             this.showToast("Tu vi chưa đủ, tiến vào sẽ tan xương nát thịt!", "error");
             return;
+        }
+
+        // Giới hạn chiến đấu: Tự động tháo danh hiệu Phê Cỏ khi khiêu chiến
+        if (this.player.equippedTitle === "title_phe_co") {
+            this.player.equippedTitle = null;
+            this.showToast("⚠️ Đang 'Phê Cỏ' không thể chiến đấu! Danh hiệu đã tự động tháo gỡ.", "warning");
+            this.renderCultivateTab();
+            this.renderCharacterTab();
+            this.updateHeaderInfo();
+            StorageSystem.save(this.player);
         }
 
         this.sound.playSlash();

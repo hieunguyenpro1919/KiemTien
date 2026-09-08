@@ -132,6 +132,7 @@ class StorageSystem {
                 hasHadRenameScroll: true,
                 linhThach: 200,
                 clearedStages: [],
+                pillsConsumed: 0,
                 lastOnlineTime: Date.now()
             };
 
