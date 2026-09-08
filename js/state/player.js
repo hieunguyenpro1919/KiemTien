@@ -631,7 +631,19 @@ class Player {
 
         this.inventory.splice(invIndex, 1);
 
-        if (item.tuViGain) {
+        if (item.tinhNguyenGain) {
+            this.pillsConsumed = (this.pillsConsumed || 0) + 1;
+            const tinhGain = item.tinhNguyenGain;
+            this.addTinhNguyen(tinhGain);
+            return {
+                success: true,
+                item,
+                gainAmount: tinhGain,
+                isTinhNguyen: true,
+                isVoCucToast: true,
+                msg: `Đã dùng 1x ${item.name}, tiếp nhận +${tinhGain.toLocaleString("vi-VN")} Tinh Nguyên Đại Đạo!`
+            };
+        } else if (item.tuViGain) {
             this.pillsConsumed = (this.pillsConsumed || 0) + 1;
             if (this.isVoCuc) {
                 const tinhGain = Math.max(1, Math.floor(item.tuViGain / 1000000000));
@@ -709,8 +721,21 @@ class Player {
         // Xóa toàn bộ số lượng vật phẩm này khỏi túi đồ
         this.inventory = this.inventory.filter(id => id !== itemId);
 
-        // Cộng dồn toàn bộ Tu Vi (hoặc Tinh Nguyên nếu ở Cảnh Giới Vô Cực)
-        if (item.tuViGain) {
+        // Cộng dồn toàn bộ Tinh Nguyên hoặc Tu Vi
+        if (item.tinhNguyenGain) {
+            this.pillsConsumed = (this.pillsConsumed || 0) + count;
+            const totalTinhNguyen = item.tinhNguyenGain * count;
+            this.addTinhNguyen(totalTinhNguyen);
+            return {
+                success: true,
+                count: count,
+                totalTuVi: totalTinhNguyen,
+                isTinhNguyen: true,
+                isVoCucToast: true,
+                item: item,
+                msg: `Đã dùng hết ${count}x [${item.name}], tiếp nhận +${totalTinhNguyen.toLocaleString("vi-VN")} Tinh Nguyên Đại Đạo!`
+            };
+        } else if (item.tuViGain) {
             this.pillsConsumed = (this.pillsConsumed || 0) + count;
             if (this.isVoCuc) {
                 const tinhGainPerPill = Math.max(1, Math.floor(item.tuViGain / 1000000000));
@@ -805,21 +830,34 @@ class Player {
             };
         }
 
-        // Tính số lượng tối đa có thể mua theo số dư Linh Thạch / Hỗn Nguyên
+        // Tính số lượng tối đa có thể mua theo số dư Linh Thạch / Hỗn Nguyên (có hỗ trợ tự động nén Linh Thạch)
         const isHonNguyen = item.currency === "hon_nguyen";
-        const currentBalance = isHonNguyen ? (this.honNguyen || 0) : (this.linhThach || 0);
-        const maxAffordable = Math.floor(currentBalance / item.price);
+        let maxAffordable = 0;
+        if (isHonNguyen) {
+            const totalHonNguyenEquivalent = (this.honNguyen || 0) + Math.floor((this.linhThach || 0) / 1000000000);
+            maxAffordable = Math.floor(totalHonNguyenEquivalent / item.price);
+        } else {
+            maxAffordable = Math.floor((this.linhThach || 0) / item.price);
+        }
+
         if (maxAffordable <= 0) {
             return { 
                 success: false, 
                 reason: "not_enough_money", 
-                msg: isHonNguyen ? "Không đủ Hỗn Nguyên Thạch để mua!" : "Không đủ Linh Thạch để mua!" 
+                msg: isHonNguyen ? "Không đủ Hỗn Nguyên Thạch (hoặc Linh Thạch tương đương) để mua!" : "Không đủ Linh Thạch để mua!" 
             };
         }
 
         const totalCost = maxAffordable * item.price;
         if (isHonNguyen) {
-            this.honNguyen -= totalCost;
+            if ((this.honNguyen || 0) < totalCost) {
+                const neededHonNguyen = totalCost - (this.honNguyen || 0);
+                const neededLinhThach = neededHonNguyen * 1000000000;
+                this.linhThach -= neededLinhThach;
+                this.honNguyen = 0;
+            } else {
+                this.honNguyen -= totalCost;
+            }
         } else {
             this.linhThach -= totalCost;
         }

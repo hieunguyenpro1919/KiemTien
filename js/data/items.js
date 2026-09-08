@@ -906,7 +906,20 @@ const ITEM_DATABASE = [
         sellPrice: 1000, // 1 Nghìn Hỗn Nguyên Thạch
         icon: "🎫",
         desc: "Lệnh bài thần bí phong ấn không gian chi lực, dùng để khiêu chiến Hư Không Tháp. Mua bằng Hỗn Nguyên Thạch (5.000 🌀). Khi dùng tăng thêm 1 Lệnh Bài Hư Không (không giới hạn số lượng)."
-    }
+    },
+    {
+        id: "pill_vo_cuc_dai_dao",
+        name: "Vô Cực Đại Đạo Bất Hủ Thần Đan",
+        slot: "dan_duoc",
+        rarity: "cuc_dao",
+        reqRealm: 11, // Cảnh giới Vô Cực / Đại Đạo Chí Cao
+        currency: "hon_nguyen",
+        tinhNguyenGain: 1000,
+        price: 25000, // 25.000 Hỗn Nguyên Thạch
+        sellPrice: 8000,
+        icon: "🌌",
+        desc: "Thần đan nghịch thiên luyện hóa từ quy tắc căn nguyên của vạn giới hư vô. Khi dùng trực tiếp gia tăng 1.000 điểm Tinh Nguyên đại đạo."
+    },
 ];
 
 class ItemSystem {

@@ -938,6 +938,9 @@ class UIController {
                 const reqRealmObj = item.reqRealm !== undefined ? RealmSystem.getRealm(item.reqRealm) : null;
                 const reqRealmName = reqRealmObj ? reqRealmObj.name : `Cảnh giới ${item.reqRealm}`;
 
+                const currIcon = item.currency === "hon_nguyen" ? "🌀" : "💎";
+                const currName = item.currency === "hon_nguyen" ? "Hỗn Nguyên" : "Linh Thạch";
+
                 let statsDisplay = "";
                 if (item.stats) {
                     const parts = [];
@@ -947,6 +950,12 @@ class UIController {
                     if (item.stats.phongThu) parts.push(`Thủ +${item.stats.phongThu}`);
                     if (item.stats.baoKich) parts.push(`Bạo +${item.stats.baoKich}%`);
                     statsDisplay = parts.join(", ");
+                } else if (item.tinhNguyenGain) {
+                    if (count > 1) {
+                        statsDisplay = `🌌 <strong>+${this.formatNumber(item.tinhNguyenGain * count)} Tinh Nguyên</strong> <small style="opacity:0.8; font-size:10px;">(+${this.formatNumber(item.tinhNguyenGain)}/viên)</small>`;
+                    } else {
+                        statsDisplay = `🌌 +${this.formatNumber(item.tinhNguyenGain)} Tinh Nguyên`;
+                    }
                 } else if (item.tuViGain) {
                     if (count > 1) {
                         statsDisplay = `✨ <strong>+${this.formatNumber(item.tuViGain * count)} Tu Vi</strong> <small style="opacity:0.8; font-size:10px;">(+${this.formatNumber(item.tuViGain)}/viên)</small>`;
@@ -975,23 +984,23 @@ class UIController {
                         if (isEquipped) {
                             actionBtns = `
                                 ${equipBtn}
-                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')" title="Bán 1 món">Bán 1 (${item.sellPrice} 💎)</button>
-                                <button class="btn-sm btn-warning" onclick="event.stopPropagation(); gameUI.sellAllItems('${item.id}')" title="Bán toàn bộ ${count} bản trong túi đồ (vẫn giữ bản đang mặc trên người)">⚡ Bán Trùng (${count}) (${this.formatNumber(item.sellPrice * count)} 💎)</button>
+                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')" title="Bán 1 món">Bán 1 (${item.sellPrice} ${currIcon})</button>
+                                <button class="btn-sm btn-warning" onclick="event.stopPropagation(); gameUI.sellAllItems('${item.id}')" title="Bán toàn bộ ${count} bản trong túi đồ (vẫn giữ bản đang mặc trên người)">⚡ Bán Trùng (${count}) (${this.formatNumber(item.sellPrice * count)} ${currIcon})</button>
                             `;
                         } else {
                             const dupsCount = count - 1;
                             const dupsGain = item.sellPrice * dupsCount;
                             actionBtns = `
                                 ${equipBtn}
-                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')" title="Bán 1 món">Bán 1 (${item.sellPrice} 💎)</button>
-                                <button class="btn-sm btn-warning" onclick="event.stopPropagation(); gameUI.sellItemDuplicates('${item.id}')" title="Giữ lại 1 bản trong túi đồ, bán nhanh ${dupsCount} bản trùng">Bán Trùng (${dupsCount}) (${this.formatNumber(dupsGain)} 💎)</button>
-                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellAllItems('${item.id}')" title="Bán toàn bộ ${count} món trong túi">Bán Hết (${this.formatNumber(item.sellPrice * count)} 💎)</button>
+                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')" title="Bán 1 món">Bán 1 (${item.sellPrice} ${currIcon})</button>
+                                <button class="btn-sm btn-warning" onclick="event.stopPropagation(); gameUI.sellItemDuplicates('${item.id}')" title="Giữ lại 1 bản trong túi đồ, bán nhanh ${dupsCount} bản trùng">Bán Trùng (${dupsCount}) (${this.formatNumber(dupsGain)} ${currIcon})</button>
+                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellAllItems('${item.id}')" title="Bán toàn bộ ${count} món trong túi">Bán Hết (${this.formatNumber(item.sellPrice * count)} ${currIcon})</button>
                             `;
                         }
                     } else {
                         actionBtns = `
                             ${equipBtn}
-                            <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')">Bán (${item.sellPrice} 💎)</button>
+                            <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')">Bán (${item.sellPrice} ${currIcon})</button>
                         `;
                     }
                 } else if (isDan) {
@@ -999,49 +1008,52 @@ class UIController {
                         if (count > 1) {
                             actionBtns = `
                                 <button class="btn-sm btn-disabled" disabled title="Cần đạt cảnh giới ${reqRealmName} trở lên mới có thể sử dụng">🔒 Cần ${reqRealmName}</button>
-                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')" title="Bán 1 viên">Bán 1 (${item.sellPrice} 💎)</button>
-                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellAllItems('${item.id}')" title="Bán hết ${count} viên">Bán Hết (${this.formatNumber(item.sellPrice * count)} 💎)</button>
+                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')" title="Bán 1 viên">Bán 1 (${item.sellPrice} ${currIcon})</button>
+                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellAllItems('${item.id}')" title="Bán hết ${count} viên">Bán Hết (${this.formatNumber(item.sellPrice * count)} ${currIcon})</button>
                             `;
                         } else {
                             actionBtns = `
                                 <button class="btn-sm btn-disabled" disabled title="Cần đạt cảnh giới ${reqRealmName} trở lên mới có thể sử dụng">🔒 Cần ${reqRealmName}</button>
-                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')">Bán (${item.sellPrice} 💎)</button>
+                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')">Bán (${item.sellPrice} ${currIcon})</button>
                             `;
                         }
                     } else if (item.isResetPill) {
                         if (count > 1) {
                             actionBtns = `
                                 <button class="btn-sm btn-success" onclick="event.stopPropagation(); gameUI.useConsumable('${item.id}')">Tẩy Tủy</button>
-                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')">Bán 1 (${item.sellPrice} 💎)</button>
-                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellAllItems('${item.id}')" title="Bán toàn bộ ${count} viên lấy ${this.formatNumber(item.sellPrice * count)} Linh Thạch">Bán Hết (${this.formatNumber(item.sellPrice * count)} 💎)</button>
+                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')">Bán 1 (${item.sellPrice} ${currIcon})</button>
+                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellAllItems('${item.id}')" title="Bán toàn bộ ${count} viên">Bán Hết (${this.formatNumber(item.sellPrice * count)} ${currIcon})</button>
                             `;
                         } else {
                             actionBtns = `
                                 <button class="btn-sm btn-success" onclick="event.stopPropagation(); gameUI.useConsumable('${item.id}')">Tẩy Tủy</button>
-                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')">Bán (${item.sellPrice} 💎)</button>
+                                <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')">Bán (${item.sellPrice} ${currIcon})</button>
                             `;
                         }
                     } else if (item.isRenameScroll) {
                         actionBtns = `
                             <button class="btn-sm btn-primary" onclick="event.stopPropagation(); gameUI.openRenameModal()">Đổi Tên</button>
-                            <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')">Bán (${item.sellPrice} 💎)</button>
+                            <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')">Bán (${item.sellPrice} ${currIcon})</button>
                         `;
                     } else if (count > 1) {
+                        const gainDesc = item.tinhNguyenGain 
+                            ? `+${this.formatNumber(item.tinhNguyenGain * count)} Tinh Nguyên Đại Đạo` 
+                            : `+${this.formatNumber((item.tuViGain || 0) * count)} Tu Vi`;
                         actionBtns = `
                             <button class="btn-sm btn-success" onclick="event.stopPropagation(); gameUI.useConsumable('${item.id}')" title="Dùng 1 viên">Dùng 1</button>
-                            <button class="btn-sm btn-warning btn-use-all" onclick="event.stopPropagation(); gameUI.useAllConsumables('${item.id}')" title="Dùng hết toàn bộ ${count} viên nhận +${this.formatNumber(item.tuViGain * count)} Tu Vi">⚡ Dùng Hết (${count})</button>
-                            <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')" title="Bán 1 viên">Bán 1 (${item.sellPrice} 💎)</button>
-                            <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellAllItems('${item.id}')" title="Bán hết ${count} viên">Bán Hết (${this.formatNumber(item.sellPrice * count)} 💎)</button>
+                            <button class="btn-sm btn-warning btn-use-all" onclick="event.stopPropagation(); gameUI.useAllConsumables('${item.id}')" title="Dùng hết toàn bộ ${count} viên nhận ${gainDesc}">⚡ Dùng Hết (${count})</button>
+                            <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')" title="Bán 1 viên">Bán 1 (${item.sellPrice} ${currIcon})</button>
+                            <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellAllItems('${item.id}')" title="Bán hết ${count} viên">Bán Hết (${this.formatNumber(item.sellPrice * count)} ${currIcon})</button>
                         `;
                     } else {
                         actionBtns = `
                             <button class="btn-sm btn-success" onclick="event.stopPropagation(); gameUI.useConsumable('${item.id}')">Sử Dụng</button>
-                            <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')">Bán (${item.sellPrice} 💎)</button>
+                            <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')">Bán (${item.sellPrice} ${currIcon})</button>
                         `;
                     }
                 } else {
                     actionBtns = `
-                        <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')">Bán (${item.sellPrice} 💎)</button>
+                        <button class="btn-sm btn-secondary" onclick="event.stopPropagation(); gameUI.sellItem('${item.id}')">Bán (${item.sellPrice} ${currIcon})</button>
                     `;
                 }
 
@@ -1146,21 +1158,22 @@ class UIController {
         const res = this.player.useConsumable(itemId);
         if (res && res.success) {
             this.sound.playHeal();
-            if (this.particles && res.item && res.item.tuViGain) {
+            if (this.particles && res.item && (res.item.tuViGain || res.item.tinhNguyenGain)) {
                 const rect = document.getElementById("cultivate-avatar-box")?.getBoundingClientRect();
                 if (rect) {
                     this.particles.emitMeditationQi(
                         rect.left + rect.width / 2,
                         rect.top + rect.height / 2,
-                        RealmSystem.getRealmColor(this.player.realmIndex)
+                        res.isTinhNguyen ? "#e040fb" : RealmSystem.getRealmColor(this.player.realmIndex)
                     );
                     const gainTxt = res.isTinhNguyen 
                         ? `+${this.formatNumber(res.gainAmount)} 🌌 Tinh Nguyên` 
                         : `+${this.formatNumber(res.gainAmount || res.item.tuViGain)} Tu Vi`;
-                    this.particles.addFloatingText(gainTxt, rect.left + rect.width / 2, rect.top - 20, "#2ecc71");
+                    this.particles.addFloatingText(gainTxt, rect.left + rect.width / 2, rect.top - 20, res.isTinhNguyen ? "#e040fb" : "#2ecc71");
                 }
             }
-            this.showToast(res.msg, "success");
+            const toastType = res.isVoCucToast ? "vo-cuc" : (res.isTinhNguyen ? "breakthrough" : "success");
+            this.showToast(res.msg, toastType);
 
             // Kiểm tra mở khóa danh hiệu (đặc biệt: Phê Cỏ khi đạt 10.000 viên)
             if (typeof TitleSystem !== "undefined") {
@@ -1200,23 +1213,24 @@ class UIController {
         const res = this.player.useAllConsumables(itemId);
         if (res && res.success) {
             this.sound.playHeal();
-            if (this.particles && res.totalTuVi) {
+            if (this.particles && (res.totalTuVi || res.item.tuViGain || res.item.tinhNguyenGain)) {
                 const rect = document.getElementById("cultivate-avatar-box")?.getBoundingClientRect();
                 if (rect) {
                     this.particles.emitMeditationQi(
                         rect.left + rect.width / 2,
                         rect.top + rect.height / 2,
-                        RealmSystem.getRealmColor(this.player.realmIndex)
+                        res.isTinhNguyen ? "#e040fb" : RealmSystem.getRealmColor(this.player.realmIndex)
                     );
                     const gainTxt = res.isTinhNguyen 
                         ? `+${this.formatNumber(res.totalTuVi)} 🌌 Tinh Nguyên` 
                         : `+${this.formatNumber(res.totalTuVi)} Tu Vi`;
-                    this.particles.addFloatingText(gainTxt, rect.left + rect.width / 2, rect.top - 20, "#2ecc71");
+                    this.particles.addFloatingText(gainTxt, rect.left + rect.width / 2, rect.top - 20, res.isTinhNguyen ? "#e040fb" : "#2ecc71");
                 }
             }
 
             const unitMsg = res.isTinhNguyen ? "🌌 Tinh Nguyên Đại Đạo" : "Tu Vi";
-            this.showToast(`✨ Đã dùng toàn bộ ${res.count}x [${res.item.name}], tăng +${this.formatNumber(res.totalTuVi)} ${unitMsg}!`, "breakthrough");
+            const toastType = res.isVoCucToast ? "vo-cuc" : "breakthrough";
+            this.showToast(`✨ Đã dùng toàn bộ ${res.count}x [${res.item.name}], tăng +${this.formatNumber(res.totalTuVi)} ${unitMsg}!`, toastType);
 
             // Kiểm tra mở khóa danh hiệu (đặc biệt: Phê Cỏ khi đạt 10.000 viên)
             if (typeof TitleSystem !== "undefined") {
@@ -2915,8 +2929,10 @@ class UIController {
                 if (item.stats.khangPhep) parts.push(`K.Phép +${item.stats.khangPhep}`);
                 if (item.stats.baoKich) parts.push(`Bạo +${item.stats.baoKich}%`);
                 statsDesc = parts.join(", ");
+            } else if (item.tinhNguyenGain) {
+                statsDesc = `+${this.formatNumber(item.tinhNguyenGain)} 🌌 Tinh Nguyên Đại Đạo`;
             } else if (item.tuViGain) {
-                statsDesc = `+${item.tuViGain} Tu Vi tức thì`;
+                statsDesc = `+${this.formatNumber(item.tuViGain)} Tu Vi tức thì`;
             } else if (item.isResetPill) {
                 statsDesc = "Tẩy lại toàn bộ điểm tiềm năng";
             }
@@ -3135,6 +3151,8 @@ class UIController {
             if (item.stats.khangPhep) parts.push(`<div class="tooltip-stat-badge"><span>💠 Kháng Phép:</span> <strong>+${this.formatNumber(item.stats.khangPhep)}</strong></div>`);
             if (item.stats.baoKich) parts.push(`<div class="tooltip-stat-badge"><span>⚡ Tỉ Lệ Bạo Kích:</span> <strong>+${item.stats.baoKich}%</strong></div>`);
             statsHtml = parts.join("");
+        } else if (item.tinhNguyenGain) {
+            statsHtml = `<div class="tooltip-stat-badge" style="color:#e040fb;"><span>🌌 Tinh Nguyên Đại Đạo:</span> <strong>+${this.formatNumber(item.tinhNguyenGain)}</strong></div>`;
         } else if (item.tuViGain) {
             statsHtml = `<div class="tooltip-stat-badge" style="color:#ffd700;"><span>✨ Tu Vi Nhận Được:</span> <strong>+${this.formatNumber(item.tuViGain)}</strong></div>`;
         } else if (item.isResetPill) {
@@ -3168,7 +3186,7 @@ class UIController {
                     ${!isRealmOk ? `<span style="color:#ff7675; font-size:10px;"> (Chưa đủ tu vi để mặc)</span>` : `<span style="color:#4caf50; font-size:10px;"> (Đủ điều kiện)</span>`}
                 </div>
                 <div class="tooltip-price">
-                    <span>💎 Giá bán lại: <strong>${this.formatNumber(item.sellPrice || 10)}</strong> Linh Thạch</span>
+                    <span>${item.currency === "hon_nguyen" ? "🌀" : "💎"} Giá bán lại: <strong>${this.formatNumber(item.sellPrice || 10)}</strong> ${item.currency === "hon_nguyen" ? "Hỗn Nguyên Thạch" : "Linh Thạch"}</span>
                 </div>
             </div>
         `;

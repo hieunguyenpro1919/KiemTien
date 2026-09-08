@@ -176,6 +176,12 @@ Mỗi phẩm cấp có màu sắc, khung viền và hiệu ứng hào quang tư�
 5. **⚔️ Cực Đạo Tru Tiên Thần Kiếm (Vũ Khí - Vật Lí)**: +120 Tr Công Vật Lí, +25 Tr Công Phép, +85 Bạo Kích (15.000 🌀).
 6. **🪄 Cực Đạo Hỗn Độn Thần Trượng (Vũ Khí - Phép)**: +25 Tr Công Vật Lí, +135 Tr Công Phép, +85 Bạo Kích (15.000 🌀).
 
+### 🌌 Vô Cực Đại Đạo Bất Hủ Thần Đan (`pill_vo_cuc_dai_dao`)
+* **Phẩm cấp**: Cực Đạo (`cuc_dao` - Đỏ Tím Cực Quang).
+* **Giá bán**: 25.000 🌀 Hỗn Nguyên Thạch (Bán lại: 8.000 🌀).
+* **Hiệu lực**: Tăng trực tiếp **+1.000 Tinh Nguyên Đại Đạo** nguyên bản (không chuyển đổi qua Tu Vi).
+* **Tính năng**: Hỗ trợ cắn lẻ từng viên, nuốt nhanh hàng loạt (`Dùng Hết`), hiển thị Toast tím huyền ảo đặc trưng và tích lũy vào số lượng đan dược tiêu thụ (`pillsConsumed`).
+
 ### Thuật Toán Sắp Xếp Tự Động Chuẩn Mực
 Tất cả danh sách vật phẩm trong túi đồ, cửa hàng Bách Bảo Các và Tàng Kinh Các đều được sắp xếp chặt chẽ theo thứ tự:
 $$\text{Cảnh Giới Yêu Cầu} \longrightarrow \text{Phẩm Cấp / Tầng} \longrightarrow \text{Giá Bán} \longrightarrow \text{Tên ABC}$$

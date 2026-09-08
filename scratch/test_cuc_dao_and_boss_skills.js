@@ -97,7 +97,7 @@ const burnSkill = SkillSystem.getSkillById("skill_cuc_dao_dot_mau");
 assert.ok(burnSkill, "Kỹ năng [skill_cuc_dao_dot_mau] phải tồn tại");
 assert.strictEqual(burnSkill.isBurnHp, true, "Kỹ năng phải có cờ isBurnHp: true");
 assert.strictEqual(burnSkill.burnDuration, 5, "Thời gian duy trì thiêu đốt là 5 giây");
-assert.strictEqual(burnSkill.burnPctPerTick, 0.03, "Mỗi 1 giây đốt 3% Max HP");
+assert.strictEqual(burnSkill.burnPctPerTick, 0.08, "Mỗi 1 giây đốt 8% Max HP (theo tùy chỉnh của người dùng)");
 
 const mockParticles = {
     emitSlash() {}, emitFire() {}, emitThunder() {}, emitMeditationQi() {},
