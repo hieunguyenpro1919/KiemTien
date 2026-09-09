@@ -442,4 +442,26 @@ Người chơi có thể tự do dùng **Tẩy Tủy Đan** để hoán chuyển
 
 ---
 
+## 🌟 17. BẢN CẬP NHẬT KIẾM TIÊN 3.0 (VẤN ĐẠO ĐỘ KIẾP, ĐỘT PHÁ NHANH & ẢI 23 VẤN THIÊN ĐỊA)
+
+1. **⚡ Đột Phá Nhanh (Fast Breakthrough)**:
+   - Nút tím dạ quang `⚡ Đột Phá Nhanh` tại Tab Tu Luyện cho phép tự động đột phá liên tục lên tầng cao nhất có thể trong 1 lần nhấn.
+   - Tự động ngắt an toàn khi gặp bình cảnh Ải 22, bình cảnh Ải 23, hết tu vi/tinh nguyên hoặc gặp thất bại lôi kiếp.
+2. **💎 Phân Bổ Tiềm Năng Nhanh (+100 & +500)**:
+   - Khi người chơi đã vượt **Ải 22: Hư Vô Bản Nguyên Cảnh**, tự động kích hoạt thêm 2 nút `+100` và `+500` cho cả 3 nhánh thuộc tính (Vật Lí, Phép, Máu).
+3. **🌌 Hư Không Tháp Tầng Cao (>= 400)**:
+   - Từ tầng 400 trở lên, phần thưởng Tu Vi được thay thế 100% bằng **Tinh Nguyên Đại Đạo**.
+   - Quét tháp tự động phân tách và cộng dồn song song cả Tu Vi (tầng 1-399) và Tinh Nguyên (tầng 400+).
+4. **⚡ Cơ Chế Vấn Đạo Độ Kiếp**:
+   - **9 Cảnh Giới Cốt Truyện (Realm 0..8, 10 tầng/cảnh giới)**: Mỗi tầng **-5%** tỉ lệ thành công (100% -> 55%). Khi thăng đại cảnh giới, tầng 1 của cảnh giới mới làm mới về 100%.
+   - **3 Cảnh Giới Vượt Ngoài (Realm 9..11, vô hạn tầng)**: Mỗi tầng **-0.5%** tỉ lệ thành công (100% -> 50.5%). Cứ mỗi chu kỳ 100 tầng (`tierIndex % 100`) tự động làm mới về 100%.
+   - Thất bại độ kiếp bị chấn động đan điền (-20% linh lực yêu cầu của tầng) và ngắt Đột Phá Nhanh.
+5. **⚔️ Ải 23: Vấn Thiên Địa & Đan Dược Chứng Đạo**:
+   - Dành riêng cho người chơi đạt Cảnh Giới Vô Cực sau khi vượt Ải 22.
+   - Cứ mỗi 100 tầng đột phá (Tầng 200, 300, 400...) bắt buộc phải trảm sát Boss Ải 23 mới được tiếp tục đột phá.
+   - Boss sở hữu cơ chế mạnh động (Dynamic Scaling) theo chỉ số người chơi kèm Kim Thân 20%/30%.
+   - Phần thưởng rơi 100% đan dược Cực Đạo **Chứng Đạo Tinh Nguyên** (`pill_chung_dao_tinh_nguyen`), gia tăng vĩnh viễn +10% tỉ lệ độ kiếp.
+
+---
+
 *Chúc các vị đạo hữu sớm đắc đạo phi thăng, ngự trị trên đỉnh cao nhất của Đại Đạo Chí Cao Vô Thượng!*

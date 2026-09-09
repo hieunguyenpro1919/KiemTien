@@ -920,6 +920,18 @@ const ITEM_DATABASE = [
         icon: "🌌",
         desc: "Thần đan nghịch thiên luyện hóa từ quy tắc căn nguyên của vạn giới hư vô. Khi dùng trực tiếp gia tăng 1.000 điểm Tinh Nguyên đại đạo."
     },
+    {
+        id: "pill_chung_dao_tinh_nguyen",
+        name: "Chứng Đạo Tinh Nguyên",
+        slot: "dan_duoc",
+        rarity: "cuc_dao",
+        reqRealm: 11,
+        price: 0,
+        sellPrice: 10000,
+        rateGain: 10,
+        icon: "💠",
+        desc: "Tinh hoa ngưng tụ từ thiên địa chi lực sau khi thông qua khảo nghiệm Ải 23: Vấn Thiên Địa. Khi phục dụng gia tăng +10% tỉ lệ độ kiếp thành công."
+    }
 ];
 
 class ItemSystem {

@@ -120,8 +120,16 @@ class TowerSystem {
         const monsterDef = Math.min(1e12, Math.floor(rawDef));
         const attackSpeed = isBoss ? 1.4 : (isElite ? 1.7 : 2.0);
 
-        // Phần thưởng Tu Vi & Linh Thạch (hoặc Hỗn Nguyên khi vượt mốc 100 Tỷ)
-        const tuVi = Math.min(1e15, Math.floor(TOWER_CONFIG.BASE_EXP * Math.pow(1.10, floor)));
+        // Phần thưởng Tu Vi & Linh Thạch (Từ Tầng 400 trở lên trực tiếp thưởng Tinh Nguyên)
+        let tuVi = 0;
+        let tinhNguyen = 0;
+        if (floor >= 400) {
+            tuVi = 0;
+            tinhNguyen = Math.floor(50 + (floor - 400) * 10 + Math.pow(1.03, floor - 400));
+        } else {
+            tuVi = Math.min(1e15, Math.floor(TOWER_CONFIG.BASE_EXP * Math.pow(1.10, floor)));
+        }
+
         let linhThach = Math.floor(TOWER_CONFIG.BASE_GOLD * Math.pow(1.09, floor));
         let honNguyen = 0;
 
@@ -158,6 +166,7 @@ class TowerSystem {
             },
             rewards: {
                 tuVi: tuVi,
+                tinhNguyen: tinhNguyen,
                 linhThach: linhThach,
                 honNguyen: honNguyen,
                 dropChance: 0,
@@ -177,12 +186,18 @@ class TowerSystem {
 
         const maxSweepFloor = highestFloor - 5;
         let totalTuVi = 0;
+        let totalTinhNguyen = 0;
         let totalLinhThach = 0;
 
         for (let f = 1; f <= maxSweepFloor; f++) {
-            const exp = Math.min(1e15, Math.floor(TOWER_CONFIG.BASE_EXP * Math.pow(1.10, f)));
+            if (f >= 400) {
+                const tinh = Math.floor(50 + (f - 400) * 10 + Math.pow(1.03, f - 400));
+                totalTinhNguyen += tinh;
+            } else {
+                const exp = Math.min(1e15, Math.floor(TOWER_CONFIG.BASE_EXP * Math.pow(1.10, f)));
+                totalTuVi += exp;
+            }
             const gold = Math.min(1e15, Math.floor(TOWER_CONFIG.BASE_GOLD * Math.pow(1.09, f)));
-            totalTuVi += exp;
             totalLinhThach += gold;
         }
 
@@ -196,6 +211,7 @@ class TowerSystem {
             fromFloor: 1,
             toFloor: maxSweepFloor,
             totalTuVi: Math.floor(totalTuVi),
+            totalTinhNguyen: Math.floor(totalTinhNguyen),
             totalLinhThach: Math.floor(totalLinhThach),
             totalHonNguyen: totalHonNguyen
         };

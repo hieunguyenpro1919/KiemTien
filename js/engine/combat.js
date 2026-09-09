@@ -740,11 +740,17 @@ class CombatEngine {
      */
     handleVictory() {
         this.stopBattle();
-        this.sound.playVictory();
+        if (this.sound && typeof this.sound.playVictory === "function") {
+            this.sound.playVictory();
+        }
 
         const stage = this.currentStage;
         const rewards = stage.rewards || { tuVi: 0, linhThach: 0 };
-        this.player.addTuVi(rewards.tuVi || 0);
+        if (rewards.tinhNguyen) {
+            this.player.addTinhNguyen(rewards.tinhNguyen);
+        } else {
+            this.player.addTuVi(rewards.tuVi || 0);
+        }
         this.player.linhThach = (this.player.linhThach || 0) + (rewards.linhThach || 0);
         if (rewards.honNguyen) {
             this.player.honNguyen = (this.player.honNguyen || 0) + rewards.honNguyen;
@@ -756,8 +762,15 @@ class CombatEngine {
             }
             this.player.towerData.highestFloor = Math.max(this.player.towerData.highestFloor || 0, stage.number);
             this.player.towerData.currentFloor = stage.number + 1;
-        } else if (stage && !this.player.clearedStages.includes(stage.id)) {
-            this.player.clearedStages.push(stage.id);
+        } else if (stage) {
+            if (!this.player.clearedStages.includes(stage.id)) {
+                this.player.clearedStages.push(stage.id);
+            }
+            // Ghi nhận mốc vượt bình cảnh Ải 23: Vấn Thiên Địa
+            if (stage.id === "stage_23" || stage.id === "stage_van_thien_dia") {
+                const milestone = Math.max(1, Math.floor(((this.player.tierIndex || 0) + 1) / 100));
+                this.player.vanThienDiaMilestonesCleared = Math.max(this.player.vanThienDiaMilestonesCleared || 0, milestone);
+            }
         }
 
         // Kiểm tra rơi vật phẩm
@@ -817,7 +830,8 @@ class CombatEngine {
                 victory: true,
                 stage: stage,
                 isTower: this.isTowerBattle,
-                tuViGain: rewards.tuVi,
+                tuViGain: rewards.tuVi || 0,
+                tinhNguyenGain: rewards.tinhNguyen || 0,
                 linhThachGain: rewards.linhThach,
                 honNguyenGain: rewards.honNguyen || 0,
                 droppedItem: droppedItem,
@@ -831,7 +845,9 @@ class CombatEngine {
      */
     handleDefeat(isEnrageTimeout = false) {
         this.stopBattle();
-        this.sound.playDefeat();
+        if (this.sound && typeof this.sound.playDefeat === "function") {
+            this.sound.playDefeat();
+        }
 
         if (this.isTowerBattle) {
             if (!this.player.towerData) {

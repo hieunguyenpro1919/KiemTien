@@ -53,6 +53,8 @@ class Player {
             isVoCuc: false,
             clearedStages: [],
             pillsConsumed: 0,
+            breakthroughBonusRate: 0,
+            vanThienDiaMilestonesCleared: 0,
             towerData: {
                 highestFloor: 0,
                 currentFloor: 1,
@@ -86,6 +88,8 @@ class Player {
         this.isVoCuc = Boolean(d.isVoCuc);
         this.clearedStages = [...d.clearedStages];
         this.pillsConsumed = d.pillsConsumed || 0;
+        this.breakthroughBonusRate = Number(d.breakthroughBonusRate) || 0;
+        this.vanThienDiaMilestonesCleared = Number(d.vanThienDiaMilestonesCleared) || 0;
         this.towerData = d.towerData ? { ...d.towerData } : { highestFloor: 0, currentFloor: 1, dailyTickets: 3, lastResetDate: "" };
         this.checkTowerReset();
         this.lastOnlineTime = d.lastOnlineTime;
@@ -133,14 +137,47 @@ class Player {
     }
 
     /**
+     * Tính toán tỉ lệ thành công của Vấn Đạo Độ Kiếp (%)
+     * - 9 Cảnh giới cốt truyện (Realm 0..8, 10 tầng/cảnh giới):
+     *   Mỗi tầng -5% tỉ lệ độ kiếp (Tầng 1 = 100%, Tầng 2 = 95%, ..., Đỉnh phong = 55%). Tối thiểu 10%.
+     * - 3 Cảnh giới vô hạn tầng (Realm 9..11: Vô Thượng Lộ, Vạn Vì Tinh Tú, Đại Đạo Chí Cao Vô Thượng):
+     *   Mỗi tầng -0.5% tỉ lệ độ kiếp (Tầng 1 = 100%, Tầng 2 = 99.5%, ..., Tầng 100 = 50.5%). Tối thiểu 10%.
+     *   Cứ mỗi 100 tầng (tierIndex % 100) làm mới lại 100%.
+     * - Cộng dồn với breakthroughBonusRate từ đan dược (Chứng Đạo Tinh Nguyên +10%).
+     */
+    getBreakthroughRate() {
+        let baseRate = 100;
+        if (this.realmIndex <= 8) {
+            baseRate = Math.max(10, 100 - ((this.tierIndex || 0) * 5));
+        } else {
+            const cycleTier = (this.tierIndex || 0) % 100;
+            baseRate = Math.max(10, +(100 - cycleTier * 0.5).toFixed(1));
+        }
+        const bonus = Math.max(0, Number(this.breakthroughBonusRate) || 0);
+        const totalRate = Math.min(100, Math.max(10, +(baseRate + bonus).toFixed(1)));
+        return {
+            baseRate,
+            bonusRate: bonus,
+            totalRate
+        };
+    }
+
+    /**
      * Kiểm tra có đủ điều kiện Đột Phá hay không
      */
     canBreakthrough() {
-        // Phương án A: Đối với toàn bộ người chơi ở Tầng >= 100 của Đại Đạo Chí Cao Vô Thượng,
-        // bắt buộc phải đánh bại [Ải 22: Hư Vô Bản Nguyên Cảnh] mới được phép tiếp tục đột phá!
-        if (this.realmIndex >= 11 && this.tierIndex >= 99) {
+        // 1. Kiểm tra điều kiện Ải 22: Tầng 100 Đại Đạo Chí Cao Vô Thượng
+        if (this.realmIndex >= 11 && this.tierIndex >= 99 && !this.isVoCuc) {
             const hasClearedVoCuc = this.clearedStages && this.clearedStages.includes("stage_vo_cuc");
             if (!hasClearedVoCuc) {
+                return false;
+            }
+        }
+
+        // 2. Kiểm tra điều kiện Ải 23: Cảnh Giới Vô Cực sau mỗi 100 tầng đột phá (Tầng 200, 300, 400...)
+        if (this.isVoCuc && (this.tierIndex + 1) % 100 === 0) {
+            const milestone = Math.floor((this.tierIndex + 1) / 100);
+            if ((this.vanThienDiaMilestonesCleared || 0) < milestone) {
                 return false;
             }
         }
@@ -199,8 +236,8 @@ class Player {
     breakthrough() {
         const maxTuVi = this.getMaxTuVi();
 
-        // 1. Kiểm tra điều kiện Ải 22 cho toàn bộ người chơi Tầng >= 100 Đại Đạo Chí Cao Vô Thượng (Phương án A)
-        if (this.realmIndex >= 11 && this.tierIndex >= 99) {
+        // 1. Kiểm tra điều kiện Ải 22 cho người chơi Tầng 100 Đại Đạo Chí Cao Vô Thượng (chưa bước vào Vô Cực)
+        if (this.realmIndex >= 11 && this.tierIndex >= 99 && !this.isVoCuc) {
             const hasClearedVoCuc = this.clearedStages && this.clearedStages.includes("stage_vo_cuc");
             if (!hasClearedVoCuc) {
                 return {
@@ -211,9 +248,43 @@ class Player {
             }
         }
 
-        // 2. Đang ở Cảnh Giới Vô Cực (Tầng 101+)
+        // 2. Kiểm tra điều kiện Ải 23: Cảnh Giới Vô Cực sau mỗi 100 tầng đột phá (Tầng 200, 300, 400...)
+        if (this.isVoCuc && (this.tierIndex + 1) % 100 === 0) {
+            const milestone = Math.floor((this.tierIndex + 1) / 100);
+            if ((this.vanThienDiaMilestonesCleared || 0) < milestone) {
+                return {
+                    success: false,
+                    isVanThienDiaBlocked: true,
+                    milestone: milestone,
+                    msg: `Cần trảm sát Boss [Ải 23: Vấn Thiên Địa] (Mốc ${milestone * 100} Tầng) để phá vỡ bình cảnh thiên địa!`
+                };
+            }
+        }
+
+        // 3. Đang ở Cảnh Giới Vô Cực (Tầng 101+)
         if (this.isVoCuc) {
             if ((this.tinhNguyen || 0) < maxTuVi) return false;
+
+            // Kiểm tra tỉ lệ độ kiếp thành công
+            const rateInfo = this.getBreakthroughRate();
+            const roll = Math.random() * 100;
+            if (roll > rateInfo.totalRate) {
+                const penalty = Math.max(1, Math.floor(maxTuVi * 0.2));
+                this.tinhNguyen = Math.max(0, (this.tinhNguyen || 0) - penalty);
+                return {
+                    success: false,
+                    isFailedRate: true,
+                    rate: rateInfo.totalRate,
+                    penaltyText: `-${penalty} Tinh Nguyên`,
+                    msg: `⚡ [ĐỘ KIẾP THẤT BẠI] Lôi kiếp chấn động đan điền! Đột phá thất bại (Tỉ lệ: ${rateInfo.totalRate}%), hao tổn 20% linh lực (-${penalty} 🌌).`
+                };
+            }
+
+            // Độ kiếp thành công: tiêu hao buff từ Chứng Đạo Tinh Nguyên nếu có
+            if (this.breakthroughBonusRate > 0) {
+                this.breakthroughBonusRate = Math.max(0, this.breakthroughBonusRate - 10);
+            }
+
             this.tinhNguyen = Math.max(0, (this.tinhNguyen || 0) - maxTuVi);
             this.tierIndex = (this.tierIndex || 100) + 1;
             this.statPoints += STAT_POINTS_PER_TIER;
@@ -230,9 +301,27 @@ class Player {
             };
         }
 
-        // 3. Mốc Tầng 100 Đại Đạo Chí Cao (realmIndex 11, tierIndex == 99)
+        // 4. Mốc Tầng 100 Đại Đạo Chí Cao (realmIndex 11, tierIndex == 99)
         if (this.realmIndex >= 11 && this.tierIndex >= 99) {
             if (this.tuVi < maxTuVi) return false;
+
+            const rateInfo = this.getBreakthroughRate();
+            const roll = Math.random() * 100;
+            if (roll > rateInfo.totalRate) {
+                const penalty = Math.max(1, Math.floor(maxTuVi * 0.2));
+                this.tuVi = Math.max(0, (this.tuVi || 0) - penalty);
+                return {
+                    success: false,
+                    isFailedRate: true,
+                    rate: rateInfo.totalRate,
+                    penaltyText: `-${penalty.toLocaleString("vi-VN")} Tu Vi`,
+                    msg: `⚡ [ĐỘ KIẾP THẤT BẠI] Lôi kiếp chấn động đan điền! Đột phá thất bại (Tỉ lệ: ${rateInfo.totalRate}%), hao tổn 20% linh lực.`
+                };
+            }
+
+            if (this.breakthroughBonusRate > 0) {
+                this.breakthroughBonusRate = Math.max(0, this.breakthroughBonusRate - 10);
+            }
 
             const excessTuVi = Math.max(0, this.tuVi - maxTuVi);
             this.isVoCuc = true;
@@ -253,8 +342,27 @@ class Player {
             };
         }
 
-        // 3. Đột phá thông thường (Cảnh giới 0 đến 10 hoặc Đại Đạo Chí Cao < Tầng 100)
+        // 5. Đột phá thông thường (Cảnh giới 0 đến 10 hoặc Đại Đạo Chí Cao < Tầng 100)
         if (!this.canBreakthrough()) return false;
+
+        const rateInfo = this.getBreakthroughRate();
+        const roll = Math.random() * 100;
+        if (roll > rateInfo.totalRate) {
+            const penalty = Math.max(1, Math.floor(maxTuVi * 0.2));
+            this.tuVi = Math.max(0, (this.tuVi || 0) - penalty);
+            return {
+                success: false,
+                isFailedRate: true,
+                rate: rateInfo.totalRate,
+                penaltyText: `-${penalty.toLocaleString("vi-VN")} Tu Vi`,
+                msg: `⚡ [ĐỘ KIẾP THẤT BẠI] Lôi kiếp chấn động đan điền! Đột phá thất bại (Tỉ lệ: ${rateInfo.totalRate}%), hao tổn 20% linh lực.`
+            };
+        }
+
+        if (this.breakthroughBonusRate > 0) {
+            this.breakthroughBonusRate = Math.max(0, this.breakthroughBonusRate - 10);
+        }
+
         this.tuVi = Math.max(0, this.tuVi - maxTuVi);
 
         let isMajor = false;
@@ -301,12 +409,78 @@ class Player {
     }
 
     /**
+     * Đột Phá Nhanh: Tự động đột phá lên tầng cao nhất có thể trong 1 lần nhấn
+     */
+    quickBreakthrough(maxIterations = 1000) {
+        let successCount = 0;
+        let stopReason = null;
+        let lastResult = null;
+        const startTitle = this.getFullTitle();
+
+        for (let i = 0; i < maxIterations; i++) {
+            // Kiểm tra các điều kiện bình cảnh trước khi đột phá
+            if (this.realmIndex >= 11 && this.tierIndex >= 99 && !this.isVoCuc) {
+                const hasClearedVoCuc = this.clearedStages && this.clearedStages.includes("stage_vo_cuc");
+                if (!hasClearedVoCuc) {
+                    stopReason = "blocked_stage_22";
+                    break;
+                }
+            }
+
+            if (this.isVoCuc && (this.tierIndex + 1) % 100 === 0) {
+                const milestone = Math.floor((this.tierIndex + 1) / 100);
+                if ((this.vanThienDiaMilestonesCleared || 0) < milestone) {
+                    stopReason = "blocked_stage_23";
+                    break;
+                }
+            }
+
+            if (!this.canBreakthrough()) {
+                stopReason = "not_enough_resource";
+                break;
+            }
+
+            const res = this.breakthrough();
+            if (res && res.success) {
+                successCount++;
+                lastResult = res;
+            } else if (res && res.isFailedRate) {
+                stopReason = "failed_rate";
+                lastResult = res;
+                break;
+            } else if (res && res.isVoCucBlocked) {
+                stopReason = "blocked_stage_22";
+                lastResult = res;
+                break;
+            } else if (res && res.isVanThienDiaBlocked) {
+                stopReason = "blocked_stage_23";
+                lastResult = res;
+                break;
+            } else {
+                stopReason = "not_enough_resource";
+                break;
+            }
+        }
+
+        return {
+            success: successCount > 0,
+            successCount,
+            totalPoints: successCount * STAT_POINTS_PER_TIER,
+            stopReason,
+            lastResult,
+            startTitle,
+            newTitle: this.getFullTitle(),
+            currentPoints: this.statPoints
+        };
+    }
+
+    /**
      * Cộng điểm chỉ số (Vật lí, Phép, Máu)
      */
     allocateStat(type, amount = 1) {
         if (this.statPoints < amount || amount <= 0) return false;
 
-        if (type === "vat_li") {
+        if (type === "vat_li" || type === "vatLi") {
             this.statVatLi += amount;
             this.statPoints -= amount;
         } else if (type === "phep") {
@@ -607,8 +781,9 @@ class Player {
 
     // ================= XỬ LÝ ĐAN DƯỢC & MUA BÁN =================
 
-    useConsumable(itemId) {
-        const item = ItemSystem.getItemById(itemId);
+    useConsumable(itemOrId) {
+        const itemId = (typeof itemOrId === "object" && itemOrId !== null) ? itemOrId.id : itemOrId;
+        const item = (typeof itemOrId === "object" && itemOrId !== null && itemOrId.slot) ? itemOrId : ItemSystem.getItemById(itemId);
         if (!item || item.slot !== "dan_duoc") return { success: false, msg: "Vật phẩm không hợp lệ!" };
 
         // Kiểm tra yêu cầu Cảnh Giới của đan dược
@@ -655,6 +830,14 @@ class Player {
         } else if (item.isResetPill) {
             const points = this.resetStats();
             return { success: true, item, msg: `Đã tẩy tủy thành công! Thu hồi lại ${points} điểm tiềm năng.` };
+        } else if (itemId === "pill_chung_dao_tinh_nguyen" || item.rateGain) {
+            const gain = item.rateGain || 10;
+            this.breakthroughBonusRate = (this.breakthroughBonusRate || 0) + gain;
+            return {
+                success: true,
+                item,
+                msg: `Đã dùng 1x ${item.name}! Tỉ lệ độ kiếp thành công tăng thêm +${gain}% (Hiện có: +${this.breakthroughBonusRate}% buff)!`
+            };
         } else if (itemId === "item_tower_ticket") {
             if (!this.towerData) {
                 this.towerData = { highestFloor: 0, currentFloor: 1, dailyTickets: 3, lastResetDate: "" };
@@ -693,8 +876,9 @@ class Player {
     /**
      * Dùng toàn bộ đan dược cùng loại trong túi đồ (Dùng nhanh 1 lần)
      */
-    useAllConsumables(itemId) {
-        const item = ItemSystem.getItemById(itemId);
+    useAllConsumables(itemOrId) {
+        const itemId = (typeof itemOrId === "object" && itemOrId !== null) ? itemOrId.id : itemOrId;
+        const item = (typeof itemOrId === "object" && itemOrId !== null && itemOrId.slot) ? itemOrId : ItemSystem.getItemById(itemId);
         if (!item || item.slot !== "dan_duoc") return { success: false, msg: "Vật phẩm không hợp lệ!" };
 
         // Kiểm tra yêu cầu Cảnh Giới của đan dược
@@ -759,6 +943,16 @@ class Player {
                 isTinhNguyen: false,
                 item: item,
                 msg: `Đã dùng hết ${count}x [${item.name}], nhận được +${totalTuVi} Tu Vi!`
+            };
+        } else if (itemId === "pill_chung_dao_tinh_nguyen" || item.rateGain) {
+            const gainPerPill = item.rateGain || 10;
+            const totalGain = gainPerPill * count;
+            this.breakthroughBonusRate = (this.breakthroughBonusRate || 0) + totalGain;
+            return {
+                success: true,
+                count: count,
+                item: item,
+                msg: `Đã dùng hết ${count}x [${item.name}], tỉ lệ độ kiếp thành công tăng thêm +${totalGain}% (Hiện có: +${this.breakthroughBonusRate}% buff)!`
             };
         } else if (itemId === "item_tower_ticket") {
             if (!this.towerData) {
@@ -1201,6 +1395,8 @@ class Player {
             isVoCuc: Boolean(this.isVoCuc),
             clearedStages: Array.isArray(this.clearedStages) ? [...this.clearedStages] : [],
             pillsConsumed: Number(this.pillsConsumed) || 0,
+            breakthroughBonusRate: Number(this.breakthroughBonusRate) || 0,
+            vanThienDiaMilestonesCleared: Number(this.vanThienDiaMilestonesCleared) || 0,
             towerData: {
                 highestFloor: Number(this.towerData?.highestFloor) || 0,
                 currentFloor: Math.max(1, Number(this.towerData?.currentFloor) || 1),
@@ -1257,6 +1453,8 @@ class Player {
 
         this.clearedStages = Array.isArray(data.clearedStages) ? [...data.clearedStages] : [];
         this.pillsConsumed = (typeof data.pillsConsumed === "number" && !isNaN(data.pillsConsumed)) ? Math.max(0, data.pillsConsumed) : (defaults.pillsConsumed || 0);
+        this.breakthroughBonusRate = (typeof data.breakthroughBonusRate === "number" && !isNaN(data.breakthroughBonusRate)) ? Math.max(0, data.breakthroughBonusRate) : (defaults.breakthroughBonusRate || 0);
+        this.vanThienDiaMilestonesCleared = (typeof data.vanThienDiaMilestonesCleared === "number" && !isNaN(data.vanThienDiaMilestonesCleared)) ? Math.max(0, data.vanThienDiaMilestonesCleared) : (defaults.vanThienDiaMilestonesCleared || 0);
         this.towerData = (data.towerData && typeof data.towerData === "object") ? {
             highestFloor: Number(data.towerData.highestFloor) || 0,
             currentFloor: Math.max(1, Number(data.towerData.currentFloor) || 1),

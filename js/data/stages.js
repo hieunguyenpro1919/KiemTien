@@ -665,6 +665,39 @@ const STAGE_DATABASE = [
                 "pill_bat_hu_luan_hoi"
             ]
         }
+    },
+    {
+        id: "stage_23",
+        number: 23,
+        name: "Ải 23: Vấn Thiên Địa",
+        area: "Thiên Đạo Luân Hồi Giới",
+        difficulty: "Vấn Đạo",
+        diffColor: "#ff007f",
+        reqRealm: 11, // Đại Đạo Chí Cao Vô Thượng
+        reqTier: 99,  // Yêu cầu đã vượt Ải 22 / Cảnh Giới Vô Cực
+        desc: "Ải khảo nghiệm tối thượng nơi ý chí thiên địa kiểm chứng đạo tâm. Cứ mỗi 100 tầng đột phá của Cảnh Giới Vô Cực, bắt buộc phải vượt ải để phá vỡ bình cảnh. Boss sở hữu sức mạnh đồng hóa theo người khiêu chiến.",
+        monster: {
+            name: "Thiên Đạo Hóa Thân (Vấn Thiên Địa)",
+            title: "Ý Chí Thiên Địa Tối Cao",
+            avatar: "⚡",
+            hp: 500000000000000,
+            attack: 5000000000,
+            defense: 100000000,
+            attackSpeed: 1.3,
+            isBoss: true,
+            damageCapPct: 0.20,
+            breakCapPct: 0.30
+        },
+        rewards: {
+            tuVi: 0,
+            tinhNguyen: 100,
+            linhThach: 1000000000,
+            honNguyen: 100000,
+            dropChance: 1.0,
+            possibleDrops: [
+                "pill_chung_dao_tinh_nguyen"
+            ]
+        }
     }
 ];
 
@@ -673,15 +706,96 @@ class StageSystem {
         return STAGE_DATABASE;
     }
 
-    static getStageById(id) {
+    /**
+     * Tạo Ải 23: Vấn Thiên Địa với Boss có chỉ số mạnh động theo người chơi (Dynamic Scaling)
+     */
+    static generateVanThienDiaStage(player = null) {
+        const milestone = player ? Math.max(1, Math.floor(((player.tierIndex || 0) + 1) / 100)) : 1;
+        const pStats = (player && typeof player.getTotalStats === "function") 
+            ? player.getTotalStats() 
+            : { maxHp: 1000000000, vatLi: 50000000, phep: 50000000, phongThu: 20000000 };
+
+        const totalAtk = (pStats.vatLi || 0) + (pStats.phep || 0);
+        const bossHp = Math.max(1000000, Math.floor((pStats.maxHp || 1000000) * (1.8 + milestone * 0.1)));
+        const bossAtk = Math.max(10000, Math.floor(totalAtk * (0.85 + milestone * 0.05)));
+        const bossDef = Math.max(1000, Math.floor((pStats.phongThu || 10000) * (0.85 + milestone * 0.03)));
+
+        return {
+            id: "stage_23",
+            number: 23,
+            name: "Ải 23: Vấn Thiên Địa",
+            area: "Thiên Đạo Luân Hồi Giới",
+            difficulty: `Vấn Đạo (Mốc ${milestone * 100} Tầng)`,
+            diffColor: "#ff007f",
+            reqRealm: 11,
+            reqTier: 99,
+            desc: `Ải khảo nghiệm tối thượng nơi ý chí thiên địa kiểm chứng đạo tâm. Cứ mỗi 100 tầng đột phá của Cảnh Giới Vô Cực, bắt buộc phải vượt ải để phá vỡ bình cảnh. Boss sở hữu sức mạnh đồng hóa theo người khiêu chiến (Mốc Tầng ${milestone * 100}).`,
+            monster: {
+                name: "Thiên Đạo Hóa Thân (Vấn Thiên Địa)",
+                title: `Ý Chí Thiên Địa (Mốc ${milestone * 100} Tầng)`,
+                avatar: "⚡",
+                hp: bossHp,
+                attack: bossAtk,
+                defense: bossDef,
+                attackSpeed: 1.3,
+                isBoss: true,
+                damageCapPct: 0.20,
+                breakCapPct: 0.30
+            },
+            rewards: {
+                tuVi: 0,
+                tinhNguyen: 100 * milestone,
+                linhThach: 1000000000 * milestone,
+                honNguyen: 100000 * milestone,
+                dropChance: 1.0,
+                possibleDrops: [
+                    "pill_chung_dao_tinh_nguyen"
+                ]
+            }
+        };
+    }
+
+    static getStageById(id, player = null) {
+        if (id === "stage_23" || id === "stage_van_thien_dia") {
+            return this.generateVanThienDiaStage(player);
+        }
         return STAGE_DATABASE.find(s => s.id === id) || null;
     }
 
     /**
      * Kiểm tra người chơi có đủ điều kiện tu vi để vào ải không
      */
-    static isStageUnlocked(playerRealm, playerTier, stage) {
-        return RealmSystem.isRealmSufficient(playerRealm, playerTier, stage.reqRealm, stage.reqTier);
+    static isStageUnlocked(playerRealmOrStage, playerTierOrPlayer, stageObj = null, player = null) {
+        let pRealm, pTier, targetStage, pObj;
+        if (typeof playerRealmOrStage === "object" && playerRealmOrStage !== null && playerRealmOrStage.id) {
+            // isStageUnlocked(stage, player)
+            targetStage = playerRealmOrStage;
+            pObj = playerTierOrPlayer;
+            pRealm = pObj ? pObj.realmIndex : 0;
+            pTier = pObj ? pObj.tierIndex : 0;
+        } else if (typeof playerRealmOrStage === "string") {
+            // isStageUnlocked('stage_23', player)
+            pObj = playerTierOrPlayer;
+            targetStage = this.getStageById(playerRealmOrStage, pObj);
+            pRealm = pObj ? pObj.realmIndex : 0;
+            pTier = pObj ? pObj.tierIndex : 0;
+        } else {
+            // Standard signature: (playerRealm, playerTier, stage, player = null)
+            pRealm = playerRealmOrStage;
+            pTier = playerTierOrPlayer;
+            targetStage = stageObj;
+            pObj = player;
+        }
+
+        if (!targetStage) return false;
+
+        if (targetStage.id === "stage_23" || targetStage.id === "stage_van_thien_dia") {
+            if (pObj) {
+                return (pObj.clearedStages && pObj.clearedStages.includes("stage_vo_cuc")) || pObj.isVoCuc;
+            }
+            return pRealm >= 11 && pTier >= 99;
+        }
+        return RealmSystem.isRealmSufficient(pRealm, pTier, targetStage.reqRealm, targetStage.reqTier);
     }
 }
 

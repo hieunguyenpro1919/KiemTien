@@ -72,6 +72,14 @@ class UIController {
             });
         }
 
+        // Nút Đột Phá Nhanh
+        const btnQuickBreakthrough = document.getElementById("btn-quick-breakthrough");
+        if (btnQuickBreakthrough) {
+            btnQuickBreakthrough.addEventListener("click", () => {
+                this.handleQuickBreakthrough();
+            });
+        }
+
         // 3 Nút kỹ năng trong màn chiến đấu
         for (let i = 0; i < 3; i++) {
             const btn = document.getElementById(`combat-skill-btn-${i}`);
@@ -408,6 +416,19 @@ class UIController {
         const tuViTextEl = document.getElementById("cultivate-tu-vi-text");
         const progressBarEl = document.getElementById("cultivate-progress-bar");
         const btnBreakthrough = document.getElementById("btn-breakthrough");
+        const btnQuickBreakthrough = document.getElementById("btn-quick-breakthrough");
+
+        // Cập nhật hiển thị Tỉ Lệ Độ Kiếp
+        const tribulationEl = document.getElementById("cultivate-tribulation-rate");
+        if (tribulationEl) {
+            const rateInfo = this.player.getBreakthroughRate();
+            let color = "#00e676";
+            if (rateInfo.totalRate < 60) color = "#ff5252";
+            else if (rateInfo.totalRate < 90) color = "#ffab00";
+
+            let bonusText = rateInfo.bonusRate > 0 ? ` <span style="color:#ffd700;">(+${rateInfo.bonusRate}% buff)</span>` : "";
+            tribulationEl.innerHTML = `⚡ Tỉ Lệ Độ Kiếp: <strong style="color:${color}; font-size:14px;">${rateInfo.totalRate}%</strong>${bonusText}`;
+        }
 
         // Kiểm tra điều kiện vượt ải để thăng cảnh giới tiếp theo
         const nextRealmIndex = this.player.realmIndex + 1;
@@ -428,11 +449,17 @@ class UIController {
         const isAtVoCucBottleneck = !this.player.isVoCuc && this.player.realmIndex >= 11 && this.player.tierIndex >= 99;
         const hasClearedVoCuc = this.player.clearedStages && this.player.clearedStages.includes("stage_vo_cuc");
 
+        // Bình cảnh Ải 23: Cảnh Giới Vô Cực sau mỗi 100 tầng đột phá (Tầng 200, 300, 400...)
+        const isAtVanThienDiaBottleneck = this.player.isVoCuc && (this.player.tierIndex + 1) % 100 === 0;
+        const currentMilestone = isAtVanThienDiaBottleneck ? Math.floor((this.player.tierIndex + 1) / 100) : 0;
+        const hasClearedVanThienDia = !isAtVanThienDiaBottleneck || ((this.player.vanThienDiaMilestonesCleared || 0) >= currentMilestone);
+
         if (this.player.isVoCuc) {
-            const hasClearedVoCuc = this.player.clearedStages && this.player.clearedStages.includes("stage_vo_cuc");
             let reqVoCucNote = "";
             if (!hasClearedVoCuc) {
                 reqVoCucNote = `<div style="font-size:12px; color:#ff3d00; margin-top:4px; font-weight:bold; background:rgba(255,61,0,0.1); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,61,0,0.3);">⚠️ BÌNH CẢNH: Cần trảm sát [Ải 22: Hư Vô Bản Nguyên Cảnh] mới có thể tiếp tục đột phá!</div>`;
+            } else if (isAtVanThienDiaBottleneck && !hasClearedVanThienDia) {
+                reqVoCucNote = `<div style="font-size:12px; color:#ff007f; margin-top:4px; font-weight:bold; background:rgba(255,0,127,0.1); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,0,127,0.3);">⚠️ BÌNH CẢNH THIÊN ĐỊA: Cần trảm sát Boss [Ải 23: Vấn Thiên Địa] (Mốc ${currentMilestone * 100} Tầng) mới có thể tiếp tục đột phá!</div>`;
             }
 
             if (realmNameEl) {
@@ -464,6 +491,10 @@ class UIController {
                     btnBreakthrough.disabled = false;
                     btnBreakthrough.classList.add("glow-btn");
                     btnBreakthrough.innerText = "⚔️ KHIÊU CHIẾN ẢI ĐỘT PHÁ (ẢI 22)";
+                } else if (isAtVanThienDiaBottleneck && !hasClearedVanThienDia) {
+                    btnBreakthrough.disabled = false;
+                    btnBreakthrough.classList.add("glow-btn");
+                    btnBreakthrough.innerText = `⚔️ KHIÊU CHIẾN ẢI 23 (MỐC ${currentMilestone * 100} TẦNG)`;
                 } else {
                     const can = this.player.canBreakthrough();
                     btnBreakthrough.disabled = !can;
@@ -536,6 +567,13 @@ class UIController {
             }
         }
 
+        // Cập nhật trạng thái nút Đột Phá Nhanh
+        if (btnQuickBreakthrough) {
+            const canQuick = this.player.canBreakthrough() && (!isAtVoCucBottleneck || hasClearedVoCuc) && (!isAtVanThienDiaBottleneck || hasClearedVanThienDia);
+            btnQuickBreakthrough.disabled = !canQuick;
+            btnQuickBreakthrough.classList.toggle("glow-btn", canQuick);
+        }
+
         // Render Tên Nhân Vật và Danh Hiệu
         const charNameEl = document.getElementById("character-display-name");
         if (charNameEl) charNameEl.innerText = this.player.name;
@@ -560,10 +598,19 @@ class UIController {
     }
 
     handleBreakthrough() {
-        if (this.player.realmIndex >= 11 && this.player.tierIndex >= 99) {
+        if (this.player.realmIndex >= 11 && this.player.tierIndex >= 99 && !this.player.isVoCuc) {
             const hasClearedVoCuc = this.player.clearedStages && this.player.clearedStages.includes("stage_vo_cuc");
             if (!hasClearedVoCuc) {
                 this.showToast("⚠️ Cần đánh bại [Ải 22: Hư Vô Bản Nguyên Cảnh] mới có thể tiếp tục đột phá!", "warning");
+                this.switchTab("stages");
+                return;
+            }
+        }
+
+        if (this.player.isVoCuc && (this.player.tierIndex + 1) % 100 === 0) {
+            const milestone = Math.floor((this.player.tierIndex + 1) / 100);
+            if ((this.player.vanThienDiaMilestonesCleared || 0) < milestone) {
+                this.showToast(`⚠️ BÌNH CẢNH: Cần đánh bại [Ải 23: Vấn Thiên Địa] (Mốc ${milestone * 100} Tầng) mới có thể đột phá tiếp!`, "warning");
                 this.switchTab("stages");
                 return;
             }
@@ -593,8 +640,84 @@ class UIController {
             this.renderCultivateTab();
             this.renderCharacterTab();
             StorageSystem.save(this.player);
+        } else if (result && result.isFailedRate) {
+            this.sound.playDefeat();
+            this.showToast(result.msg, "error");
+            this.updateHeaderInfo();
+            this.renderCultivateTab();
+            this.renderCharacterTab();
+            StorageSystem.save(this.player);
         } else if (result && result.isVoCucBlocked) {
             this.showToast(result.msg, "warning");
+            this.switchTab("stages");
+        } else if (result && result.isVanThienDiaBlocked) {
+            this.showToast(result.msg, "warning");
+            this.switchTab("stages");
+        } else {
+            this.showToast("Chưa tích tụ đủ linh lực để đột phá!", "warning");
+        }
+    }
+
+    handleQuickBreakthrough() {
+        if (this.player.realmIndex >= 11 && this.player.tierIndex >= 99 && !this.player.isVoCuc) {
+            const hasClearedVoCuc = this.player.clearedStages && this.player.clearedStages.includes("stage_vo_cuc");
+            if (!hasClearedVoCuc) {
+                this.showToast("⚠️ Cần đánh bại [Ải 22: Hư Vô Bản Nguyên Cảnh] mới có thể tiếp tục đột phá!", "warning");
+                this.switchTab("stages");
+                return;
+            }
+        }
+
+        if (this.player.isVoCuc && (this.player.tierIndex + 1) % 100 === 0) {
+            const milestone = Math.floor((this.player.tierIndex + 1) / 100);
+            if ((this.player.vanThienDiaMilestonesCleared || 0) < milestone) {
+                this.showToast(`⚠️ BÌNH CẢNH: Cần đánh bại [Ải 23: Vấn Thiên Địa] (Mốc ${milestone * 100} Tầng) mới có thể đột phá tiếp!`, "warning");
+                this.switchTab("stages");
+                return;
+            }
+        }
+
+        if (!this.player.canBreakthrough()) {
+            this.showToast("Chưa tích tụ đủ linh lực để đột phá!", "warning");
+            return;
+        }
+
+        const result = this.player.quickBreakthrough();
+        if (result && result.success) {
+            this.sound.playBreakthrough();
+            if (this.particles) {
+                const rect = document.getElementById("cultivate-avatar-box")?.getBoundingClientRect();
+                if (rect) {
+                    this.particles.emitBreakthrough(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                }
+            }
+
+            let extraMsg = "";
+            if (result.stopReason === "blocked_stage_22") {
+                extraMsg = " (Dừng lại do chạm bình cảnh Ải 22)";
+            } else if (result.stopReason === "blocked_stage_23") {
+                extraMsg = " (Dừng lại do chạm bình cảnh Ải 23: Vấn Thiên Địa)";
+            } else if (result.stopReason === "failed_rate") {
+                extraMsg = " (Dừng lại do gặp kiếp nạn độ kiếp thất bại)";
+            }
+
+            this.showToast(`⚡ [ĐỘT PHÁ NHANH] Đã thăng liên tục ${result.successCount} tầng! Đạt [${result.newTitle}], thu hoạch +${result.totalPoints} Điểm Tiềm Năng!${extraMsg}`, "breakthrough");
+            this.updateHeaderInfo();
+            this.renderCultivateTab();
+            this.renderCharacterTab();
+            StorageSystem.save(this.player);
+        } else if (result && result.stopReason === "failed_rate") {
+            this.sound.playDefeat();
+            this.showToast(result.lastResult?.msg || "Độ kiếp thất bại do lôi kiếp chấn động!", "error");
+            this.updateHeaderInfo();
+            this.renderCultivateTab();
+            this.renderCharacterTab();
+            StorageSystem.save(this.player);
+        } else if (result && result.stopReason === "blocked_stage_22") {
+            this.showToast("⚠️ Cần đánh bại [Ải 22: Hư Vô Bản Nguyên Cảnh] mới có thể tiếp tục đột phá!", "warning");
+            this.switchTab("stages");
+        } else if (result && result.stopReason === "blocked_stage_23") {
+            this.showToast("⚠️ Cần đánh bại [Ải 23: Vấn Thiên Địa] mới có thể phá vỡ bình cảnh!", "warning");
             this.switchTab("stages");
         } else {
             this.showToast("Chưa tích tụ đủ linh lực để đột phá!", "warning");
@@ -676,12 +799,23 @@ class UIController {
 
     renderStatButtons() {
         const types = ["vat_li", "phep", "mau"];
+        const hasCleared22 = (this.player.clearedStages && this.player.clearedStages.includes("stage_vo_cuc")) || this.player.isVoCuc;
         types.forEach(type => {
             const container = document.getElementById(`stat-btns-${type}`);
             if (!container) return;
+
+            let extraBtns = "";
+            if (hasCleared22) {
+                extraBtns = `
+                    <button class="btn-sm btn-stat" onclick="gameUI.allocateStat('${type}', 100)" ${this.player.statPoints < 100 ? "disabled" : ""}>+100</button>
+                    <button class="btn-sm btn-stat" onclick="gameUI.allocateStat('${type}', 500)" ${this.player.statPoints < 500 ? "disabled" : ""}>+500</button>
+                `;
+            }
+
             container.innerHTML = `
                 <button class="btn-sm btn-stat" onclick="gameUI.allocateStat('${type}', 1)" ${this.player.statPoints < 1 ? "disabled" : ""}>+1</button>
                 <button class="btn-sm btn-stat" onclick="gameUI.allocateStat('${type}', 5)" ${this.player.statPoints < 5 ? "disabled" : ""}>+5</button>
+                ${extraBtns}
                 <button class="btn-sm btn-stat" onclick="gameUI.allocateStat('${type}', ${this.player.statPoints})" ${this.player.statPoints < 1 ? "disabled" : ""}>Max</button>
             `;
         });
@@ -1615,8 +1749,12 @@ class UIController {
         stageListEl.innerHTML = "";
         const allStages = StageSystem.getAllStages();
 
-        allStages.forEach(stage => {
-            const unlocked = StageSystem.isStageUnlocked(this.player.realmIndex, this.player.tierIndex, stage);
+        allStages.forEach(rawStage => {
+            let stage = rawStage;
+            if (stage.id === "stage_23" || stage.id === "stage_van_thien_dia") {
+                stage = StageSystem.generateVanThienDiaStage(this.player);
+            }
+            const unlocked = StageSystem.isStageUnlocked(this.player.realmIndex, this.player.tierIndex, stage, this.player);
             const isCleared = this.player.clearedStages.includes(stage.id);
             const reqTitle = RealmSystem.getFullRealmTitle(stage.reqRealm, stage.reqTier);
 
@@ -1643,10 +1781,20 @@ class UIController {
                 </div>
 
                 <div class="stage-rewards">
-                    <span>✨ +${this.formatNumber(stage.rewards.tuVi)} Tu Vi</span>
+                    ${stage.rewards.tinhNguyen 
+                        ? `<span style="color:#c084fc;">🌌 +${this.formatNumber(stage.rewards.tinhNguyen)} Tinh Nguyên</span>` 
+                        : (stage.rewards.tuVi ? `<span>✨ +${this.formatNumber(stage.rewards.tuVi)} Tu Vi</span>` : '')
+                    }
                     ${stage.rewards.honNguyen 
                         ? `<span style="color:#c7d2fe;">🌀 +${this.formatNumber(stage.rewards.honNguyen)} Hỗn Nguyên</span>` 
-                        : `<span>💎 +${this.formatNumber(stage.rewards.linhThach)} Linh Thạch</span>`
+                        : (stage.rewards.linhThach ? `<span>💎 +${this.formatNumber(stage.rewards.linhThach)} Linh Thạch</span>` : '')
+                    }
+                    ${stage.rewards.dropChance && stage.rewards.possibleDrops && stage.rewards.possibleDrops.length > 0
+                        ? `<span style="color:#ffd700;">🎁 Rơi 100%: ${stage.rewards.possibleDrops.map(id => {
+                            const it = typeof ItemSystem !== 'undefined' ? ItemSystem.getItemById(id) : null;
+                            return it ? it.name : id;
+                        }).join(', ')}</span>`
+                        : ''
                     }
                 </div>
 
@@ -1756,7 +1904,10 @@ class UIController {
 
                     <div class="tower-rewards-box">
                         <span style="color: var(--text-gold); font-weight: 600;">🎁 Thưởng Tầng:</span>
-                        <span>✨ +${this.formatNumber(stage.rewards.tuVi)} Tu Vi</span>
+                        ${stage.rewards.tinhNguyen 
+                            ? `<span style="color:#c084fc;">🌌 +${this.formatNumber(stage.rewards.tinhNguyen)} Tinh Nguyên</span>` 
+                            : `<span>✨ +${this.formatNumber(stage.rewards.tuVi)} Tu Vi</span>`
+                        }
                         ${stage.rewards.honNguyen 
                             ? `<span style="color:#c7d2fe;">🌀 +${this.formatNumber(stage.rewards.honNguyen)} Hỗn Nguyên</span>`
                             : `<span>💎 +${this.formatNumber(stage.rewards.linhThach)} Linh Thạch</span>`
@@ -1799,9 +1950,20 @@ class UIController {
                     } else {
                         sweepLinhThachText = `<strong>+${this.formatNumber(sweepData.totalLinhThach)} Linh Thạch</strong>`;
                     }
+
+                    let sweepExpText = "";
+                    if (sweepData.totalTinhNguyen > 0) {
+                        sweepExpText = `<strong style="color:#c084fc;">+${this.formatNumber(sweepData.totalTinhNguyen)} 🌌 Tinh Nguyên</strong>`;
+                        if (sweepData.totalTuVi > 0) {
+                            sweepExpText += ` • <strong>+${this.formatNumber(sweepData.totalTuVi)} ✨ Tu Vi</strong>`;
+                        }
+                    } else {
+                        sweepExpText = `<strong>+${this.formatNumber(sweepData.totalTuVi)} Tu Vi</strong>`;
+                    }
+
                     sweepPreviewEl.innerHTML = `
                         ✨ Quét Tầng 1 -> ${sweepData.toFloor}: 
-                        <strong>+${this.formatNumber(sweepData.totalTuVi)} Tu Vi</strong> • 
+                        ${sweepExpText} • 
                         ${sweepLinhThachText}
                     `;
                 } else {
@@ -2109,7 +2271,13 @@ class UIController {
         const sweepData = TowerSystem.calculateSweepRewards(this.player.towerData.highestFloor);
         if (!sweepData) return;
 
-        let rewardPrompt = `✨ Tu Vi: +${this.formatNumber(sweepData.totalTuVi)}\n`;
+        let rewardPrompt = "";
+        if (sweepData.totalTinhNguyen > 0) {
+            rewardPrompt += `🌌 Tinh Nguyên: +${this.formatNumber(sweepData.totalTinhNguyen)}\n`;
+        }
+        if (sweepData.totalTuVi > 0) {
+            rewardPrompt += `✨ Tu Vi: +${this.formatNumber(sweepData.totalTuVi)}\n`;
+        }
         if (sweepData.totalHonNguyen > 0) {
             rewardPrompt += `🌀 Hỗn Nguyên: +${this.formatNumber(sweepData.totalHonNguyen)}\n`;
         }
@@ -2120,18 +2288,29 @@ class UIController {
         }
 
         this.player.towerData.dailyTickets = Math.max(0, this.player.towerData.dailyTickets - 1);
-        this.player.addTuVi(sweepData.totalTuVi);
+        if (sweepData.totalTinhNguyen > 0) {
+            this.player.addTinhNguyen(sweepData.totalTinhNguyen);
+        }
+        if (sweepData.totalTuVi > 0) {
+            this.player.addTuVi(sweepData.totalTuVi);
+        }
         this.player.linhThach = (this.player.linhThach || 0) + sweepData.totalLinhThach;
         if (sweepData.totalHonNguyen) {
             this.player.honNguyen = (this.player.honNguyen || 0) + sweepData.totalHonNguyen;
         }
 
         this.sound.playVictory();
-        let toastMsg = `⚡ Quét nhanh thành công Tầng 1 -> ${sweepData.toFloor}! Nhận +${this.formatNumber(sweepData.totalTuVi)} Tu Vi`;
-        if (sweepData.totalHonNguyen > 0) {
-            toastMsg += `, +${this.formatNumber(sweepData.totalHonNguyen)} 🌀 Hỗn Nguyên`;
+        let toastMsg = `⚡ Quét nhanh thành công Tầng 1 -> ${sweepData.toFloor}! Nhận `;
+        if (sweepData.totalTinhNguyen > 0) {
+            toastMsg += `+${this.formatNumber(sweepData.totalTinhNguyen)} 🌌 Tinh Nguyên, `;
         }
-        toastMsg += ` & +${this.formatNumber(sweepData.totalLinhThach)} 💎 Linh Thạch!`;
+        if (sweepData.totalTuVi > 0) {
+            toastMsg += `+${this.formatNumber(sweepData.totalTuVi)} Tu Vi, `;
+        }
+        if (sweepData.totalHonNguyen > 0) {
+            toastMsg += `+${this.formatNumber(sweepData.totalHonNguyen)} 🌀 Hỗn Nguyên, `;
+        }
+        toastMsg += `+${this.formatNumber(sweepData.totalLinhThach)} 💎 Linh Thạch!`;
         this.showToast(toastMsg, "breakthrough");
         this.renderTowerTab();
         this.updateHeaderInfo();
@@ -2153,10 +2332,10 @@ class UIController {
 
     startBattle(stageId) {
         this.clearAutoRepeatTimer();
-        const stage = StageSystem.getStageById(stageId);
+        const stage = StageSystem.getStageById(stageId, this.player);
         if (!stage) return;
 
-        if (!StageSystem.isStageUnlocked(this.player.realmIndex, this.player.tierIndex, stage)) {
+        if (!StageSystem.isStageUnlocked(this.player.realmIndex, this.player.tierIndex, stage, this.player)) {
             this.showToast("Tu vi chưa đủ, tiến vào sẽ tan xương nát thịt!", "error");
             return;
         }
@@ -2255,7 +2434,7 @@ class UIController {
                 contentEl.innerHTML = `
                     <p style="color: #c084fc; font-weight: 600;">Đạo hữu đã dũng mãnh trảm sát ma vật Hư Không, phá tan cấm chế tiến lên tầng cao hơn!</p>
                     <div class="result-rewards-box" style="border-color: rgba(224, 64, 251, 0.4); background: rgba(74, 20, 140, 0.15);">
-                        <div>✨ Tu Vi Nhận Được: <strong>+${this.formatNumber(result.tuViGain)}</strong></div>
+                        <div>${result.tinhNguyenGain > 0 ? `🌌 Tinh Nguyên: <strong style="color: #c084fc;">+${this.formatNumber(result.tinhNguyenGain)}</strong>` : `✨ Tu Vi Nhận Được: <strong>+${this.formatNumber(result.tuViGain)}</strong>`}</div>
                         ${result.honNguyenGain > 0 ? `<div>🌀 Hỗn Nguyên: <strong style="color: #c7d2fe;">+${this.formatNumber(result.honNguyenGain)}</strong></div>` : ""}
                         <div>💎 Linh Thạch: <strong>+${this.formatNumber(result.linhThachGain)}</strong></div>
                         <div>🏆 Kỷ Lục Đạt Được: <strong>Tầng ${this.player.towerData.highestFloor}</strong></div>
@@ -2324,7 +2503,8 @@ class UIController {
             contentEl.innerHTML = `
                 <p>Đạo hữu đã uy phong trảm sát yêu tà!</p>
                 <div class="result-rewards-box">
-                    <div>✨ Tu Vi Nhận Được: <strong>+${this.formatNumber(result.tuViGain)}</strong></div>
+                    ${result.tuViGain > 0 ? `<div>✨ Tu Vi Nhận Được: <strong>+${this.formatNumber(result.tuViGain)}</strong></div>` : ""}
+                    ${result.tinhNguyenGain > 0 ? `<div>🌌 Tinh Nguyên: <strong style="color: #67e8f9;">+${this.formatNumber(result.tinhNguyenGain)}</strong></div>` : ""}
                     ${result.honNguyenGain > 0 ? `<div>🌀 Hỗn Nguyên: <strong style="color: #c7d2fe;">+${this.formatNumber(result.honNguyenGain)}</strong></div>` : ""}
                     <div>💎 Linh Thạch: <strong>+${this.formatNumber(result.linhThachGain)}</strong></div>
                     <div>🎁 Chiến Lợi Phẩm: ${dropHtml}</div>
