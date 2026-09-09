@@ -334,6 +334,8 @@ body {
     gap: 10px;
     z-index: 9999;
     pointer-events: none;
+    max-height: 180px;
+    overflow: hidden;
 }
 
 .game-toast {
@@ -359,8 +361,18 @@ body {
 .toast-warning { border-color: #ffb74d; }
 .toast-info { border-color: #00d2d3; }
 
-.toast-fade-out {
-    animation: fadeOutToast 0.4s ease-in forwards;
+.toast-fade-out, .game-toast.fade-out {
+    animation: fadeOutToast 0.3s ease-in forwards;
+}
+
+.toast-bump {
+    animation: toastBump 0.22s ease-out !important;
+}
+
+@keyframes toastBump {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
 @keyframes slideInToast {
@@ -514,6 +526,8 @@ body {
         right: 12px;
         left: 12px;
         align-items: center;
+        max-height: 125px;
+        overflow: hidden;
     }
 
     .game-toast {

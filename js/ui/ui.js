@@ -426,8 +426,7 @@ class UIController {
             if (rateInfo.totalRate < 60) color = "#ff5252";
             else if (rateInfo.totalRate < 90) color = "#ffab00";
 
-            let bonusText = rateInfo.bonusRate > 0 ? ` <span style="color:#ffd700;">(+${rateInfo.bonusRate}% vĩnh viễn)</span>` : "";
-            tribulationEl.innerHTML = `⚡ Tỉ Lệ Độ Kiếp: <strong style="color:${color}; font-size:14px;">${rateInfo.totalRate}%</strong>${bonusText}`;
+            tribulationEl.innerHTML = `⚡ Tỉ Lệ Độ Kiếp: <strong style="color:${color}; font-size:14px;">${rateInfo.totalRate}%</strong>`;
         }
 
         // Kiểm tra điều kiện vượt ải để thăng cảnh giới tiếp theo
@@ -601,7 +600,7 @@ class UIController {
         if (this.player.realmIndex >= 11 && this.player.tierIndex >= 99 && !this.player.isVoCuc) {
             const hasClearedVoCuc = this.player.clearedStages && this.player.clearedStages.includes("stage_vo_cuc");
             if (!hasClearedVoCuc) {
-                this.showToast("⚠️ Cần đánh bại [Ải 22: Hư Vô Bản Nguyên Cảnh] mới có thể tiếp tục đột phá!", "warning");
+                this.showToast("⚠️ Cần đánh bại [Ải 22: Hư Vô Bản Nguyên Cảnh] mới có thể tiếp tục đột phá!", "warning", "toast-breakthrough");
                 this.switchTab("stages");
                 return;
             }
@@ -610,31 +609,34 @@ class UIController {
         if (this.player.isVoCuc && (this.player.tierIndex + 1) % 100 === 0) {
             const milestone = Math.floor((this.player.tierIndex + 1) / 100);
             if ((this.player.vanThienDiaMilestonesCleared || 0) < milestone) {
-                this.showToast(`⚠️ BÌNH CẢNH: Cần đánh bại [Ải 23: Vấn Thiên Địa] (Mốc ${milestone * 100} Tầng) mới có thể đột phá tiếp!`, "warning");
+                this.showToast(`⚠️ BÌNH CẢNH: Cần đánh bại [Ải 23: Vấn Thiên Địa] (Mốc ${milestone * 100} Tầng) mới có thể đột phá tiếp!`, "warning", "toast-breakthrough");
                 this.switchTab("stages");
                 return;
             }
         }
 
+        const avatarBox = document.getElementById("cultivate-avatar-box");
+        const btnBox = document.getElementById("btn-breakthrough");
+        const avatarRect = (avatarBox && typeof avatarBox.getBoundingClientRect === "function") ? avatarBox.getBoundingClientRect() : null;
+        const btnRect = (btnBox && typeof btnBox.getBoundingClientRect === "function") ? btnBox.getBoundingClientRect() : null;
+        const floatX = avatarRect ? (avatarRect.left + avatarRect.width / 2) : (btnRect ? (btnRect.left + btnRect.width / 2) : (window.innerWidth / 2));
+        const floatY = avatarRect ? (avatarRect.top + avatarRect.height / 3) : (btnRect ? (btnRect.top - 20) : (window.innerHeight / 2 - 40));
+
         const result = this.player.breakthrough();
         if (result && result.success) {
             this.sound.playBreakthrough();
             if (this.particles) {
-                const rect = document.getElementById("cultivate-avatar-box")?.getBoundingClientRect();
-                if (rect) {
-                    this.particles.emitBreakthrough(rect.left + rect.width / 2, rect.top + rect.height / 2);
-                }
+                this.particles.emitBreakthrough(floatX, floatY);
+                this.particles.addFloatingText("✨ +4 Tiềm Năng", floatX, floatY, "#ffd700", true);
             }
             if (result.isVoCuc && result.isMajor) {
-                this.showToast(`🌌 THĂNG HOA THÀNH CÔNG! Chúc mừng đạo hữu đạt [${result.newTitle}]! Tu vi hóa thành Tinh Nguyên, nhận 4 ĐIỂM TIỀM NĂNG!`, "breakthrough");
-            } else if (result.isVoCuc) {
-                this.showToast(`🎉 ĐỘT PHÁ THÀNH CÔNG! Đạt [${result.newTitle}], nhận 4 ĐIỂM TIỀM NĂNG!`, "breakthrough");
+                this.showToast(`🌌 THĂNG HOA THÀNH CÔNG! Chúc mừng đạo hữu đạt [${result.newTitle}]! Tu vi hóa thành Tinh Nguyên, nhận 4 ĐIỂM TIỀM NĂNG!`, "breakthrough", "toast-breakthrough");
             } else if (result.isMajor) {
-                this.showToast(`🌌 ĐỘT PHÁ ĐẠI CẢNH GIỚI! Chúc mừng đạo hữu bước vào [${result.realm.name}], nhận 4 ĐIỂM TIỀM NĂNG!`, "breakthrough");
+                this.showToast(`🌌 ĐỘT PHÁ ĐẠI CẢNH GIỚI! Chúc mừng đạo hữu bước vào [${result.realm.name}], nhận 4 ĐIỂM TIỀM NĂNG!`, "breakthrough", "toast-breakthrough");
             } else if (result.blockedReason) {
-                this.showToast(`⚡ Thăng lên [${result.newTitle}], nhận 4 ĐIỂM TIỀM NĂNG! (Cần vượt [${result.blockedReason}] để thăng đại cảnh giới)`, "info");
+                this.showToast(`⚡ Thăng lên [${result.newTitle}], nhận 4 ĐIỂM TIỀM NĂNG! (Cần vượt [${result.blockedReason}] để thăng đại cảnh giới)`, "info", "toast-breakthrough");
             } else {
-                this.showToast(`🎉 ĐỘT PHÁ THÀNH CÔNG! Đạt [${result.newTitle}], nhận đúng 4 ĐIỂM TIỀM NĂNG!`, "breakthrough");
+                this.showToast(`🎉 Đột phá thành công! Đạt [${result.newTitle}] (+4 Tiềm Năng)`, "breakthrough", "toast-breakthrough");
             }
             this.updateHeaderInfo();
             this.renderCultivateTab();
@@ -642,19 +644,22 @@ class UIController {
             StorageSystem.save(this.player);
         } else if (result && result.isFailedRate) {
             this.sound.playDefeat();
-            this.showToast(result.msg, "error");
+            if (this.particles) {
+                this.particles.addFloatingText("⚡ ĐỘ KIẾP THẤT BẠI!", floatX, floatY, "#ff5252", true);
+            }
+            this.showToast(result.msg, "error", "toast-breakthrough");
             this.updateHeaderInfo();
             this.renderCultivateTab();
             this.renderCharacterTab();
             StorageSystem.save(this.player);
         } else if (result && result.isVoCucBlocked) {
-            this.showToast(result.msg, "warning");
+            this.showToast(result.msg, "warning", "toast-breakthrough");
             this.switchTab("stages");
         } else if (result && result.isVanThienDiaBlocked) {
-            this.showToast(result.msg, "warning");
+            this.showToast(result.msg, "warning", "toast-breakthrough");
             this.switchTab("stages");
         } else {
-            this.showToast("Chưa tích tụ đủ linh lực để đột phá!", "warning");
+            this.showToast("Chưa tích tụ đủ linh lực để đột phá!", "warning", "toast-breakthrough");
         }
     }
 
@@ -685,11 +690,14 @@ class UIController {
         const result = this.player.quickBreakthrough();
         if (result && result.success) {
             this.sound.playBreakthrough();
+            const avatarBox = document.getElementById("cultivate-avatar-box");
+            const avatarRect = (avatarBox && typeof avatarBox.getBoundingClientRect === "function") ? avatarBox.getBoundingClientRect() : null;
+            const floatX = avatarRect ? (avatarRect.left + avatarRect.width / 2) : (window.innerWidth / 2);
+            const floatY = avatarRect ? (avatarRect.top + avatarRect.height / 3) : (window.innerHeight / 2 - 40);
+
             if (this.particles) {
-                const rect = document.getElementById("cultivate-avatar-box")?.getBoundingClientRect();
-                if (rect) {
-                    this.particles.emitBreakthrough(rect.left + rect.width / 2, rect.top + rect.height / 2);
-                }
+                this.particles.emitBreakthrough(floatX, floatY);
+                this.particles.addFloatingText(`✨ +${result.totalPoints} Tiềm Năng`, floatX, floatY, "#ffd700", true);
             }
 
             let extraMsg = "";
@@ -701,26 +709,33 @@ class UIController {
                 extraMsg = " (Dừng lại do gặp kiếp nạn độ kiếp thất bại)";
             }
 
-            this.showToast(`⚡ [ĐỘT PHÁ NHANH] Đã thăng liên tục ${result.successCount} tầng! Đạt [${result.newTitle}], thu hoạch +${result.totalPoints} Điểm Tiềm Năng!${extraMsg}`, "breakthrough");
+            this.showToast(`⚡ [ĐỘT PHÁ NHANH] Đã thăng liên tục ${result.successCount} tầng! Đạt [${result.newTitle}], thu hoạch +${result.totalPoints} Điểm Tiềm Năng!${extraMsg}`, "breakthrough", "toast-breakthrough");
             this.updateHeaderInfo();
             this.renderCultivateTab();
             this.renderCharacterTab();
             StorageSystem.save(this.player);
         } else if (result && result.stopReason === "failed_rate") {
             this.sound.playDefeat();
-            this.showToast(result.lastResult?.msg || "Độ kiếp thất bại do lôi kiếp chấn động!", "error");
+            const avatarBox = document.getElementById("cultivate-avatar-box");
+            const avatarRect = avatarBox?.getBoundingClientRect();
+            const floatX = avatarBox ? (avatarBox.left + avatarBox.width / 2) : (window.innerWidth / 2);
+            const floatY = avatarBox ? (avatarBox.top + avatarBox.height / 3) : (window.innerHeight / 2 - 40);
+            if (this.particles) {
+                this.particles.addFloatingText("⚡ ĐỘ KIẾP THẤT BẠI!", floatX, floatY, "#ff5252", true);
+            }
+            this.showToast(result.lastResult?.msg || "Độ kiếp thất bại do lôi kiếp chấn động!", "error", "toast-breakthrough");
             this.updateHeaderInfo();
             this.renderCultivateTab();
             this.renderCharacterTab();
             StorageSystem.save(this.player);
         } else if (result && result.stopReason === "blocked_stage_22") {
-            this.showToast("⚠️ Cần đánh bại [Ải 22: Hư Vô Bản Nguyên Cảnh] mới có thể tiếp tục đột phá!", "warning");
+            this.showToast("⚠️ Cần đánh bại [Ải 22: Hư Vô Bản Nguyên Cảnh] mới có thể tiếp tục đột phá!", "warning", "toast-breakthrough");
             this.switchTab("stages");
         } else if (result && result.stopReason === "blocked_stage_23") {
-            this.showToast("⚠️ Cần đánh bại [Ải 23: Vấn Thiên Địa] mới có thể phá vỡ bình cảnh!", "warning");
+            this.showToast("⚠️ Cần đánh bại [Ải 23: Vấn Thiên Địa] mới có thể phá vỡ bình cảnh!", "warning", "toast-breakthrough");
             this.switchTab("stages");
         } else {
-            this.showToast("Chưa tích tụ đủ linh lực để đột phá!", "warning");
+            this.showToast("Chưa tích tụ đủ linh lực để đột phá!", "warning", "toast-breakthrough");
         }
     }
 
@@ -3114,7 +3129,7 @@ class UIController {
                 if (item.stats.baoKich) parts.push(`Bạo +${item.stats.baoKich}%`);
                 statsDesc = parts.join(", ");
             } else if (item.rateGain) {
-                statsDesc = `+${item.rateGain}% Tỉ Lệ Độ Kiếp (Vĩnh viễn)`;
+                statsDesc = `+${item.rateGain}% Tỉ Lệ Độ Kiếp (Cảnh giới hiện tại)`;
             } else if (item.tinhNguyenGain) {
                 statsDesc = `+${this.formatNumber(item.tinhNguyenGain)} 🌌 Tinh Nguyên Đại Đạo`;
             } else if (item.tuViGain) {
@@ -3258,19 +3273,43 @@ class UIController {
 
     // ================= THÔNG BÁO (TOAST POPUPS) =================
 
-    showToast(message, type = "info") {
+    showToast(message, type = "info", id = null) {
         const container = document.getElementById("toast-container");
         if (!container) return;
 
+        // 1. Nếu có ID chỉ định (ví dụ: "toast-breakthrough"), CẬP NHẬT ĐÈ vào toast đang có
+        if (id) {
+            const existingToast = container.querySelector(`[data-toast-id="${id}"]`);
+            if (existingToast) {
+                existingToast.className = `game-toast toast-${type} toast-bump`;
+                existingToast.innerHTML = `<span>${message}</span>`;
+                // Kéo dài timer của existingToast
+                if (existingToast._timer) clearTimeout(existingToast._timer);
+                existingToast._timer = setTimeout(() => {
+                    existingToast.classList.add("fade-out");
+                    setTimeout(() => existingToast.remove(), 300);
+                }, 1600);
+                return;
+            }
+        }
+
+        // 2. Khống chế số lượng: Tối đa 2 toast hiển thị cùng lúc trên màn hình (FIFO)
+        while (container.children.length >= 2) {
+            const oldest = container.firstElementChild;
+            if (oldest && oldest._timer) clearTimeout(oldest._timer);
+            if (oldest) oldest.remove();
+        }
+
         const toast = document.createElement("div");
         toast.className = `game-toast toast-${type}`;
+        if (id) toast.setAttribute("data-toast-id", id);
         toast.innerHTML = `<span>${message}</span>`;
         container.appendChild(toast);
 
-        setTimeout(() => {
+        toast._timer = setTimeout(() => {
             toast.classList.add("fade-out");
-            setTimeout(() => toast.remove(), 400);
-        }, 3000);
+            setTimeout(() => toast.remove(), 300);
+        }, 1600);
     }
 
     formatNumber(num) {
@@ -3338,7 +3377,7 @@ class UIController {
             if (item.stats.baoKich) parts.push(`<div class="tooltip-stat-badge"><span>⚡ Tỉ Lệ Bạo Kích:</span> <strong>+${item.stats.baoKich}%</strong></div>`);
             statsHtml = parts.join("");
         } else if (item.rateGain) {
-            statsHtml = `<div class="tooltip-stat-badge" style="color:#00e676;"><span>⚡ Tỉ Lệ Độ Kiếp:</span> <strong>+${item.rateGain}% (Vĩnh viễn)</strong></div>`;
+            statsHtml = `<div class="tooltip-stat-badge" style="color:#00e676;"><span>⚡ Tỉ Lệ Độ Kiếp:</span> <strong>+${item.rateGain}% (Cảnh giới hiện tại)</strong></div>`;
         } else if (item.tinhNguyenGain) {
             statsHtml = `<div class="tooltip-stat-badge" style="color:#e040fb;"><span>🌌 Tinh Nguyên Đại Đạo:</span> <strong>+${this.formatNumber(item.tinhNguyenGain)}</strong></div>`;
         } else if (item.tuViGain) {

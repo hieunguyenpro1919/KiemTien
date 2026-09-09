@@ -143,7 +143,8 @@ class Player {
      * - 3 Cảnh giới vô hạn tầng (Realm 9..11: Vô Thượng Lộ, Vạn Vì Tinh Tú, Đại Đạo Chí Cao Vô Thượng):
      *   Mỗi tầng -0.5% tỉ lệ độ kiếp (Tầng 1 = 100%, Tầng 2 = 99.5%, ..., Tầng 100 = 50.5%). Tối thiểu 10%.
      *   Cứ mỗi 100 tầng (tierIndex % 100) làm mới lại 100%.
-     * - Cộng dồn vĩnh viễn với breakthroughBonusRate từ đan dược (Chứng Đạo Tinh Nguyên +10%, Luận Đạo Tinh Nguyên +1%).
+     * - Cộng dồn với breakthroughBonusRate từ đan dược trong cảnh giới / chu kỳ 100 tầng hiện tại.
+     *   Khi thăng đại cảnh giới mới hoặc qua chu kỳ 100 tầng thì làm mới lại cùng bản thân.
      */
     getBreakthroughRate() {
         let baseRate = 100;
@@ -282,6 +283,9 @@ class Player {
 
             this.tinhNguyen = Math.max(0, (this.tinhNguyen || 0) - maxTuVi);
             this.tierIndex = (this.tierIndex || 100) + 1;
+            if (this.tierIndex % 100 === 0) {
+                this.breakthroughBonusRate = 0; // Làm mới cùng chu kỳ 100 tầng
+            }
             this.statPoints += STAT_POINTS_PER_TIER;
             this.currentHp = this.getMaxHp();
             return {
@@ -319,6 +323,7 @@ class Player {
             this.tuVi = 0;
             this.tinhNguyen = Math.floor(excessTuVi / 1000000000);
             this.tierIndex = 100; // Thăng hoa lên Tầng 101
+            this.breakthroughBonusRate = 0; // Làm mới khi thăng hoa bước vào Cảnh Giới Vô Cực
             this.statPoints += STAT_POINTS_PER_TIER;
             this.currentHp = this.getMaxHp();
             return {
@@ -366,14 +371,19 @@ class Player {
                 this.realmIndex++;
                 this.tierIndex = 0;
                 isMajor = true;
+                this.breakthroughBonusRate = 0; // Thăng đại cảnh giới mới: làm mới tỉ lệ cùng bản thân
             }
         } else {
             if (this.realmIndex < RealmSystem.getRealmCount() - 1 && hasClearedReqStage) {
                 this.realmIndex++;
                 this.tierIndex = 0;
                 isMajor = true;
+                this.breakthroughBonusRate = 0; // Thăng đại cảnh giới mới: làm mới tỉ lệ cùng bản thân
             } else {
                 this.tierIndex++;
+                if (this.tierIndex % 100 === 0) {
+                    this.breakthroughBonusRate = 0; // Qua mốc 100 tầng: làm mới tỉ lệ cùng bản thân
+                }
                 if (reqStageForNext && !hasClearedReqStage) {
                     const reqStageObj = typeof StageSystem !== "undefined" ? StageSystem.getStageById(reqStageForNext) : null;
                     blockedReason = reqStageObj ? reqStageObj.name : reqStageForNext;
@@ -820,10 +830,11 @@ class Player {
         } else if (itemId === "pill_chung_dao_tinh_nguyen" || item.rateGain) {
             const gain = item.rateGain || 10;
             this.breakthroughBonusRate = (this.breakthroughBonusRate || 0) + gain;
+            const currentRate = this.getBreakthroughRate().totalRate;
             return {
                 success: true,
                 item,
-                msg: `Đã dùng 1x ${item.name}! Tỉ lệ độ kiếp thành công tăng vĩnh viễn +${gain}% (Tổng cộng: +${this.breakthroughBonusRate}%)!`
+                msg: `Đã dùng 1x ${item.name}! Tỉ lệ độ kiếp tăng thêm +${gain}% (Tỉ lệ hiện tại: ${currentRate}%)!`
             };
         } else if (itemId === "item_tower_ticket") {
             if (!this.towerData) {
@@ -935,11 +946,12 @@ class Player {
             const gainPerPill = item.rateGain || 10;
             const totalGain = gainPerPill * count;
             this.breakthroughBonusRate = (this.breakthroughBonusRate || 0) + totalGain;
+            const currentRate = this.getBreakthroughRate().totalRate;
             return {
                 success: true,
                 count: count,
                 item: item,
-                msg: `Đã dùng hết ${count}x [${item.name}], tỉ lệ độ kiếp thành công tăng vĩnh viễn +${totalGain}% (Tổng cộng: +${this.breakthroughBonusRate}%)!`
+                msg: `Đã dùng hết ${count}x [${item.name}], tỉ lệ độ kiếp tăng thêm +${totalGain}% (Tỉ lệ hiện tại: ${currentRate}%)!`
             };
         } else if (itemId === "item_tower_ticket") {
             if (!this.towerData) {
