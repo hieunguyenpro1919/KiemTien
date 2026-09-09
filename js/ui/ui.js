@@ -804,20 +804,19 @@ class UIController {
             const container = document.getElementById(`stat-btns-${type}`);
             if (!container) return;
 
-            let extraBtns = "";
             if (hasCleared22) {
-                extraBtns = `
+                container.innerHTML = `
                     <button class="btn-sm btn-stat" onclick="gameUI.allocateStat('${type}', 100)" ${this.player.statPoints < 100 ? "disabled" : ""}>+100</button>
                     <button class="btn-sm btn-stat" onclick="gameUI.allocateStat('${type}', 500)" ${this.player.statPoints < 500 ? "disabled" : ""}>+500</button>
+                    <button class="btn-sm btn-stat" onclick="gameUI.allocateStat('${type}', ${this.player.statPoints})" ${this.player.statPoints < 1 ? "disabled" : ""}>Max</button>
+                `;
+            } else {
+                container.innerHTML = `
+                    <button class="btn-sm btn-stat" onclick="gameUI.allocateStat('${type}', 1)" ${this.player.statPoints < 1 ? "disabled" : ""}>+1</button>
+                    <button class="btn-sm btn-stat" onclick="gameUI.allocateStat('${type}', 5)" ${this.player.statPoints < 5 ? "disabled" : ""}>+5</button>
+                    <button class="btn-sm btn-stat" onclick="gameUI.allocateStat('${type}', ${this.player.statPoints})" ${this.player.statPoints < 1 ? "disabled" : ""}>Max</button>
                 `;
             }
-
-            container.innerHTML = `
-                <button class="btn-sm btn-stat" onclick="gameUI.allocateStat('${type}', 1)" ${this.player.statPoints < 1 ? "disabled" : ""}>+1</button>
-                <button class="btn-sm btn-stat" onclick="gameUI.allocateStat('${type}', 5)" ${this.player.statPoints < 5 ? "disabled" : ""}>+5</button>
-                ${extraBtns}
-                <button class="btn-sm btn-stat" onclick="gameUI.allocateStat('${type}', ${this.player.statPoints})" ${this.player.statPoints < 1 ? "disabled" : ""}>Max</button>
-            `;
         });
     }
 

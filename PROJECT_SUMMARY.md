@@ -448,7 +448,7 @@ Người chơi có thể tự do dùng **Tẩy Tủy Đan** để hoán chuyển
    - Nút tím dạ quang `⚡ Đột Phá Nhanh` tại Tab Tu Luyện cho phép tự động đột phá liên tục lên tầng cao nhất có thể trong 1 lần nhấn.
    - Tự động ngắt an toàn khi gặp bình cảnh Ải 22, bình cảnh Ải 23, hết tu vi/tinh nguyên hoặc gặp thất bại lôi kiếp.
 2. **💎 Phân Bổ Tiềm Năng Nhanh (+100 & +500)**:
-   - Khi người chơi đã vượt **Ải 22: Hư Vô Bản Nguyên Cảnh**, tự động kích hoạt thêm 2 nút `+100` và `+500` cho cả 3 nhánh thuộc tính (Vật Lí, Phép, Máu).
+   - Khi người chơi đã vượt **Ải 22: Hư Vô Bản Nguyên Cảnh**, 2 nút `+100` và `+500` sẽ thay thế trực tiếp cho `+1` và `+5` (`+100`, `+500`, `Max`) giúp bảng cộng điểm luôn gọn gàng.
 3. **🌌 Hư Không Tháp Tầng Cao (>= 400)**:
    - Từ tầng 400 trở lên, phần thưởng Tu Vi được thay thế 100% bằng **Tinh Nguyên Đại Đạo**.
    - Quét tháp tự động phân tách và cộng dồn song song cả Tu Vi (tầng 1-399) và Tinh Nguyên (tầng 400+).
