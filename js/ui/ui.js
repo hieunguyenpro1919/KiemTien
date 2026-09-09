@@ -426,7 +426,7 @@ class UIController {
             if (rateInfo.totalRate < 60) color = "#ff5252";
             else if (rateInfo.totalRate < 90) color = "#ffab00";
 
-            let bonusText = rateInfo.bonusRate > 0 ? ` <span style="color:#ffd700;">(+${rateInfo.bonusRate}% buff)</span>` : "";
+            let bonusText = rateInfo.bonusRate > 0 ? ` <span style="color:#ffd700;">(+${rateInfo.bonusRate}% vĩnh viễn)</span>` : "";
             tribulationEl.innerHTML = `⚡ Tỉ Lệ Độ Kiếp: <strong style="color:${color}; font-size:14px;">${rateInfo.totalRate}%</strong>${bonusText}`;
         }
 
@@ -3114,7 +3114,7 @@ class UIController {
                 if (item.stats.baoKich) parts.push(`Bạo +${item.stats.baoKich}%`);
                 statsDesc = parts.join(", ");
             } else if (item.rateGain) {
-                statsDesc = `+${item.rateGain}% Tỉ Lệ Độ Kiếp Thành Công`;
+                statsDesc = `+${item.rateGain}% Tỉ Lệ Độ Kiếp (Vĩnh viễn)`;
             } else if (item.tinhNguyenGain) {
                 statsDesc = `+${this.formatNumber(item.tinhNguyenGain)} 🌌 Tinh Nguyên Đại Đạo`;
             } else if (item.tuViGain) {
@@ -3338,7 +3338,7 @@ class UIController {
             if (item.stats.baoKich) parts.push(`<div class="tooltip-stat-badge"><span>⚡ Tỉ Lệ Bạo Kích:</span> <strong>+${item.stats.baoKich}%</strong></div>`);
             statsHtml = parts.join("");
         } else if (item.rateGain) {
-            statsHtml = `<div class="tooltip-stat-badge" style="color:#00e676;"><span>⚡ Tỉ Lệ Độ Kiếp:</span> <strong>+${item.rateGain}%</strong></div>`;
+            statsHtml = `<div class="tooltip-stat-badge" style="color:#00e676;"><span>⚡ Tỉ Lệ Độ Kiếp:</span> <strong>+${item.rateGain}% (Vĩnh viễn)</strong></div>`;
         } else if (item.tinhNguyenGain) {
             statsHtml = `<div class="tooltip-stat-badge" style="color:#e040fb;"><span>🌌 Tinh Nguyên Đại Đạo:</span> <strong>+${this.formatNumber(item.tinhNguyenGain)}</strong></div>`;
         } else if (item.tuViGain) {

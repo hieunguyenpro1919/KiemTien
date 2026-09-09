@@ -931,7 +931,7 @@ const ITEM_DATABASE = [
         sellPrice: 10000,
         rateGain: 10,
         icon: "💠",
-        desc: "Tinh hoa ngưng tụ từ thiên địa chi lực sau khi thông qua khảo nghiệm Ải 23: Vấn Thiên Địa (Chiến lợi phẩm độc quyền rơi từ Ải 23, không bán tại Bách Bảo Các). Khi phục dụng gia tăng +10% tỉ lệ độ kiếp thành công."
+        desc: "Tinh hoa ngưng tụ từ thiên địa chi lực sau khi thông qua khảo nghiệm Ải 23: Vấn Thiên Địa (Chiến lợi phẩm độc quyền rơi từ Ải 23, không bán tại Bách Bảo Các). Khi phục dụng vĩnh viễn gia tăng +10% tỉ lệ độ kiếp thành công (cộng dồn vĩnh viễn, không bị mất sau khi đột phá)."
     },
     {
         id: "pill_luan_dao_tinh_nguyen",
@@ -944,7 +944,7 @@ const ITEM_DATABASE = [
         sellPrice: 80000,
         rateGain: 1,
         icon: "🔮",
-        desc: "Tinh hoa ngộ đạo đúc kết từ vạn cổ luận biến quy tắc đại đạo. Khi phục dụng gia tăng +1% tỉ lệ độ kiếp thành công cho lần đột phá kế tiếp."
+        desc: "Tinh hoa ngộ đạo đúc kết từ vạn cổ luận biến quy tắc đại đạo (bán tại Bách Bảo Các với giá 250.000 Hỗn Nguyên). Khi phục dụng vĩnh viễn gia tăng +1% tỉ lệ độ kiếp thành công (cộng dồn vĩnh viễn, không bị mất sau khi đột phá)."
     }
 ];
 

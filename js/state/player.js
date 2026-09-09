@@ -143,7 +143,7 @@ class Player {
      * - 3 Cảnh giới vô hạn tầng (Realm 9..11: Vô Thượng Lộ, Vạn Vì Tinh Tú, Đại Đạo Chí Cao Vô Thượng):
      *   Mỗi tầng -0.5% tỉ lệ độ kiếp (Tầng 1 = 100%, Tầng 2 = 99.5%, ..., Tầng 100 = 50.5%). Tối thiểu 10%.
      *   Cứ mỗi 100 tầng (tierIndex % 100) làm mới lại 100%.
-     * - Cộng dồn với breakthroughBonusRate từ đan dược (Chứng Đạo Tinh Nguyên +10%).
+     * - Cộng dồn vĩnh viễn với breakthroughBonusRate từ đan dược (Chứng Đạo Tinh Nguyên +10%, Luận Đạo Tinh Nguyên +1%).
      */
     getBreakthroughRate() {
         let baseRate = 100;
@@ -271,7 +271,6 @@ class Player {
             if (roll > rateInfo.totalRate) {
                 const penalty = Math.max(1, Math.floor(maxTuVi * 0.2));
                 this.tinhNguyen = Math.max(0, (this.tinhNguyen || 0) - penalty);
-                this.breakthroughBonusRate = 0;
                 return {
                     success: false,
                     isFailedRate: true,
@@ -280,9 +279,6 @@ class Player {
                     msg: `⚡ [ĐỘ KIẾP THẤT BẠI] Lôi kiếp chấn động đan điền! Đột phá thất bại (Tỉ lệ: ${rateInfo.totalRate}%), hao tổn 20% linh lực (-${penalty} 🌌).`
                 };
             }
-
-            // Độ kiếp thành công: tiêu hao buff đan dược nếu có
-            this.breakthroughBonusRate = 0;
 
             this.tinhNguyen = Math.max(0, (this.tinhNguyen || 0) - maxTuVi);
             this.tierIndex = (this.tierIndex || 100) + 1;
@@ -309,7 +305,6 @@ class Player {
             if (roll > rateInfo.totalRate) {
                 const penalty = Math.max(1, Math.floor(maxTuVi * 0.2));
                 this.tuVi = Math.max(0, (this.tuVi || 0) - penalty);
-                this.breakthroughBonusRate = 0;
                 return {
                     success: false,
                     isFailedRate: true,
@@ -318,8 +313,6 @@ class Player {
                     msg: `⚡ [ĐỘ KIẾP THẤT BẠI] Lôi kiếp chấn động đan điền! Đột phá thất bại (Tỉ lệ: ${rateInfo.totalRate}%), hao tổn 20% linh lực.`
                 };
             }
-
-            this.breakthroughBonusRate = 0;
 
             const excessTuVi = Math.max(0, this.tuVi - maxTuVi);
             this.isVoCuc = true;
@@ -348,7 +341,6 @@ class Player {
         if (roll > rateInfo.totalRate) {
             const penalty = Math.max(1, Math.floor(maxTuVi * 0.2));
             this.tuVi = Math.max(0, (this.tuVi || 0) - penalty);
-            this.breakthroughBonusRate = 0;
             return {
                 success: false,
                 isFailedRate: true,
@@ -357,8 +349,6 @@ class Player {
                 msg: `⚡ [ĐỘ KIẾP THẤT BẠI] Lôi kiếp chấn động đan điền! Đột phá thất bại (Tỉ lệ: ${rateInfo.totalRate}%), hao tổn 20% linh lực.`
             };
         }
-
-        this.breakthroughBonusRate = 0;
 
         this.tuVi = Math.max(0, this.tuVi - maxTuVi);
 
@@ -833,7 +823,7 @@ class Player {
             return {
                 success: true,
                 item,
-                msg: `Đã dùng 1x ${item.name}! Tỉ lệ độ kiếp thành công tăng thêm +${gain}% (Hiện có: +${this.breakthroughBonusRate}% buff)!`
+                msg: `Đã dùng 1x ${item.name}! Tỉ lệ độ kiếp thành công tăng vĩnh viễn +${gain}% (Tổng cộng: +${this.breakthroughBonusRate}%)!`
             };
         } else if (itemId === "item_tower_ticket") {
             if (!this.towerData) {
@@ -949,7 +939,7 @@ class Player {
                 success: true,
                 count: count,
                 item: item,
-                msg: `Đã dùng hết ${count}x [${item.name}], tỉ lệ độ kiếp thành công tăng thêm +${totalGain}% (Hiện có: +${this.breakthroughBonusRate}% buff)!`
+                msg: `Đã dùng hết ${count}x [${item.name}], tỉ lệ độ kiếp thành công tăng vĩnh viễn +${totalGain}% (Tổng cộng: +${this.breakthroughBonusRate}%)!`
             };
         } else if (itemId === "item_tower_ticket") {
             if (!this.towerData) {
@@ -1034,10 +1024,10 @@ class Player {
         }
 
         if (maxAffordable <= 0) {
-            return { 
-                success: false, 
-                reason: "not_enough_money", 
-                msg: isHonNguyen ? "Không đủ Hỗn Nguyên Thạch (hoặc Linh Thạch tương đương) để mua!" : "Không đủ Linh Thạch để mua!" 
+            return {
+                success: false,
+                reason: "not_enough_money",
+                msg: isHonNguyen ? "Không đủ Hỗn Nguyên Thạch (hoặc Linh Thạch tương đương) để mua!" : "Không đủ Linh Thạch để mua!"
             };
         }
 
