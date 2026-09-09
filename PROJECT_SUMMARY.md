@@ -456,11 +456,12 @@ Người chơi có thể tự do dùng **Tẩy Tủy Đan** để hoán chuyển
    - **9 Cảnh Giới Cốt Truyện (Realm 0..8, 10 tầng/cảnh giới)**: Mỗi tầng **-5%** tỉ lệ thành công (100% -> 55%). Khi thăng đại cảnh giới, tầng 1 của cảnh giới mới làm mới về 100%.
    - **3 Cảnh Giới Vượt Ngoài (Realm 9..11, vô hạn tầng)**: Mỗi tầng **-0.5%** tỉ lệ thành công (100% -> 50.5%). Cứ mỗi chu kỳ 100 tầng (`tierIndex % 100`) tự động làm mới về 100%.
    - Thất bại độ kiếp bị chấn động đan điền (-20% linh lực yêu cầu của tầng) và ngắt Đột Phá Nhanh.
-5. **⚔️ Ải 23: Vấn Thiên Địa & Đan Dược Chứng Đạo**:
+5. **⚔️ Ải 23: Vấn Thiên Địa & Đan Dược Độ Kiếp**:
    - Dành riêng cho người chơi đạt Cảnh Giới Vô Cực sau khi vượt Ải 22.
    - Cứ mỗi 100 tầng đột phá (Tầng 200, 300, 400...) bắt buộc phải trảm sát Boss Ải 23 mới được tiếp tục đột phá.
    - Boss sở hữu cơ chế mạnh động (Dynamic Scaling) theo chỉ số người chơi kèm Kim Thân 20%/30%.
-   - Phần thưởng rơi 100% đan dược Cực Đạo **Chứng Đạo Tinh Nguyên** (`pill_chung_dao_tinh_nguyen`), gia tăng vĩnh viễn +10% tỉ lệ độ kiếp.
+   - Rơi 100% đan dược Cực Đạo **Chứng Đạo Tinh Nguyên** (`pill_chung_dao_tinh_nguyen`), gia tăng vĩnh viễn +10% tỉ lệ độ kiếp.
+   - Bổ sung đan dược Cực Đạo **Luận Đạo Tinh Nguyên** (`pill_luan_dao_tinh_nguyen`) tại Bách Bảo Các giá 250.000 Hỗn Nguyên Thạch, hỗ trợ tăng +1% tỉ lệ độ kiếp cho lần đột phá kế tiếp.
 
 ---
 

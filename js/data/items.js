@@ -931,6 +931,19 @@ const ITEM_DATABASE = [
         rateGain: 10,
         icon: "💠",
         desc: "Tinh hoa ngưng tụ từ thiên địa chi lực sau khi thông qua khảo nghiệm Ải 23: Vấn Thiên Địa. Khi phục dụng gia tăng +10% tỉ lệ độ kiếp thành công."
+    },
+    {
+        id: "pill_luan_dao_tinh_nguyen",
+        name: "Luận Đạo Tinh Nguyên",
+        slot: "dan_duoc",
+        rarity: "cuc_dao",
+        reqRealm: 0,
+        currency: "hon_nguyen",
+        price: 250000,
+        sellPrice: 80000,
+        rateGain: 1,
+        icon: "🔮",
+        desc: "Tinh hoa ngộ đạo đúc kết từ vạn cổ luận biến quy tắc đại đạo. Khi phục dụng gia tăng +1% tỉ lệ độ kiếp thành công cho lần đột phá kế tiếp."
     }
 ];
 

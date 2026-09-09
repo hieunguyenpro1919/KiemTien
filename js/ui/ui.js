@@ -3108,6 +3108,8 @@ class UIController {
                 if (item.stats.khangPhep) parts.push(`K.Phép +${item.stats.khangPhep}`);
                 if (item.stats.baoKich) parts.push(`Bạo +${item.stats.baoKich}%`);
                 statsDesc = parts.join(", ");
+            } else if (item.rateGain) {
+                statsDesc = `+${item.rateGain}% Tỉ Lệ Độ Kiếp Thành Công`;
             } else if (item.tinhNguyenGain) {
                 statsDesc = `+${this.formatNumber(item.tinhNguyenGain)} 🌌 Tinh Nguyên Đại Đạo`;
             } else if (item.tuViGain) {
@@ -3330,6 +3332,8 @@ class UIController {
             if (item.stats.khangPhep) parts.push(`<div class="tooltip-stat-badge"><span>💠 Kháng Phép:</span> <strong>+${this.formatNumber(item.stats.khangPhep)}</strong></div>`);
             if (item.stats.baoKich) parts.push(`<div class="tooltip-stat-badge"><span>⚡ Tỉ Lệ Bạo Kích:</span> <strong>+${item.stats.baoKich}%</strong></div>`);
             statsHtml = parts.join("");
+        } else if (item.rateGain) {
+            statsHtml = `<div class="tooltip-stat-badge" style="color:#00e676;"><span>⚡ Tỉ Lệ Độ Kiếp:</span> <strong>+${item.rateGain}%</strong></div>`;
         } else if (item.tinhNguyenGain) {
             statsHtml = `<div class="tooltip-stat-badge" style="color:#e040fb;"><span>🌌 Tinh Nguyên Đại Đạo:</span> <strong>+${this.formatNumber(item.tinhNguyenGain)}</strong></div>`;
         } else if (item.tuViGain) {

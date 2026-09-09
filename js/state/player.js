@@ -271,6 +271,7 @@ class Player {
             if (roll > rateInfo.totalRate) {
                 const penalty = Math.max(1, Math.floor(maxTuVi * 0.2));
                 this.tinhNguyen = Math.max(0, (this.tinhNguyen || 0) - penalty);
+                this.breakthroughBonusRate = 0;
                 return {
                     success: false,
                     isFailedRate: true,
@@ -280,10 +281,8 @@ class Player {
                 };
             }
 
-            // Độ kiếp thành công: tiêu hao buff từ Chứng Đạo Tinh Nguyên nếu có
-            if (this.breakthroughBonusRate > 0) {
-                this.breakthroughBonusRate = Math.max(0, this.breakthroughBonusRate - 10);
-            }
+            // Độ kiếp thành công: tiêu hao buff đan dược nếu có
+            this.breakthroughBonusRate = 0;
 
             this.tinhNguyen = Math.max(0, (this.tinhNguyen || 0) - maxTuVi);
             this.tierIndex = (this.tierIndex || 100) + 1;
@@ -310,6 +309,7 @@ class Player {
             if (roll > rateInfo.totalRate) {
                 const penalty = Math.max(1, Math.floor(maxTuVi * 0.2));
                 this.tuVi = Math.max(0, (this.tuVi || 0) - penalty);
+                this.breakthroughBonusRate = 0;
                 return {
                     success: false,
                     isFailedRate: true,
@@ -319,9 +319,7 @@ class Player {
                 };
             }
 
-            if (this.breakthroughBonusRate > 0) {
-                this.breakthroughBonusRate = Math.max(0, this.breakthroughBonusRate - 10);
-            }
+            this.breakthroughBonusRate = 0;
 
             const excessTuVi = Math.max(0, this.tuVi - maxTuVi);
             this.isVoCuc = true;
@@ -350,6 +348,7 @@ class Player {
         if (roll > rateInfo.totalRate) {
             const penalty = Math.max(1, Math.floor(maxTuVi * 0.2));
             this.tuVi = Math.max(0, (this.tuVi || 0) - penalty);
+            this.breakthroughBonusRate = 0;
             return {
                 success: false,
                 isFailedRate: true,
@@ -359,9 +358,7 @@ class Player {
             };
         }
 
-        if (this.breakthroughBonusRate > 0) {
-            this.breakthroughBonusRate = Math.max(0, this.breakthroughBonusRate - 10);
-        }
+        this.breakthroughBonusRate = 0;
 
         this.tuVi = Math.max(0, this.tuVi - maxTuVi);
 
