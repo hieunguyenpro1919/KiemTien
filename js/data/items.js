@@ -926,12 +926,12 @@ const ITEM_DATABASE = [
         slot: "dan_duoc",
         rarity: "cuc_dao",
         reqRealm: 11,
-        price: 10000000,
-        currency: "hon_nguyen",
+        notForSale: true,
+        price: 0,
         sellPrice: 10000,
         rateGain: 10,
         icon: "💠",
-        desc: "Tinh hoa ngưng tụ từ thiên địa chi lực sau khi thông qua khảo nghiệm Ải 23: Vấn Thiên Địa. Khi phục dụng gia tăng +10% tỉ lệ độ kiếp thành công."
+        desc: "Tinh hoa ngưng tụ từ thiên địa chi lực sau khi thông qua khảo nghiệm Ải 23: Vấn Thiên Địa (Chiến lợi phẩm độc quyền rơi từ Ải 23, không bán tại Bách Bảo Các). Khi phục dụng gia tăng +10% tỉ lệ độ kiếp thành công."
     },
     {
         id: "pill_luan_dao_tinh_nguyen",

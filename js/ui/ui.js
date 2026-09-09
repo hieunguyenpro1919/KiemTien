@@ -3034,6 +3034,11 @@ class UIController {
 
         const allItems = ITEM_DATABASE;
         const filtered = allItems.filter(item => {
+            // 0. Không bán các vật phẩm rơi độc quyền hoặc không có giá mua
+            if (item.notForSale || !item.price || item.price <= 0) {
+                return false;
+            }
+
             // 1. Lọc theo Loại item (vukhi, giap, non, dan_duoc)
             if (this.shopFilterType !== "all" && item.slot !== this.shopFilterType) {
                 return false;

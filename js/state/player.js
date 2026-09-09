@@ -969,7 +969,9 @@ class Player {
 
     buyItem(itemId, quantity = 1) {
         const item = ItemSystem.getItemById(itemId);
-        if (!item) return { success: false, msg: "Vật phẩm không tồn tại!" };
+        if (!item || item.notForSale || !item.price || item.price <= 0) {
+            return { success: false, msg: "Vật phẩm này là chiến lợi phẩm độc quyền, không bán trong Bách Bảo Các!" };
+        }
         const totalCost = item.price * quantity;
 
         if (item.currency === "hon_nguyen") {
@@ -1000,8 +1002,8 @@ class Player {
      */
     buyMaxPill(itemId) {
         const item = (typeof ItemSystem !== "undefined") ? ItemSystem.getItemById(itemId) : null;
-        if (!item || !item.price || item.price <= 0) {
-            return { success: false, reason: "invalid_item", msg: "Vật phẩm không hợp lệ!" };
+        if (!item || item.notForSale || !item.price || item.price <= 0) {
+            return { success: false, reason: "invalid_item", msg: "Vật phẩm này không bán trong tiệm!" };
         }
 
         // Chỉ áp dụng cho đan dược thông thường, không áp dụng cho trang bị, Tẩy Tủy Đan hoặc Cuộn Giấy Đổi Tên
