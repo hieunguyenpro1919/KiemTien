@@ -2927,3 +2927,584 @@
         text-align: center;
     }
 }
+
+/* ==========================================================================
+   HỆ THỐNG ĐÀI CẦU ĐẠO (GACHA) & ĐẠI THẦN THÔNG
+   ========================================================================== */
+
+.gacha-container {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 24px;
+}
+
+.gacha-header-banner {
+    background: linear-gradient(135deg, rgba(30, 27, 75, 0.9) 0%, rgba(49, 46, 129, 0.7) 50%, rgba(15, 23, 42, 0.9) 100%);
+    border: 1px solid rgba(168, 85, 247, 0.45);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    box-shadow: 0 6px 24px rgba(124, 77, 255, 0.18);
+}
+
+.gacha-header-left {
+    flex: 1;
+    min-width: 240px;
+}
+
+.gacha-main-title {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    color: #ffd700;
+    text-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+    margin: 0 0 4px 0;
+    letter-spacing: 0.5px;
+}
+
+.gacha-subtitle {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.gacha-header-stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.gacha-stat-card {
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.gacha-stat-icon {
+    font-size: 22px;
+}
+
+.gacha-stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.gacha-stat-label {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.gacha-stat-value {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.shards-mini-progress {
+    width: 60px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.shards-mini-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #a855f7, #e040fb);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* --- BỆ THỜ CẦU ĐẠO (GACHA ALTAR STAGE) --- */
+.gacha-altar-panel {
+    position: relative;
+    background: radial-gradient(circle at center, rgba(30, 20, 60, 0.95) 0%, rgba(10, 10, 26, 0.98) 100%);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: var(--radius-lg);
+    padding: 36px 20px 28px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 0 50px rgba(124, 77, 255, 0.15);
+}
+
+.gacha-altar-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* Vòng ma trận huyền ảo */
+.altar-runes-ring {
+    position: relative;
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    border: 2px dashed rgba(255, 215, 0, 0.5);
+    box-shadow: 0 0 25px rgba(124, 77, 255, 0.35), inset 0 0 25px rgba(255, 215, 0, 0.2);
+    animation: rotateAltar 25s linear infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes rotateAltar {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Khối cầu năng lượng trung tâm */
+.altar-core-orb {
+    position: absolute;
+    top: 50px;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffe082 0%, #ff6f00 40%, #311b92 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 35px rgba(255, 215, 0, 0.8), 0 0 60px rgba(224, 64, 251, 0.6);
+    animation: floatOrb 3s ease-in-out infinite alternate;
+}
+
+.orb-icon {
+    font-size: 34px;
+    filter: drop-shadow(0 0 8px #fff);
+}
+
+@keyframes floatOrb {
+    0% { transform: translateY(0px) scale(0.96); }
+    100% { transform: translateY(-8px) scale(1.04); }
+}
+
+/* Badge Tỉ lệ */
+.altar-rates-badge {
+    margin-top: 28px;
+    margin-bottom: 16px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Khung Tiến Độ Bảo Hiểm (Pity Trackers) */
+.gacha-pity-container {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    width: 100%;
+    max-width: 520px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.gacha-pity-card {
+    flex: 1;
+    min-width: 220px;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    transition: border-color 0.2s;
+}
+
+.gacha-pity-card.pity-than {
+    border-color: rgba(255, 215, 0, 0.3);
+}
+
+.gacha-pity-card.pity-thanh {
+    border-color: rgba(224, 64, 251, 0.3);
+}
+
+.gacha-pity-card .pity-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+
+.gacha-pity-card .pity-label {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.gacha-pity-card .pity-value {
+    font-weight: 700;
+    font-family: var(--font-heading);
+}
+
+.pity-progress-outer {
+    width: 100%;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.pity-progress-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.pity-progress-bar.bar-than {
+    background: linear-gradient(90deg, #ff9100, #ffd700);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+}
+
+.pity-progress-bar.bar-thanh {
+    background: linear-gradient(90deg, #9c27b0, #e040fb);
+    box-shadow: 0 0 8px rgba(224, 64, 251, 0.5);
+}
+
+/* Cụm nút bấm Tầm Đạo */
+.gacha-action-buttons {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.btn-gacha-roll {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 28px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.btn-gacha-roll .roll-icon {
+    font-size: 26px;
+}
+
+.btn-gacha-roll .roll-texts {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.btn-gacha-roll strong {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.btn-gacha-roll small {
+    font-size: 11px;
+    opacity: 0.85;
+}
+
+.btn-roll-1 {
+    background: linear-gradient(135deg, #4a148c, #7c4dff);
+    border: 1px solid #b388ff;
+    color: #fff;
+}
+
+.btn-roll-1:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 77, 255, 0.6);
+}
+
+.btn-roll-10 {
+    background: linear-gradient(135deg, #ff6f00, #ffd700);
+    border: 1px solid #ffe57f;
+    color: #1a0033;
+}
+
+.btn-roll-10:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(255, 215, 0, 0.7);
+}
+
+/* --- BÁCH KHOA TOÀN THƯ ĐẠI THẦN THÔNG (CODEX) --- */
+.gacha-codex-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.codex-card {
+    background: rgba(15, 23, 42, 0.85);
+    border-radius: 10px;
+    padding: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.codex-card.tier-than {
+    border-color: rgba(255, 215, 0, 0.5);
+    box-shadow: 0 2px 14px rgba(255, 215, 0, 0.15);
+}
+
+.codex-card.tier-thanh {
+    border-color: rgba(224, 64, 251, 0.5);
+    box-shadow: 0 2px 14px rgba(224, 64, 251, 0.15);
+}
+
+.codex-card.tier-linh {
+    border-color: rgba(0, 230, 118, 0.4);
+    box-shadow: 0 2px 14px rgba(0, 230, 118, 0.1);
+}
+
+.codex-card.is-locked {
+    filter: grayscale(0.7);
+    opacity: 0.65;
+}
+
+.codex-card.is-equipped {
+    border-width: 2px;
+    border-color: #ffd700 !important;
+    box-shadow: 0 0 16px rgba(255, 215, 0, 0.4);
+}
+
+.codex-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.codex-icon {
+    font-size: 32px;
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.codex-title-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.codex-name {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.codex-tier-badge {
+    align-self: flex-start;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.codex-cost {
+    font-size: 11px;
+    color: #ff9100;
+    font-weight: 600;
+}
+
+.codex-desc {
+    font-size: 12px;
+    color: #cbd5e1;
+    line-height: 1.45;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 8px 10px;
+    border-radius: 6px;
+    flex: 1;
+}
+
+.codex-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+}
+
+/* --- GACHA REVEAL MODAL & CARDS --- */
+.gacha-modal-box {
+    max-width: 720px;
+    width: 95%;
+    background: radial-gradient(circle at center, rgba(26, 20, 56, 0.98) 0%, rgba(10, 10, 20, 0.98) 100%);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(124, 77, 255, 0.3);
+}
+
+.gacha-cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    margin: 20px 0;
+    max-height: 55vh;
+    overflow-y: auto;
+    padding: 10px 4px;
+}
+
+.reveal-card-item {
+    width: 120px;
+    border-radius: 10px;
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+    background: rgba(15, 23, 42, 0.9);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    position: relative;
+    animation: cardPopIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes cardPopIn {
+    0% { transform: scale(0.4) rotate(-8deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.reveal-card-item.tier-than {
+    border-color: #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+    background: radial-gradient(circle, rgba(255, 23, 68, 0.25), rgba(15, 23, 42, 0.9));
+}
+
+.reveal-card-item.tier-thanh {
+    border-color: #e040fb;
+    box-shadow: 0 0 16px rgba(224, 64, 251, 0.6);
+    background: radial-gradient(circle, rgba(124, 77, 255, 0.25), rgba(15, 23, 42, 0.9));
+}
+
+.reveal-card-item.tier-linh {
+    border-color: #00e676;
+    box-shadow: 0 0 12px rgba(0, 230, 118, 0.4);
+    background: radial-gradient(circle, rgba(0, 230, 118, 0.15), rgba(15, 23, 42, 0.9));
+}
+
+.reveal-icon {
+    font-size: 32px;
+}
+
+.reveal-name {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.reveal-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+.reveal-tag-new {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #ff1744;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(255, 23, 68, 0.6);
+    animation: bounceTag 1s infinite alternate;
+}
+
+@keyframes bounceTag {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-3px); }
+}
+
+.reveal-tag-dupe {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #7c4dff;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+
+.gacha-summary-msg {
+    text-align: center;
+    font-size: 13px;
+    color: #cbd5e1;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px 16px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+/* --- KHỐI ĐẠI THẦN THÔNG TRÊN TAB NHÂN VẬT --- */
+.equipped-ultimate-container {
+    padding: 10px;
+}
+
+.ultimate-equipped-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    border-radius: 8px;
+    padding: 8px 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.ultimate-equipped-icon {
+    font-size: 26px;
+}
+
+.ultimate-equipped-meta {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ultimate-equipped-name {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.ultimate-equipped-short {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.ultimate-equipped-empty {
+    text-align: center;
+    padding: 12px;
+    color: var(--text-muted);
+    font-size: 12px;
+}

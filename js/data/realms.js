@@ -230,3 +230,7 @@ if (typeof window !== "undefined") {
     window.STAT_POINTS_PER_TIER = STAT_POINTS_PER_TIER;
     window.RealmSystem = RealmSystem;
 }
+
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = { REALM_DATA, TIER_NAMES, STAT_POINTS_PER_TIER, RealmSystem };
+}

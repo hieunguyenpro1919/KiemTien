@@ -107,6 +107,12 @@ class CombatEngine {
         this.skillCooldowns = [0, 0, 0];
         this.playerAttackTimer = 0;
 
+        // Nộ khí & Đại thần thông
+        this.playerRage = 0;
+        this.playerMaxRage = (this.player.equippedUltimate === "ult_thanh_tue_nguyet") ? 200 : 100;
+        this.ultimateBuffYChi = 0;
+        this.ultimateBuffBatKham = 0;
+
         // Bắt đầu vòng lặp 100ms
         if (this.combatInterval) clearInterval(this.combatInterval);
         this.combatInterval = setInterval(() => this.tick(0.1), 100);
@@ -131,9 +137,29 @@ class CombatEngine {
         this.bossSkillTimer = 0;
         this.monsterBurnDuration = 0;
         this.monsterBurnTickTimer = 0;
+        this.ultimateBuffYChi = 0;
+        this.ultimateBuffBatKham = 0;
         if (this.combatInterval) {
             clearInterval(this.combatInterval);
             this.combatInterval = null;
+        }
+    }
+
+    /**
+     * Tích lũy Nộ Khí chiến đấu
+     */
+    addRage(amount) {
+        if (!this.isActive || !this.player || !this.player.equippedUltimate) return;
+        const oldRage = this.playerRage || 0;
+        const maxRage = this.playerMaxRage || 100;
+        this.playerRage = Math.min(maxRage, oldRage + amount);
+        if (oldRage < maxRage && this.playerRage >= maxRage) {
+            if (this.particles) {
+                const pPos = this.getPlayerCenter();
+                this.particles.emitMeditationQi(pPos.x, pPos.y, "#ff3d00");
+                this.particles.addFloatingText("🔥 NỘ KHÍ ĐẦY!", pPos.x, pPos.y - 35, "#ff3d00", true);
+            }
+            this.addCombatLog(`🔥 [NỘ KHÍ ĐẦY] Đại Thần Thông đã sẵn sàng khai phóng!`, "buff");
         }
     }
 
@@ -174,6 +200,14 @@ class CombatEngine {
             this.monsterBurnTickTimer = 0;
         }
 
+        // Xử lý đếm lùi buff của Đại Thần Thông
+        if (this.ultimateBuffYChi > 0) {
+            this.ultimateBuffYChi = Math.max(0, this.ultimateBuffYChi - effectiveDt);
+        }
+        if (this.ultimateBuffBatKham > 0) {
+            this.ultimateBuffBatKham = Math.max(0, this.ultimateBuffBatKham - effectiveDt);
+        }
+
         // Giảm thời gian hồi chiêu của 3 kỹ năng
         for (let i = 0; i < 3; i++) {
             if (this.skillCooldowns[i] > 0) {
@@ -183,6 +217,10 @@ class CombatEngine {
 
         // Tự động dùng chiêu nếu bật Auto và KHÔNG bị Choáng
         if (this.isAuto && this.playerStunTimer <= 0) {
+            // Tự động xuất Đại Thần Thông khi nộ khí đã đầy
+            if (this.player.equippedUltimate && (this.playerRage || 0) >= (this.playerMaxRage || 100)) {
+                this.useUltimate();
+            }
             for (let i = 0; i < 3; i++) {
                 if (this.player.equippedSkills[i] && this.skillCooldowns[i] <= 0) {
                     this.useSkill(i);
@@ -191,9 +229,10 @@ class CombatEngine {
             }
         }
 
-        // Đòn đánh thường của người chơi (mỗi 1.5 giây, chỉ ra đòn khi KHÔNG bị Choáng)
+        // Đòn đánh thường của người chơi (mỗi 1.5 giây, tăng 200% tốc đánh khi kích hoạt Ý Chí Bất Tận)
         if (this.playerStunTimer <= 0) {
-            this.playerAttackTimer += effectiveDt;
+            const atkSpeedMult = (this.ultimateBuffYChi > 0) ? 3.0 : 1.0;
+            this.playerAttackTimer += effectiveDt * atkSpeedMult;
             if (this.playerAttackTimer >= 1.5) {
                 this.playerAttackTimer = 0;
                 this.playerBasicAttack();
@@ -264,17 +303,31 @@ class CombatEngine {
     playerBasicAttack() {
         if (!this.isActive || this.monsterHp <= 0) return;
 
+        this.addRage(4); // Đánh thường +4 Nộ Khí
+
         const pStats = this.player.getTotalStats();
         const isCrit = Math.random() * 100 < pStats.baoKich;
+        const isYChi = (this.ultimateBuffYChi > 0);
 
-        // Sát thương = max(1, (Vật lí + Phép * 0.3) - Giáp quái)
-        let baseDmg = pStats.vatLi + Math.floor(pStats.phep * 0.3);
-        let actualDmg = Math.max(1, baseDmg - Math.floor(this.monster.defense * 0.4));
-        if (isCrit) actualDmg = Math.floor(actualDmg * 1.65);
+        let actualDmg = 0;
+        let capResult = { damage: 0, isCapped: false, isBreak: false, capPct: 0 };
 
-        // Áp dụng Kim Thân Hộ Thể (isCrit kích hoạt Phá Kim Thân)
-        const capResult = this.applyDamageCap(actualDmg, isCrit);
-        actualDmg = capResult.damage;
+        if (isYChi) {
+            // Hiệu ứng "Ý Chí Bất Tận": Sát thương chuẩn scale theo Vật Lí (250%), BỎ QUA GIÁP VÀ KIM THÂN!
+            let baseDmg = Math.floor(pStats.vatLi * 2.5);
+            actualDmg = Math.max(1, baseDmg);
+            if (isCrit) actualDmg = Math.floor(actualDmg * 1.65);
+            capResult = { damage: actualDmg, isCapped: false, isBreak: true, capPct: 1.0 };
+        } else {
+            // Sát thương = max(1, (Vật lí + Phép * 0.3) - Giáp quái)
+            let baseDmg = pStats.vatLi + Math.floor(pStats.phep * 0.3);
+            actualDmg = Math.max(1, baseDmg - Math.floor(this.monster.defense * 0.4));
+            if (isCrit) actualDmg = Math.floor(actualDmg * 1.65);
+
+            // Áp dụng Kim Thân Hộ Thể (isCrit kích hoạt Phá Kim Thân)
+            capResult = this.applyDamageCap(actualDmg, isCrit);
+            actualDmg = capResult.damage;
+        }
 
         // Bào mòn khiên Boss trước nếu Boss có khiên
         if (this.monsterShield > 0) {
@@ -310,17 +363,23 @@ class CombatEngine {
         if (this.particles) {
             const mPos = this.getMonsterCenter();
             this.particles.emitSlash(mPos.x, mPos.y);
-            this.particles.addFloatingText(isCrit ? `BẠO! -${actualDmg}` : `-${actualDmg}`, mPos.x, mPos.y - 20, isCrit ? "#ffca28" : "#fff", isCrit);
-            if (capResult.isCapped) {
-                if (capResult.isBreak) {
-                    this.particles.addFloatingText("PHÁ KIM THÂN!", mPos.x, mPos.y - 48, "#ff9100", true);
-                } else {
-                    this.particles.addFloatingText("KIM THÂN!", mPos.x, mPos.y - 48, "#ffd700", true);
+            if (isYChi) {
+                this.particles.addFloatingText(isCrit ? `⚔️ BẠO KÍCH CHUẨN! -${actualDmg}` : `⚔️ SÁT THƯƠNG CHUẨN! -${actualDmg}`, mPos.x, mPos.y - 25, "#ff3d00", true);
+            } else {
+                this.particles.addFloatingText(isCrit ? `BẠO! -${actualDmg}` : `-${actualDmg}`, mPos.x, mPos.y - 20, isCrit ? "#ffca28" : "#fff", isCrit);
+                if (capResult.isCapped) {
+                    if (capResult.isBreak) {
+                        this.particles.addFloatingText("PHÁ KIM THÂN!", mPos.x, mPos.y - 48, "#ff9100", true);
+                    } else {
+                        this.particles.addFloatingText("KIM THÂN!", mPos.x, mPos.y - 48, "#ffd700", true);
+                    }
                 }
             }
         }
 
-        if (capResult.isCapped) {
+        if (isYChi) {
+            this.addCombatLog(`⚔️ [Ý CHÍ BẤT TẬN] Quyền kình xé toạc hư không, giáng đòn SÁT THƯƠNG CHUẨN ${actualDmg.toLocaleString()} HP lên [${this.monster.name}]!`, "pha-kim-than");
+        } else if (capResult.isCapped) {
             if (capResult.isBreak) {
                 this.addCombatLog(`💥 [PHÁ KIM THÂN] Đòn bạo kích xé rách Kim Thân của [${this.monster.name}], gây ${actualDmg.toLocaleString()} sát thương (Trần ${Math.round(capResult.capPct * 100)}% Máu)!`, "pha-kim-than");
             } else {
@@ -364,6 +423,7 @@ class CombatEngine {
 
         const pStats = this.player.getTotalStats();
         this.skillCooldowns[slotIndex] = skill.cooldown;
+        this.addRage(20); // Tung skill +20 Nộ Khí
 
         const mPos = this.getMonsterCenter();
         const pPos = this.getPlayerCenter();
@@ -548,9 +608,23 @@ class CombatEngine {
     monsterAttack() {
         if (!this.isActive || this.playerHp <= 0) return;
 
+        this.addRage(4); // Bị đánh +4 Nộ Khí
+
         const pStats = this.player.getTotalStats();
         let rawDmg = this.monster.attack;
         let actualDmg = Math.max(1, rawDmg - Math.floor(pStats.phongThu * 0.5));
+
+        // Nếu có buff "Bất Kham", sát thương không vượt quá 5% Máu tối đa của người chơi
+        if (this.ultimateBuffBatKham > 0) {
+            const maxAllowed = Math.max(1, Math.floor(this.playerMaxHp * 0.05));
+            if (actualDmg > maxAllowed) {
+                actualDmg = maxAllowed;
+                if (this.particles) {
+                    const pPos = this.getPlayerCenter();
+                    this.particles.addFloatingText("⚡ BẤT KHAM (<=5% HP)!", pPos.x, pPos.y - 35, "#00e676", true);
+                }
+            }
+        }
 
         // Hấp thụ bằng khiên trước
         if (this.playerShield > 0) {
@@ -657,6 +731,13 @@ class CombatEngine {
             const rawDmg = Math.floor(this.monster.attack * 2.5);
             let actualDmg = Math.max(1, rawDmg - Math.floor(pStats.phongThu * 0.45));
 
+            if (this.ultimateBuffBatKham > 0) {
+                const maxAllowed = Math.max(1, Math.floor(this.playerMaxHp * 0.05));
+                if (actualDmg > maxAllowed) {
+                    actualDmg = maxAllowed;
+                }
+            }
+
             // Hấp thụ bằng khiên người chơi nếu có
             if (this.playerShield > 0) {
                 if (this.playerShield >= actualDmg) {
@@ -705,7 +786,11 @@ class CombatEngine {
 
         } else if (skillType === "lifesteal") {
             // Cơ chế 4: Hút Máu (Tối đa 10% HP người chơi BỎ QUA KHIÊN thành 10% HP cho Boss)
-            const drainHp = Math.min(this.playerHp, Math.max(1, Math.floor(this.playerMaxHp * 0.10)));
+            let drainHp = Math.min(this.playerHp, Math.max(1, Math.floor(this.playerMaxHp * 0.10)));
+            if (this.ultimateBuffBatKham > 0) {
+                const maxAllowed = Math.max(1, Math.floor(this.playerMaxHp * 0.05));
+                drainHp = Math.min(drainHp, maxAllowed);
+            }
             // Trừ trực tiếp vào máu người chơi, bỏ qua hoàn toàn khiên!
             this.playerHp = Math.max(0, this.playerHp - drainHp);
 
@@ -746,14 +831,26 @@ class CombatEngine {
 
         const stage = this.currentStage;
         const rewards = stage.rewards || { tuVi: 0, linhThach: 0 };
-        if (rewards.tinhNguyen) {
-            this.player.addTinhNguyen(rewards.tinhNguyen);
+        if (this.isTowerBattle) {
+            if (this.player.isVoCuc) {
+                const tinh = rewards.tinhNguyen || (typeof TowerSystem !== "undefined" ? TowerSystem.getFloorTinhNguyen(stage.number) : 1);
+                this.player.addTinhNguyen(tinh);
+            } else {
+                this.player.addTuVi(rewards.tuVi || 0);
+            }
         } else {
-            this.player.addTuVi(rewards.tuVi || 0);
+            if (rewards.tinhNguyen) {
+                this.player.addTinhNguyen(rewards.tinhNguyen);
+            } else {
+                this.player.addTuVi(rewards.tuVi || 0);
+            }
         }
         this.player.linhThach = (this.player.linhThach || 0) + (rewards.linhThach || 0);
         if (rewards.honNguyen) {
             this.player.honNguyen = (this.player.honNguyen || 0) + rewards.honNguyen;
+        }
+        if (rewards.gachaTickets) {
+            this.player.addGachaTickets(rewards.gachaTickets);
         }
 
         if (this.isTowerBattle) {
@@ -808,10 +905,15 @@ class CombatEngine {
             this.particles.emitBreakthrough(mPos.x, mPos.y);
         }
 
+        const monsterName = (this.monster && this.monster.name) ? this.monster.name : (stage && stage.name ? stage.name : "Kẻ Địch");
         if (droppedItem && droppedItem.id === "pill_tay_tuy") {
-            this.addCombatLog(`🌟 [KỲ DUYÊN] Trảm sát [${this.monster.name}], phát hiện Nghịch Thiên Linh Bảo [Tẩy Tủy Đan] cực hiếm!`, "victory");
+            this.addCombatLog(`🌟 [KỲ DUYÊN] Trảm sát [${monsterName}], phát hiện Nghịch Thiên Linh Bảo [Tẩy Tủy Đan] cực hiếm!`, "victory");
         } else {
-            this.addCombatLog(`Đại thắng! Trảm sát [${this.monster.name}]!`, "victory");
+            this.addCombatLog(`Đại thắng! Trảm sát [${monsterName}]!`, "victory");
+        }
+
+        if (rewards.gachaTickets) {
+            this.addCombatLog(`🎫 [CHIẾN LỢI PHẨM] Thu hoạch +${rewards.gachaTickets} Vé Tầm Đạo từ mốc Hư Không Tháp!`, "victory");
         }
 
         // Kiểm tra mở khóa Danh Hiệu mới từ chiến tích trảm Boss
@@ -826,12 +928,17 @@ class CombatEngine {
         }
 
         if (this.onCombatEndCallback) {
+            const actualTinhGain = (this.isTowerBattle && this.player.isVoCuc)
+                ? (rewards.tinhNguyen || (typeof TowerSystem !== "undefined" ? TowerSystem.getFloorTinhNguyen(stage.number) : 1))
+                : (rewards.tinhNguyen || 0);
+            const actualTuViGain = (this.isTowerBattle && this.player.isVoCuc) ? 0 : (rewards.tuVi || 0);
+
             this.onCombatEndCallback({
                 victory: true,
                 stage: stage,
                 isTower: this.isTowerBattle,
-                tuViGain: rewards.tuVi || 0,
-                tinhNguyenGain: rewards.tinhNguyen || 0,
+                tuViGain: actualTuViGain,
+                tinhNguyenGain: actualTinhGain,
                 linhThachGain: rewards.linhThach,
                 honNguyenGain: rewards.honNguyen || 0,
                 droppedItem: droppedItem,
@@ -876,7 +983,170 @@ class CombatEngine {
 
     // ================= TIỆN ÍCH GIAO DIỆN CHIẾN ĐẤU =================
 
+    /**
+     * Thi triển Đại Thần Thông (Ultimate Skill)
+     */
+    useUltimate() {
+        if (!this.isActive || this.monsterHp <= 0) return false;
+        if (this.playerStunTimer > 0) return false;
+
+        const ultId = this.player.equippedUltimate;
+        if (!ultId) return false;
+
+        const maxRage = this.playerMaxRage || 100;
+        if ((this.playerRage || 0) < maxRage) return false;
+
+        const ultSkill = (typeof UltimateSkillSystem !== "undefined")
+            ? UltimateSkillSystem.getSkillById(ultId)
+            : null;
+        if (!ultSkill) return false;
+
+        // Tiêu hao toàn bộ nộ khí
+        this.playerRage = 0;
+
+        const pStats = this.player.getTotalStats();
+        const mPos = this.getMonsterCenter();
+        const pPos = this.getPlayerCenter();
+
+        if (this.sound && typeof this.sound.playThunder === "function") {
+            this.sound.playThunder();
+        }
+
+        switch (ultId) {
+            case "ult_than_nhat_niem": {
+                // Thần Cấp: "Nhất Niệm"
+                // Trừ thẳng 80% Máu Boss, BỎ QUA KIM THÂN VÀ GIÁP (Sát thương chuẩn True Damage)
+                const trueDmg = Math.max(1, Math.floor(this.monsterMaxHp * 0.8));
+                this.monsterHp = Math.max(0, this.monsterHp - trueDmg);
+
+                this.shakeElement("monster-avatar-box");
+                if (this.particles) {
+                    this.particles.emitBreakthrough(mPos.x, mPos.y);
+                    this.particles.addFloatingText(`🌌 NHẤT NIỆM! -${trueDmg.toLocaleString()}`, mPos.x, mPos.y - 40, "#ffd700", true);
+                    this.particles.addFloatingText("BỎ QUA KIM THÂN & GIÁP (80% HP)!", mPos.x, mPos.y - 65, "#ff1744", true);
+                }
+
+                this.addCombatLog(`🌌 [ĐẠI THẦN THÔNG - NHẤT NIỆM] Nhất niệm khai thiên, vạn cổ giai không! Giáng đòn sát thương chuẩn ${trueDmg.toLocaleString()} HP (80% Máu Boss) HOÀN TOÀN BỎ QUA KIM THÂN & GIÁP!`, "dot-mau");
+                break;
+            }
+
+            case "ult_thanh_tue_nguyet": {
+                // Thánh Cấp: "Tuế Nguyệt"
+                // Lập tức hồi mọi kỹ năng thường của bản thân
+                this.skillCooldowns = [0, 0, 0];
+
+                if (this.particles) {
+                    this.particles.emitMeditationQi(pPos.x, pPos.y, "#e040fb");
+                    this.particles.addFloatingText("⏳ TUẾ NGUYỆT: HỒI MỌI CHIÊU!", pPos.x, pPos.y - 35, "#e040fb", true);
+                }
+
+                this.addCombatLog(`⏳ [ĐẠI THẦN THÔNG - TUẾ NGUYỆT] Luân chuyển thời không, nghịch hồi nhân quả! Lập tức HỒI TOÀN BỘ 3 KỸ NĂNG thường để xả skill liên hoàn!`, "buff");
+                break;
+            }
+
+            case "ult_thanh_y_chi_bat_tan": {
+                // Thánh Cấp: "Ý Chí Bất Tận"
+                // +200% tốc đánh, đánh thường thành sát thương chuẩn scale theo vật lí (8s)
+                this.ultimateBuffYChi = 8.0;
+
+                if (this.particles) {
+                    this.particles.emitSlash(pPos.x, pPos.y, "#ff3d00");
+                    this.particles.addFloatingText("⚔️ Ý CHÍ BẤT TẬN (8s)!", pPos.x, pPos.y - 35, "#ff9100", true);
+                    this.particles.addFloatingText("+200% TỐC ĐÁNH & SÁT THƯƠNG CHUẨN!", pPos.x, pPos.y - 60, "#ffd700", true);
+                }
+
+                this.addCombatLog(`⚔️ [ĐẠI THẦN THÔNG - Ý CHÍ BẤT TẬN] Quyền ý vô song! Trong 8s nhận +200% Tốc Đánh và đòn đánh thường hóa thành SÁT THƯƠNG CHUẨN xé nát quy tắc!`, "buff");
+                break;
+            }
+
+            case "ult_linh_vo_ton": {
+                // Linh Cấp: "Vô Tổn"
+                // Khiên hộ thể cực dày: 600% Công Phép + 30% Max HP
+                const shieldAmount = Math.floor(pStats.phep * 6 + this.playerMaxHp * 0.3);
+                this.playerShield = (this.playerShield || 0) + shieldAmount;
+
+                if (this.sound && typeof this.sound.playShield === "function") {
+                    this.sound.playShield();
+                }
+                if (this.particles) {
+                    this.particles.emitMeditationQi(pPos.x, pPos.y, "#00e676");
+                    this.particles.addFloatingText(`🛡️ KHIÊN VÔ TỔN +${shieldAmount.toLocaleString()}`, pPos.x, pPos.y - 35, "#00e676", true);
+                }
+
+                this.addCombatLog(`🛡️ [ĐẠI THẦN THÔNG - VÔ TỔN] Hộ thể linh quang bao phủ! Nhận Khiên Vô Tổn cực dày trị giá ${shieldAmount.toLocaleString()} HP (600% Phép + 30% Max HP)!`, "buff");
+                break;
+            }
+
+            case "ult_linh_bat_kham": {
+                // Linh Cấp: "Bất Kham"
+                // Trong 10s, Boss không thể gây sát thương vượt quá 5% Máu tối đa của bản thân
+                this.ultimateBuffBatKham = 10.0;
+
+                if (this.particles) {
+                    this.particles.emitMeditationQi(pPos.x, pPos.y, "#00b0ff");
+                    this.particles.addFloatingText("⚡ BẤT KHAM (10s)!", pPos.x, pPos.y - 35, "#00b0ff", true);
+                    this.particles.addFloatingText("CHẶN MỌI ĐÒN <= 5% HP!", pPos.x, pPos.y - 60, "#00e676", true);
+                }
+
+                this.addCombatLog(`⚡ [ĐẠI THẦN THÔNG - BẤT KHAM] Kim thân bất toái! Trong 10 giây tới, đối thủ KHÔNG THỂ gây sát thương vượt quá 5% Máu tối đa của đạo hữu mỗi đòn!`, "buff");
+                break;
+            }
+
+            case "ult_linh_huyet_te": {
+                // Linh Cấp: "Huyết Tế"
+                // Trừ 50% Máu bản thân, gây 45% Máu Boss (XUYÊN KIM THÂN, KHÔNG XUYÊN GIÁP)
+                const selfHpLoss = Math.max(1, Math.floor(this.playerHp * 0.5));
+                this.playerHp = Math.max(1, this.playerHp - selfHpLoss);
+
+                const rawBossDmg = Math.floor(this.monsterMaxHp * 0.45);
+                let finalBossDmg = Math.max(1, rawBossDmg - Math.floor(this.monster.defense * 0.5));
+
+                // Bào mòn khiên Boss trước nếu có khiên
+                if (this.monsterShield > 0) {
+                    if (this.monsterShield >= finalBossDmg) {
+                        this.monsterShield -= finalBossDmg;
+                        finalBossDmg = 0;
+                    } else {
+                        finalBossDmg -= this.monsterShield;
+                        this.monsterShield = 0;
+                    }
+                }
+
+                if (finalBossDmg > 0) {
+                    this.monsterHp = Math.max(0, this.monsterHp - finalBossDmg);
+                }
+
+                this.shakeElement("player-avatar-box");
+                this.shakeElement("monster-avatar-box");
+
+                if (this.particles) {
+                    this.particles.emitFire(mPos.x, mPos.y);
+                    this.particles.addFloatingText(`🩸 -${selfHpLoss.toLocaleString()} HP Bản Thân`, pPos.x, pPos.y - 30, "#ff1744", true);
+                    this.particles.addFloatingText(`💥 HUYẾT TẾ! -${finalBossDmg.toLocaleString()}`, mPos.x, mPos.y - 40, "#ff5252", true);
+                    this.particles.addFloatingText("XUYÊN KIM THÂN!", mPos.x, mPos.y - 65, "#ff9100", true);
+                }
+
+                this.addCombatLog(`🩸 [ĐẠI THẦN THÔNG - HUYẾT TẾ] Hiến tế ${selfHpLoss.toLocaleString()} HP bản thân, giáng đòn hủy diệt ${finalBossDmg.toLocaleString()} HP (45% Máu Boss, XUYÊN KIM THÂN, tính Giáp)!`, "pha-kim-than");
+                break;
+            }
+        }
+
+        if (this.monsterHp <= 0) {
+            this.updateUI();
+            this.stopBattle();
+            const delay = Math.max(180, Math.round(450 / (this.speedMultiplier || 1)));
+            setTimeout(() => {
+                this.handleVictory();
+            }, delay);
+            return true;
+        }
+
+        this.updateUI();
+        return true;
+    }
+
     updateUI() {
+        if (typeof document === "undefined") return;
         const formatHp = (val) => {
             if (val === undefined || val === null || isNaN(val)) return "0";
             if (val >= 1000000000000000) {
@@ -984,6 +1254,55 @@ class CombatEngine {
             }
         }
 
+        // Cập nhật thanh Nộ Khí người chơi
+        const curRage = this.playerRage || 0;
+        const maxRage = this.playerMaxRage || 100;
+        const ragePercent = Math.max(0, Math.min(100, (curRage / maxRage) * 100));
+
+        const rageBar = document.getElementById("combat-player-rage-bar");
+        const rageText = document.getElementById("combat-player-rage-text");
+        if (rageBar) rageBar.style.width = `${ragePercent}%`;
+        if (rageText) rageText.innerText = `${curRage} / ${maxRage} Nộ`;
+
+        // Cập nhật Nút Đại Thần Thông
+        const ultBtn = document.getElementById("combat-ultimate-btn");
+        const ultOverlay = document.getElementById("combat-ultimate-cd");
+        const ultIcon = document.getElementById("combat-ultimate-icon");
+        const ultName = document.getElementById("combat-ultimate-name");
+
+        if (ultBtn) {
+            const ultId = this.player.equippedUltimate;
+            if (ultId && typeof UltimateSkillSystem !== "undefined") {
+                const ultSkill = UltimateSkillSystem.getSkillById(ultId);
+                if (ultSkill) {
+                    ultBtn.style.display = "flex";
+                    if (ultIcon) ultIcon.innerText = ultSkill.icon;
+                    if (ultName) ultName.innerText = ultSkill.name;
+
+                    const isReady = (curRage >= maxRage) && (this.playerStunTimer <= 0);
+                    ultBtn.disabled = !isReady;
+                    if (isReady) {
+                        ultBtn.classList.add("ultimate-ready");
+                    } else {
+                        ultBtn.classList.remove("ultimate-ready");
+                    }
+
+                    if (ultOverlay) {
+                        if (isReady) {
+                            ultOverlay.style.display = "none";
+                        } else {
+                            ultOverlay.style.display = "flex";
+                            ultOverlay.innerText = `${Math.floor(ragePercent)}%`;
+                        }
+                    }
+                } else {
+                    ultBtn.style.display = "none";
+                }
+            } else {
+                ultBtn.style.display = "none";
+            }
+        }
+
         // Cập nhật thanh đếm lùi Enrage Timer (Hư Không Tháp)
         const enrageBox = document.getElementById("combat-enrage-box");
         const enrageText = document.getElementById("combat-enrage-timer");
@@ -1008,6 +1327,7 @@ class CombatEngine {
     }
 
     shakeElement(elemId) {
+        if (typeof document === "undefined") return;
         const el = document.getElementById(elemId);
         if (!el) return;
         el.classList.add("shake-anim");
@@ -1015,6 +1335,7 @@ class CombatEngine {
     }
 
     getPlayerCenter() {
+        if (typeof document === "undefined") return { x: 200, y: 300 };
         const el = document.getElementById("combat-player-box");
         if (el) {
             const r = el.getBoundingClientRect();
@@ -1024,6 +1345,7 @@ class CombatEngine {
     }
 
     getMonsterCenter() {
+        if (typeof document === "undefined") return { x: 600, y: 300 };
         const el = document.getElementById("combat-monster-box");
         if (el) {
             const r = el.getBoundingClientRect();
@@ -1033,6 +1355,7 @@ class CombatEngine {
     }
 
     addCombatLog(msg, type = "normal") {
+        if (typeof document === "undefined") return;
         const logBox = document.getElementById("combat-log-list");
         if (!logBox) return;
 
@@ -1051,4 +1374,9 @@ class CombatEngine {
 
 if (typeof window !== "undefined") {
     window.CombatEngine = CombatEngine;
+}
+
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = CombatEngine;
+    module.exports.CombatEngine = CombatEngine;
 }

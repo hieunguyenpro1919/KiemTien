@@ -88,6 +88,11 @@
                 <span class="nav-text-full">Tàng Kinh Các (Kỹ Năng)</span>
                 <span class="nav-text-short">Kỹ Năng</span>
             </button>
+            <button class="nav-tab-btn" data-tab="gacha">
+                <span class="nav-icon">🔮</span>
+                <span class="nav-text-full">Đài Cầu Đạo</span>
+                <span class="nav-text-short">Cầu Đạo</span>
+            </button>
             <button class="nav-tab-btn" data-tab="shop">
                 <span class="nav-icon">🏪</span>
                 <span class="nav-text-full">Bách Bảo Các</span>
@@ -269,6 +274,17 @@
                             <div id="equipped-skill-slot-2"></div>
                         </div>
                     </div>
+
+                    <!-- Khối Đại Thần Thông Trấn Thân -->
+                    <div class="panel panel-ultimate-loadout" style="margin-top: 12px;">
+                        <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <h2 class="panel-title"><span>🔮</span> ĐẠI THẦN THÔNG TRẤN THÂN</h2>
+                            <button class="btn-xs btn-outline-gold" onclick="gameUI.switchTab('gacha')">Đài Cầu Đạo</button>
+                        </div>
+                        <div class="equipped-ultimate-container" id="equipped-ultimate-slot">
+                            <!-- Rendered by JavaScript -->
+                        </div>
+                    </div>
                 </div>
 
             </div>
@@ -435,6 +451,110 @@
 
                 <div class="skill-shop-grid" id="npc-skill-shop-list">
                     <!-- Rendered by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB: ĐÀI CẦU ĐẠO (GACHA & ĐẠI THẦN THÔNG) ================= -->
+        <section class="tab-page" id="tab-gacha" style="display: none;">
+            <div class="gacha-container">
+                <!-- Header Banner Đài Cầu Đạo -->
+                <div class="gacha-header-banner">
+                    <div class="gacha-header-left">
+                        <h2 class="gacha-main-title">🔮 ĐÀI CẦU ĐẠO THƯỢNG CỔ</h2>
+                        <p class="gacha-subtitle">Linh đài thượng cổ ngưng tụ pháp tắc chư thiên. Tiêu hao Vé Tầm Đạo để cảm ứng chí cao quy tắc, lĩnh ngộ Đại Thần Thông nghịch thiên!</p>
+                    </div>
+                    <div class="gacha-header-stats">
+                        <div class="gacha-stat-card">
+                            <span class="gacha-stat-icon">🎫</span>
+                            <div class="gacha-stat-info">
+                                <span class="gacha-stat-label">Vé Tầm Đạo</span>
+                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <strong class="gacha-stat-value text-gold" id="gacha-tickets-count">0 Vé</strong>
+                                    <button class="btn-xs btn-outline-gold" onclick="gameUI.switchTab('shop')">Mua Thêm (Bảo Các)</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gacha-stat-card">
+                            <span class="gacha-stat-icon">✨</span>
+                            <div class="gacha-stat-info">
+                                <span class="gacha-stat-label">Mảnh Cơ Duyên (10 Mảnh = +1 Vé)</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <strong class="gacha-stat-value text-purple" id="gacha-shards-count">0/10 Mảnh</strong>
+                                    <div class="shards-mini-progress"><div class="shards-mini-bar" id="gacha-shards-bar" style="width: 0%"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bệ Thờ Cầu Đạo Thần Bí (Altar Circle) -->
+                <div class="gacha-altar-panel">
+                    <div class="gacha-altar-stage">
+                        <div class="altar-runes-ring"></div>
+                        <div class="altar-core-orb">
+                            <span class="orb-icon">🌌</span>
+                            <div class="orb-light"></div>
+                        </div>
+                        <div class="altar-rates-badge">
+                            <span>Tỉ Lệ: </span>
+                            <strong style="color: #ffd700;">0.2% Thần Cấp (Bảo hiểm 500)</strong> • 
+                            <strong style="color: #e040fb;">2.0% Thánh Cấp (Bảo hiểm 100)</strong> • 
+                            <strong style="color: #00e676;">97.8% Linh Cấp</strong>
+                        </div>
+                        <!-- Thanh Tiến Độ Bảo Hiểm (Pity Trackers) -->
+                        <div class="gacha-pity-container">
+                            <div class="gacha-pity-card pity-than">
+                                <div class="pity-meta">
+                                    <span class="pity-label">🌟 Bảo Hiểm Thần Cấp:</span>
+                                    <strong class="pity-value text-gold" id="gacha-pity-than-count">0 / 500</strong>
+                                </div>
+                                <div class="pity-progress-outer">
+                                    <div class="pity-progress-bar bar-than" id="gacha-pity-than-bar" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                            <div class="gacha-pity-card pity-thanh">
+                                <div class="pity-meta">
+                                    <span class="pity-label">⚡ Bảo Hiểm Thánh Cấp:</span>
+                                    <strong class="pity-value text-purple" id="gacha-pity-thanh-count">0 / 100</strong>
+                                </div>
+                                <div class="pity-progress-outer">
+                                    <div class="pity-progress-bar bar-thanh" id="gacha-pity-thanh-bar" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gacha-action-buttons">
+                            <button class="btn-gacha-roll btn-roll-1" id="btn-gacha-roll-1" onclick="gameUI.handleGachaRoll(1)">
+                                <span class="roll-icon">🔮</span>
+                                <div class="roll-texts">
+                                    <strong>Tầm Đạo x1</strong>
+                                    <small>Tiêu hao 1 Vé Tầm Đạo</small>
+                                </div>
+                            </button>
+                            <button class="btn-gacha-roll btn-roll-10" id="btn-gacha-roll-10" onclick="gameUI.handleGachaRoll(10)">
+                                <span class="roll-icon">✨</span>
+                                <div class="roll-texts">
+                                    <strong>Tầm Đạo x10</strong>
+                                    <small>Tiêu hao 10 Vé Tầm Đạo</small>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bách Khoa Toàn Thư Đại Thần Thông (Skill Codex) -->
+                <div class="panel gacha-codex-panel" style="margin-top: 20px;">
+                    <div class="panel-header">
+                        <div>
+                            <h2 class="panel-title"><span>📜</span> BÁCH KHOA ĐẠI THẦN THÔNG (6 CHIÊU)</h2>
+                            <span style="font-size: 13px; color: var(--text-muted);">
+                                Thu thập đủ bộ Đại Thần Thông trấn thân. Rút chiêu trùng tự động phân giải thành 1 Mảnh Cơ Duyên!
+                            </span>
+                        </div>
+                    </div>
+                    <div class="gacha-codex-grid" id="gacha-codex-grid">
+                        <!-- Rendered by JavaScript -->
+                    </div>
                 </div>
             </div>
         </section>
@@ -696,6 +816,14 @@
                                 <div class="combat-shield-bar-fill" id="combat-player-shield-bar" style="width: 0%">
                                 </div>
                             </div>
+                            <!-- Thanh Nộ Khí -->
+                            <div class="fighter-rage-meta">
+                                <span>Nộ Khí:</span>
+                                <strong id="combat-player-rage-text">0 / 100 Nộ</strong>
+                            </div>
+                            <div class="combat-rage-bar-outer">
+                                <div class="combat-rage-bar-fill" id="combat-player-rage-bar" style="width: 0%"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -739,6 +867,15 @@
                         <span class="combat-skill-icon" id="combat-skill-icon-2">➕</span>
                         <span class="combat-skill-name" id="combat-skill-name-2">Kỹ Năng 3</span>
                         <div class="combat-cd-overlay" id="combat-skill-cd-2">0.0s</div>
+                    </button>
+                    <!-- Ô Kích Hoạt Đại Thần Thông -->
+                    <button class="combat-skill-btn combat-ultimate-btn" id="combat-ultimate-btn" style="display: none;" onclick="if(window.gameCombat) window.gameCombat.useUltimate()">
+                        <span class="combat-skill-icon" id="combat-ultimate-icon">🌌</span>
+                        <div class="combat-ultimate-info">
+                            <span class="combat-ultimate-badge">ĐẠI THẦN THÔNG</span>
+                            <span class="combat-skill-name" id="combat-ultimate-name">Nhất Niệm</span>
+                        </div>
+                        <div class="combat-cd-overlay" id="combat-ultimate-cd">0%</div>
                     </button>
                 </div>
 
@@ -888,12 +1025,30 @@
         </div>
     </div>
 
+    <!-- Modal Hiệu Ứng Rút Thẻ Đại Thần Thông (Gacha Reveal Modal) -->
+    <div class="game-modal" id="gacha-reveal-modal" style="display: none;">
+        <div class="game-modal-box gacha-modal-box">
+            <div class="modal-header">
+                <h3 style="font-family: var(--font-heading); font-size: 22px; color: #ffd700;">🔮 KẾT QUẢ TẦM ĐẠO</h3>
+            </div>
+            <div class="gacha-cards-container" id="gacha-reveal-cards">
+                <!-- Rendered cards with animation -->
+            </div>
+            <div class="gacha-summary-msg" id="gacha-reveal-summary"></div>
+            <div class="modal-actions" style="margin-top: 20px; display: flex; justify-content: center; gap: 12px;">
+                <button class="btn-primary" id="btn-gacha-again" onclick="gameUI.handleGachaAgain()">🔄 Rút Tiếp</button>
+                <button class="btn-secondary" onclick="gameUI.closeGachaRevealModal()">Thu Nhận</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Khay Chứa Thông Báo Toast -->
     <div id="toast-container"></div>
 
     <!-- Nạp Các Tệp Kịch Bản JavaScript theo thứ tự -->
     <script src="js/data/realms.js"></script>
     <script src="js/data/skills.js"></script>
+    <script src="js/data/skills_ultimate.js"></script>
     <script src="js/data/items.js"></script>
     <script src="js/data/titles.js"></script>
     <script src="js/data/stages.js"></script>

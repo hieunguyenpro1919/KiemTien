@@ -945,12 +945,28 @@ const ITEM_DATABASE = [
         rateGain: 1,
         icon: "🔮",
         desc: "Tinh hoa ngộ đạo đúc kết từ vạn cổ luận biến quy tắc đại đạo (bán tại Bách Bảo Các với giá 250.000 Hỗn Nguyên). Khi phục dụng gia tăng +1% tỉ lệ độ kiếp trong cảnh giới / chu kỳ hiện tại (không bị mất khi độ kiếp thất bại, làm mới khi thăng đại cảnh giới)."
+    },
+    {
+        id: "ticket_tam_dao",
+        name: "Vé Tầm Đạo",
+        slot: "dan_duoc",
+        rarity: "cuc_dao",
+        reqRealm: 0,
+        currency: "hon_nguyen",
+        price: 500000,
+        sellPrice: 100000,
+        icon: "🎫",
+        desc: "Lệnh bài huyền bí kết nối với Đài Cầu Đạo thượng cổ, dùng để Tầm Đạo rút 1 lần Đại Thần Thông. Chỉ có thể nhận từ mốc tầng Hư Không Tháp hoặc mua tại Bách Bảo Các với giá 500.000 Hỗn Nguyên. Khi dùng sẽ chuyển thẳng thành Vé Tầm Đạo khả dụng."
     }
 ];
 
 class ItemSystem {
     static getItemById(id) {
         return ITEM_DATABASE.find(item => item.id === id) || null;
+    }
+
+    static getItem(id) {
+        return this.getItemById(id);
     }
 
     static getItemsBySlot(slot) {
@@ -1004,4 +1020,8 @@ if (typeof window !== "undefined") {
     window.RARITY_INFO = RARITY_INFO;
     window.ITEM_DATABASE = ITEM_DATABASE;
     window.ItemSystem = ItemSystem;
+}
+
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = { RARITY_ORDER, RARITY_INFO, ITEM_DATABASE, ItemSystem };
 }

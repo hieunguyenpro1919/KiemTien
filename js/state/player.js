@@ -42,7 +42,8 @@ class Player {
                 "weapon_01",
                 "pill_tu_khi_tieu",
                 "pill_tu_khi_tieu",
-                "item_rename_scroll"
+                "item_rename_scroll",
+                "ticket_tam_dao"
             ],
             equippedTitle: "title_so_nhap",
             unlockedTitles: ["title_so_nhap"],
@@ -61,6 +62,13 @@ class Player {
                 dailyTickets: 3,
                 lastResetDate: ""
             },
+            unlockedUltimates: [],
+            equippedUltimate: null,
+            gachaTickets: 1,
+            fortuneShards: 0,
+            pityThanCount: 0,
+            pityThanhCount: 0,
+            vocucPendingTuVi: 0,
             lastOnlineTime: Date.now()
         };
     }
@@ -92,6 +100,13 @@ class Player {
         this.vanThienDiaMilestonesCleared = Number(d.vanThienDiaMilestonesCleared) || 0;
         this.towerData = d.towerData ? { ...d.towerData } : { highestFloor: 0, currentFloor: 1, dailyTickets: 3, lastResetDate: "" };
         this.checkTowerReset();
+        this.unlockedUltimates = Array.isArray(d.unlockedUltimates) ? [...d.unlockedUltimates] : [];
+        this.equippedUltimate = d.equippedUltimate || null;
+        this.gachaTickets = Number(d.gachaTickets) || 0;
+        this.fortuneShards = Number(d.fortuneShards) || 0;
+        this.pityThanCount = Number(d.pityThanCount) || 0;
+        this.pityThanhCount = Number(d.pityThanhCount) || 0;
+        this.vocucPendingTuVi = Number(d.vocucPendingTuVi) || 0;
         this.lastOnlineTime = d.lastOnlineTime;
         this.currentHp = this.getMaxHp();
     }
@@ -209,16 +224,21 @@ class Player {
 
     /**
      * Thêm Tu Vi (từ đả tọa, dùng đan dược, vượt ải)
+     * Nếu ở Cảnh Giới Vô Cực: Tích lũy đủ 1 Tỷ Tu Vi = 1 Tinh Nguyên (chống bug 1:1)
      */
     addTuVi(amount) {
         amount = Number(amount);
         if (isNaN(amount) || amount <= 0) {
             return { added: 0, canBreakthrough: this.canBreakthrough() };
         }
-        // Nếu đã ở Cảnh Giới Vô Cực, tự động ngưng tụ thành Tinh Nguyên (1 Tỷ Tu Vi = 1 Tinh Nguyên)
         if (this.isVoCuc) {
-            const tinhGain = Math.max(1, Math.floor(amount / 1000000000));
-            return this.addTinhNguyen(tinhGain);
+            this.vocucPendingTuVi = (this.vocucPendingTuVi || 0) + amount;
+            if (this.vocucPendingTuVi >= 1000000000) {
+                const tinhGain = Math.floor(this.vocucPendingTuVi / 1000000000);
+                this.vocucPendingTuVi = this.vocucPendingTuVi % 1000000000;
+                return this.addTinhNguyen(tinhGain);
+            }
+            return { added: 0, canBreakthrough: this.canBreakthrough() };
         }
         if (isNaN(this.tuVi) || typeof this.tuVi !== "number") {
             this.tuVi = 0;
@@ -817,12 +837,18 @@ class Player {
             };
         } else if (item.tuViGain) {
             this.pillsConsumed = (this.pillsConsumed || 0) + 1;
+            const res = this.addTuVi(item.tuViGain);
             if (this.isVoCuc) {
-                const tinhGain = Math.max(1, Math.floor(item.tuViGain / 1000000000));
-                this.addTinhNguyen(tinhGain);
-                return { success: true, item, gainAmount: tinhGain, isTinhNguyen: true, msg: `Đã dùng 1x ${item.name}, nhận được +${tinhGain} Tinh Nguyên Đại Đạo!` };
+                return {
+                    success: true,
+                    item,
+                    gainAmount: res.added,
+                    isTinhNguyen: true,
+                    msg: res.added > 0
+                        ? `Đã dùng 1x ${item.name}, ngưng tụ được +${res.added} Tinh Nguyên Đại Đạo!`
+                        : `Đã dùng 1x ${item.name}, linh khí tích lũy vào đan điền Vô Cực (${(this.vocucPendingTuVi || 0).toLocaleString("vi-VN")} / 1.000.000.000 Tu Vi)!`
+                };
             }
-            this.addTuVi(item.tuViGain);
             return { success: true, item, gainAmount: item.tuViGain, isTinhNguyen: false, msg: `Đã dùng 1x ${item.name}, nhận được +${item.tuViGain} điểm Tu Vi!` };
         } else if (item.isResetPill) {
             const points = this.resetStats();
@@ -842,6 +868,9 @@ class Player {
             }
             this.towerData.dailyTickets = (this.towerData.dailyTickets || 0) + 1;
             return { success: true, item, msg: `Đã dùng 1x ${item.name}, nhận được +1 Lệnh Bài Hư Không (Hiện có: ${this.towerData.dailyTickets})!` };
+        } else if (itemId === "ticket_tam_dao") {
+            this.addGachaTickets(1);
+            return { success: true, item, msg: `Đã kích hoạt 1x ${item.name}, nhận được +1 Vé Tầm Đạo (Hiện có: ${this.gachaTickets} vé tại Đài Cầu Đạo)!` };
         }
 
         return { success: true, item, msg: `Đã sử dụng 1x ${item.name}!` };
@@ -919,21 +948,20 @@ class Player {
             };
         } else if (item.tuViGain) {
             this.pillsConsumed = (this.pillsConsumed || 0) + count;
+            const totalTuVi = item.tuViGain * count;
+            const res = this.addTuVi(totalTuVi);
             if (this.isVoCuc) {
-                const tinhGainPerPill = Math.max(1, Math.floor(item.tuViGain / 1000000000));
-                const totalTinhNguyen = tinhGainPerPill * count;
-                this.addTinhNguyen(totalTinhNguyen);
                 return {
                     success: true,
                     count: count,
-                    totalTuVi: totalTinhNguyen,
+                    totalTuVi: res.added,
                     isTinhNguyen: true,
                     item: item,
-                    msg: `Đã dùng hết ${count}x [${item.name}], nhận được +${totalTinhNguyen} Tinh Nguyên Đại Đạo!`
+                    msg: res.added > 0
+                        ? `Đã dùng hết ${count}x [${item.name}], ngưng tụ được +${res.added} Tinh Nguyên Đại Đạo!`
+                        : `Đã dùng hết ${count}x [${item.name}], linh khí tích lũy vào đan điền Vô Cực (${(this.vocucPendingTuVi || 0).toLocaleString("vi-VN")} / 1.000.000.000 Tu Vi)!`
                 };
             }
-            const totalTuVi = item.tuViGain * count;
-            this.addTuVi(totalTuVi);
             return {
                 success: true,
                 count: count,
@@ -963,6 +991,14 @@ class Player {
                 count: count,
                 item: item,
                 msg: `Đã dùng hết ${count}x [${item.name}], nhận được +${count} Lệnh Bài Hư Không (Hiện có: ${this.towerData.dailyTickets})!`
+            };
+        } else if (itemId === "ticket_tam_dao") {
+            this.addGachaTickets(count);
+            return {
+                success: true,
+                count: count,
+                item: item,
+                msg: `Đã kích hoạt ${count}x [${item.name}], nhận được +${count} Vé Tầm Đạo (Hiện có: ${this.gachaTickets} vé tại Đài Cầu Đạo)!`
             };
         }
 
@@ -1364,6 +1400,120 @@ class Player {
         };
     }
 
+    // ================= HỆ THỐNG ĐẠI THẦN THÔNG & ĐÀI CẦU ĐẠO =================
+
+    addGachaTickets(n = 1) {
+        this.gachaTickets = Math.max(0, (this.gachaTickets || 0) + n);
+        return this.gachaTickets;
+    }
+
+    addFortuneShards(n = 1) {
+        this.fortuneShards = Math.max(0, (this.fortuneShards || 0) + n);
+        let ticketsForged = 0;
+        while (this.fortuneShards >= 10) {
+            this.fortuneShards -= 10;
+            this.gachaTickets = (this.gachaTickets || 0) + 1;
+            ticketsForged++;
+        }
+        return { totalShards: this.fortuneShards, ticketsForged };
+    }
+
+    equipUltimate(id) {
+        if (!id) {
+            this.equippedUltimate = null;
+            return { success: true, equipped: null };
+        }
+        if (!this.unlockedUltimates.includes(id)) {
+            return { success: false, msg: "Chưa mở khóa Đại Thần Thông này!" };
+        }
+        this.equippedUltimate = id;
+        return { success: true, equipped: id };
+    }
+
+    rollGacha(times = 1) {
+        times = Math.max(1, Math.floor(times || 1));
+
+        // Tự động quy đổi Vé Tầm Đạo từ túi đồ nếu gachaTickets chưa đủ
+        const invTickets = this.inventory.filter(id => id === "ticket_tam_dao").length;
+        if (this.gachaTickets < times && invTickets > 0) {
+            const need = times - this.gachaTickets;
+            const convertCount = Math.min(need, invTickets);
+            for (let i = 0; i < convertCount; i++) {
+                const idx = this.inventory.indexOf("ticket_tam_dao");
+                if (idx !== -1) this.inventory.splice(idx, 1);
+            }
+            this.gachaTickets += convertCount;
+        }
+
+        if (this.gachaTickets < times) {
+            return {
+                success: false,
+                msg: `Không đủ Vé Tầm Đạo! Cần ${times} vé (Hiện có: ${this.gachaTickets}).`
+            };
+        }
+
+        this.gachaTickets -= times;
+        const results = [];
+        let newSkillsCount = 0;
+        let dupesCount = 0;
+        let shardsGained = 0;
+        let ticketsForged = 0;
+
+        for (let i = 0; i < times; i++) {
+            this.pityThanCount = (this.pityThanCount || 0) + 1;
+            this.pityThanhCount = (this.pityThanhCount || 0) + 1;
+
+            const skill = (typeof UltimateSkillSystem !== "undefined")
+                ? UltimateSkillSystem.rollGachaDrop(this.pityThanCount, this.pityThanhCount)
+                : null;
+            if (!skill) continue;
+
+            if (skill.tier === "than") {
+                this.pityThanCount = 0;
+                this.pityThanhCount = 0;
+            } else if (skill.tier === "thanh") {
+                this.pityThanhCount = 0;
+            }
+
+            const isNew = !this.unlockedUltimates.includes(skill.id);
+            if (isNew) {
+                this.unlockedUltimates.push(skill.id);
+                // Nếu chưa trang bị chiêu nào, tự động trang bị chiêu đầu tiên vừa quay được
+                if (!this.equippedUltimate) {
+                    this.equippedUltimate = skill.id;
+                }
+                newSkillsCount++;
+                results.push({ skill, isNew: true });
+            } else {
+                // Trùng: Tự động phân giải thành 1 Mảnh Cơ Duyên
+                const forgeRes = this.addFortuneShards(1);
+                dupesCount++;
+                shardsGained++;
+                ticketsForged += forgeRes.ticketsForged;
+                results.push({ 
+                    skill, 
+                    isNew: false, 
+                    shardsGained: 1, 
+                    ticketsForged: forgeRes.ticketsForged 
+                });
+            }
+        }
+
+        return {
+            success: true,
+            times,
+            results,
+            newSkillsCount,
+            dupesCount,
+            shardsGained,
+            ticketsForged,
+            remainingTickets: this.gachaTickets,
+            currentShards: this.fortuneShards,
+            pityThanCount: this.pityThanCount,
+            pityThanhCount: this.pityThanhCount
+        };
+    }
+
     // ================= LƯU & TẢI TRẠNG THÁI =================
 
     toJSON() {
@@ -1404,6 +1554,13 @@ class Player {
                 dailyTickets: (typeof this.towerData?.dailyTickets === "number") ? this.towerData.dailyTickets : 3,
                 lastResetDate: typeof this.towerData?.lastResetDate === "string" ? this.towerData.lastResetDate : ""
             },
+            unlockedUltimates: Array.isArray(this.unlockedUltimates) ? [...this.unlockedUltimates] : [],
+            equippedUltimate: this.equippedUltimate || null,
+            gachaTickets: Number(this.gachaTickets) || 0,
+            fortuneShards: Number(this.fortuneShards) || 0,
+            pityThanCount: Number(this.pityThanCount) || 0,
+            pityThanhCount: Number(this.pityThanhCount) || 0,
+            vocucPendingTuVi: Number(this.vocucPendingTuVi) || 0,
             lastOnlineTime: Date.now()
         };
     }
@@ -1463,6 +1620,15 @@ class Player {
             lastResetDate: typeof data.towerData.lastResetDate === "string" ? data.towerData.lastResetDate : ""
         } : { highestFloor: 0, currentFloor: 1, dailyTickets: 3, lastResetDate: "" };
         this.checkTowerReset();
+
+        this.unlockedUltimates = Array.isArray(data.unlockedUltimates) ? [...data.unlockedUltimates] : [...defaults.unlockedUltimates];
+        this.equippedUltimate = (typeof data.equippedUltimate === "string" && data.equippedUltimate) ? data.equippedUltimate : defaults.equippedUltimate;
+        this.gachaTickets = (typeof data.gachaTickets === "number" && !isNaN(data.gachaTickets)) ? Math.max(0, data.gachaTickets) : (defaults.gachaTickets || 0);
+        this.fortuneShards = (typeof data.fortuneShards === "number" && !isNaN(data.fortuneShards)) ? Math.max(0, data.fortuneShards) : (defaults.fortuneShards || 0);
+        this.pityThanCount = (typeof data.pityThanCount === "number" && !isNaN(data.pityThanCount)) ? Math.max(0, data.pityThanCount) : 0;
+        this.pityThanhCount = (typeof data.pityThanhCount === "number" && !isNaN(data.pityThanhCount)) ? Math.max(0, data.pityThanhCount) : 0;
+        this.vocucPendingTuVi = (typeof data.vocucPendingTuVi === "number" && !isNaN(data.vocucPendingTuVi)) ? Math.max(0, data.vocucPendingTuVi) : 0;
+
         this.lastOnlineTime = (typeof data.lastOnlineTime === "number" && !isNaN(data.lastOnlineTime)) ? data.lastOnlineTime : Date.now();
         this.currentHp = this.getMaxHp();
     }
@@ -1474,4 +1640,5 @@ if (typeof window !== "undefined") {
 
 if (typeof module !== "undefined" && module.exports) {
     module.exports = Player;
+    module.exports.Player = Player;
 }

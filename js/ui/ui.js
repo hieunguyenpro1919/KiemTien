@@ -90,6 +90,14 @@ class UIController {
             }
         }
 
+        // Nút Đại Thần Thông trong màn chiến đấu
+        const btnUltimate = document.getElementById("combat-ultimate-btn");
+        if (btnUltimate) {
+            btnUltimate.addEventListener("click", () => {
+                this.combat.useUltimate();
+            });
+        }
+
         // Nút Tốc Độ Trận Đấu (x1, x2, x3)
         const btnSpeed = document.getElementById("btn-combat-speed");
         if (btnSpeed) {
@@ -328,6 +336,7 @@ class UIController {
         else if (tabName === "skills") this.renderSkillsTab();
         else if (tabName === "shop") this.renderShopTab();
         else if (tabName === "tower") this.renderTowerTab();
+        else if (tabName === "gacha") this.renderGachaTab();
     }
 
     renderAll() {
@@ -338,6 +347,7 @@ class UIController {
         this.renderSkillsTab();
         this.renderShopTab();
         this.renderTowerTab();
+        this.renderGachaTab();
     }
 
     // ================= THANH THÔNG TIN ĐỈNH (HEADER) =================
@@ -807,6 +817,9 @@ class UIController {
 
         // 3 Ô Kỹ Năng Xuất Trận
         this.renderEquippedSkills();
+
+        // Ô Đại Thần Thông Trấn Thân
+        this.renderEquippedUltimate();
 
         // Túi đồ (Inventory)
         this.renderInventory();
@@ -1955,7 +1968,7 @@ class UIController {
 
         if (sweepPreviewEl) {
             if (canSweep && typeof TowerSystem !== "undefined") {
-                const sweepData = TowerSystem.calculateSweepRewards(tower.highestFloor);
+                const sweepData = TowerSystem.calculateSweepRewards(tower.highestFloor, this.player.isVoCuc);
                 if (sweepData) {
                     sweepPreviewEl.style.display = "block";
                     let sweepLinhThachText = "";
@@ -1966,11 +1979,8 @@ class UIController {
                     }
 
                     let sweepExpText = "";
-                    if (sweepData.totalTinhNguyen > 0) {
+                    if (this.player.isVoCuc) {
                         sweepExpText = `<strong style="color:#c084fc;">+${this.formatNumber(sweepData.totalTinhNguyen)} 🌌 Tinh Nguyên</strong>`;
-                        if (sweepData.totalTuVi > 0) {
-                            sweepExpText += ` • <strong>+${this.formatNumber(sweepData.totalTuVi)} ✨ Tu Vi</strong>`;
-                        }
                     } else {
                         sweepExpText = `<strong>+${this.formatNumber(sweepData.totalTuVi)} Tu Vi</strong>`;
                     }
@@ -2282,14 +2292,13 @@ class UIController {
             this.showToast(`🎫 ${buyRes.msg}`, "success");
         }
 
-        const sweepData = TowerSystem.calculateSweepRewards(this.player.towerData.highestFloor);
+        const sweepData = TowerSystem.calculateSweepRewards(this.player.towerData.highestFloor, this.player.isVoCuc);
         if (!sweepData) return;
 
         let rewardPrompt = "";
-        if (sweepData.totalTinhNguyen > 0) {
+        if (this.player.isVoCuc) {
             rewardPrompt += `🌌 Tinh Nguyên: +${this.formatNumber(sweepData.totalTinhNguyen)}\n`;
-        }
-        if (sweepData.totalTuVi > 0) {
+        } else {
             rewardPrompt += `✨ Tu Vi: +${this.formatNumber(sweepData.totalTuVi)}\n`;
         }
         if (sweepData.totalHonNguyen > 0) {
@@ -2302,10 +2311,9 @@ class UIController {
         }
 
         this.player.towerData.dailyTickets = Math.max(0, this.player.towerData.dailyTickets - 1);
-        if (sweepData.totalTinhNguyen > 0) {
+        if (this.player.isVoCuc) {
             this.player.addTinhNguyen(sweepData.totalTinhNguyen);
-        }
-        if (sweepData.totalTuVi > 0) {
+        } else {
             this.player.addTuVi(sweepData.totalTuVi);
         }
         this.player.linhThach = (this.player.linhThach || 0) + sweepData.totalLinhThach;
@@ -2315,10 +2323,9 @@ class UIController {
 
         this.sound.playVictory();
         let toastMsg = `⚡ Quét nhanh thành công Tầng 1 -> ${sweepData.toFloor}! Nhận `;
-        if (sweepData.totalTinhNguyen > 0) {
+        if (this.player.isVoCuc) {
             toastMsg += `+${this.formatNumber(sweepData.totalTinhNguyen)} 🌌 Tinh Nguyên, `;
-        }
-        if (sweepData.totalTuVi > 0) {
+        } else {
             toastMsg += `+${this.formatNumber(sweepData.totalTuVi)} Tu Vi, `;
         }
         if (sweepData.totalHonNguyen > 0) {
@@ -2448,7 +2455,7 @@ class UIController {
                 contentEl.innerHTML = `
                     <p style="color: #c084fc; font-weight: 600;">Đạo hữu đã dũng mãnh trảm sát ma vật Hư Không, phá tan cấm chế tiến lên tầng cao hơn!</p>
                     <div class="result-rewards-box" style="border-color: rgba(224, 64, 251, 0.4); background: rgba(74, 20, 140, 0.15);">
-                        <div>${result.tinhNguyenGain > 0 ? `🌌 Tinh Nguyên: <strong style="color: #c084fc;">+${this.formatNumber(result.tinhNguyenGain)}</strong>` : `✨ Tu Vi Nhận Được: <strong>+${this.formatNumber(result.tuViGain)}</strong>`}</div>
+                        <div>${this.player.isVoCuc ? `🌌 Tinh Nguyên: <strong style="color: #c084fc;">+${this.formatNumber(result.tinhNguyenGain || (typeof TowerSystem !== "undefined" ? TowerSystem.getFloorTinhNguyen(result.stage.number) : 1))}</strong>` : `✨ Tu Vi Nhận Được: <strong>+${this.formatNumber(result.tuViGain)}</strong>`}</div>
                         ${result.honNguyenGain > 0 ? `<div>🌀 Hỗn Nguyên: <strong style="color: #c7d2fe;">+${this.formatNumber(result.honNguyenGain)}</strong></div>` : ""}
                         <div>💎 Linh Thạch: <strong>+${this.formatNumber(result.linhThachGain)}</strong></div>
                         <div>🏆 Kỷ Lục Đạt Được: <strong>Tầng ${this.player.towerData.highestFloor}</strong></div>
@@ -3530,8 +3537,247 @@ class UIController {
         tooltip.style.display = "flex";
         this.positionTooltip(e, tooltip);
     }
+
+    // ================= ĐẠI THẦN THÔNG & ĐÀI CẦU ĐẠO (GACHA) =================
+
+    renderEquippedUltimate() {
+        const slotEl = document.getElementById("equipped-ultimate-slot");
+        if (!slotEl) return;
+
+        const ultId = this.player.equippedUltimate;
+        if (!ultId || typeof UltimateSkillSystem === "undefined") {
+            slotEl.innerHTML = `
+                <div class="ultimate-equipped-empty">
+                    <p style="margin-bottom: 6px;">Chưa trang bị Đại Thần Thông trấn thân</p>
+                    <button class="btn-xs btn-outline-gold" onclick="gameUI.switchTab('gacha')">🔮 Vào Đài Cầu Đạo</button>
+                </div>
+            `;
+            return;
+        }
+
+        const skill = UltimateSkillSystem.getSkill(ultId);
+        if (!skill) {
+            slotEl.innerHTML = `
+                <div class="ultimate-equipped-empty">
+                    <p style="margin-bottom: 6px;">Kỹ năng không tồn tại</p>
+                    <button class="btn-xs btn-outline-gold" onclick="gameUI.switchTab('gacha')">🔮 Vào Đài Cầu Đạo</button>
+                </div>
+            `;
+            return;
+        }
+
+        const tier = UltimateSkillSystem.getTier(skill.tier);
+        slotEl.innerHTML = `
+            <div class="ultimate-equipped-card" style="border-color: ${tier.border}; background: radial-gradient(circle at left, ${tier.bg} 0%, rgba(15, 23, 42, 0.85) 70%);">
+                <div class="ultimate-equipped-icon" style="filter: drop-shadow(0 0 6px ${tier.color});">${skill.icon}</div>
+                <div class="ultimate-equipped-meta">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span class="ultimate-equipped-name" style="color: ${tier.color};">${skill.name}</span>
+                        <span class="codex-tier-badge" style="background: ${tier.bg}; color: ${tier.color}; border: 1px solid ${tier.border}; font-size: 9px; padding: 1px 6px;">${tier.name}</span>
+                    </div>
+                    <span class="ultimate-equipped-short">${skill.shortDesc}</span>
+                    <span style="font-size: 10px; color: #ff9100; font-weight: 600;">Tiêu hao: ${skill.rageCost} Nộ Khí</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <button class="btn-xs btn-danger" onclick="gameUI.handleUnequipUltimate()" title="Tháo Đại Thần Thông">Gỡ Ra</button>
+                    <button class="btn-xs btn-outline-gold" onclick="gameUI.switchTab('gacha')" title="Đổi chiêu khác">Đổi</button>
+                </div>
+            </div>
+        `;
+    }
+
+    renderGachaTab() {
+        if (typeof UltimateSkillSystem === "undefined") return;
+
+        // Cập nhật số lượng vé và mảnh cơ duyên
+        const ticketsEl = document.getElementById("gacha-tickets-count");
+        if (ticketsEl) {
+            ticketsEl.innerText = `${this.player.gachaTickets || 0} Vé`;
+        }
+
+        const shardsEl = document.getElementById("gacha-shards-count");
+        const shardsBar = document.getElementById("gacha-shards-bar");
+        const shards = this.player.fortuneShards || 0;
+        if (shardsEl) {
+            shardsEl.innerText = `${shards % 10}/10 Mảnh (Tổng: ${shards})`;
+        }
+        if (shardsBar) {
+            shardsBar.style.width = `${(shards % 10) * 10}%`;
+        }
+
+        // Render tiến độ Bảo Hiểm (Pity Trackers)
+        const pityThanEl = document.getElementById("gacha-pity-than-count");
+        const pityThanBar = document.getElementById("gacha-pity-than-bar");
+        const pityThanhEl = document.getElementById("gacha-pity-thanh-count");
+        const pityThanhBar = document.getElementById("gacha-pity-thanh-bar");
+
+        const pityThan = this.player.pityThanCount || 0;
+        const pityThanh = this.player.pityThanhCount || 0;
+
+        if (pityThanEl) pityThanEl.innerText = `${pityThan} / 500`;
+        if (pityThanBar) pityThanBar.style.width = `${Math.min(100, (pityThan / 500) * 100)}%`;
+
+        if (pityThanhEl) pityThanhEl.innerText = `${pityThanh} / 100`;
+        if (pityThanhBar) pityThanhBar.style.width = `${Math.min(100, (pityThanh / 100) * 100)}%`;
+
+        // Render Codex 6 Đại Thần Thông
+        const gridEl = document.getElementById("gacha-codex-grid");
+        if (!gridEl) return;
+
+        const allSkills = UltimateSkillSystem.getAllSkills();
+        const unlockedList = this.player.unlockedUltimates || [];
+        const equippedId = this.player.equippedUltimate;
+
+        gridEl.innerHTML = allSkills.map(skill => {
+            const isUnlocked = unlockedList.includes(skill.id);
+            const isEquipped = equippedId === skill.id;
+            const tier = UltimateSkillSystem.getTier(skill.tier);
+            const tierClass = skill.tier === "THAN" ? "tier-than" : (skill.tier === "THANH" ? "tier-thanh" : "tier-linh");
+
+            let actionBtn = "";
+            if (!isUnlocked) {
+                actionBtn = `<button class="btn-xs" style="background: rgba(255,255,255,0.1); color: #64748b; border: 1px solid rgba(255,255,255,0.1); cursor: not-allowed;" disabled>🔒 Chưa Giác Ngộ</button>`;
+            } else if (isEquipped) {
+                actionBtn = `<button class="btn-xs" style="background: rgba(255, 215, 0, 0.2); color: #ffd700; border: 1px solid #ffd700;" onclick="gameUI.handleUnequipUltimate()">✓ Đang Xuất Trận (Gỡ)</button>`;
+            } else {
+                actionBtn = `<button class="btn-xs btn-primary" onclick="gameUI.handleEquipUltimate('${skill.id}')">⚡ Xuất Trận</button>`;
+            }
+
+            return `
+                <div class="codex-card ${tierClass} ${!isUnlocked ? 'is-locked' : ''} ${isEquipped ? 'is-equipped' : ''}">
+                    <div class="codex-header">
+                        <div class="codex-icon" style="border: 1px solid ${tier.border};">${skill.icon}</div>
+                        <div class="codex-title-wrap">
+                            <span class="codex-name" style="color: ${tier.color};">${skill.name}</span>
+                            <span class="codex-tier-badge" style="background: ${tier.bg}; color: ${tier.color}; border: 1px solid ${tier.border};">${tier.name}</span>
+                        </div>
+                    </div>
+                    <div class="codex-cost">🔥 Tiêu hao Nộ: <strong>${skill.rageCost} Nộ</strong></div>
+                    <div class="codex-desc">${skill.detail}</div>
+                    <div class="codex-footer">
+                        <span style="font-size: 11px; color: ${isUnlocked ? '#4caf50' : '#94a3b8'};">
+                            ${isUnlocked ? '✦ Đã Giác Ngộ' : '◇ Chưa Sở Hữu'}
+                        </span>
+                        ${actionBtn}
+                    </div>
+                </div>
+            `;
+        }).join("");
+    }
+
+    handleEquipUltimate(skillId) {
+        if (!this.player.unlockedUltimates.includes(skillId)) {
+            this.showToast("Chưa giác ngộ Đại Thần Thông này, không thể xuất trận!", "error");
+            return;
+        }
+
+        this.player.equipUltimate(skillId);
+        const skill = UltimateSkillSystem.getSkill(skillId);
+        if (typeof StorageSystem !== "undefined") StorageSystem.save(this.player);
+        this.sound.playClick();
+        this.showToast(`Đã xuất trận Đại Thần Thông: [${skill ? skill.name : skillId}]!`, "breakthrough");
+        this.renderEquippedUltimate();
+        this.renderGachaTab();
+    }
+
+    handleUnequipUltimate() {
+        if (!this.player.equippedUltimate) return;
+        this.player.equipUltimate(null);
+        if (typeof StorageSystem !== "undefined") StorageSystem.save(this.player);
+        this.sound.playClick();
+        this.showToast("Đã tháo Đại Thần Thông trấn thân!", "info");
+        this.renderEquippedUltimate();
+        this.renderGachaTab();
+    }
+
+    handleGachaRoll(times = 1) {
+        if (typeof UltimateSkillSystem === "undefined") return;
+
+        // Kiểm tra vé
+        // Tự động kiểm tra túi đồ xem có Vé Tầm Đạo không để nạp vào
+        let availableTickets = this.player.gachaTickets || 0;
+        const invTicket = this.player.inventory.find(i => i.itemId === "ticket_tam_dao");
+        if (invTicket && invTicket.quantity > 0) {
+            availableTickets += invTicket.quantity;
+        }
+
+        if (availableTickets < times) {
+            this.sound.playFail();
+            this.showToast(`Không đủ Vé Tầm Đạo! Cần ${times} vé (Hiện có: ${availableTickets}). Hãy leo Hư Không Tháp hoặc mua tại Bách Bảo Các.`, "error");
+            return;
+        }
+
+        // Thực hiện rút
+        const rollResult = this.player.rollGacha(times);
+        if (typeof StorageSystem !== "undefined") StorageSystem.save(this.player);
+
+        this.lastGachaTimes = times;
+        this.sound.playBreakthrough();
+        this.showGachaRevealModal(rollResult);
+        this.renderGachaTab();
+        this.renderEquippedUltimate();
+        this.updateHeaderInfo();
+    }
+
+    handleGachaAgain() {
+        const times = this.lastGachaTimes || 1;
+        this.closeGachaRevealModal();
+        setTimeout(() => {
+            this.handleGachaRoll(times);
+        }, 200);
+    }
+
+    showGachaRevealModal(rollResult) {
+        const modal = document.getElementById("gacha-reveal-modal");
+        const cardsEl = document.getElementById("gacha-reveal-cards");
+        const summaryEl = document.getElementById("gacha-reveal-summary");
+        if (!modal || !cardsEl || !summaryEl) return;
+
+        const results = rollResult.results || [];
+        cardsEl.innerHTML = results.map(res => {
+            const skill = res.skill;
+            const tier = UltimateSkillSystem.getTier(skill.tier);
+            const tierClass = skill.tier === "THAN" ? "tier-than" : (skill.tier === "THANH" ? "tier-thanh" : "tier-linh");
+
+            const tagHtml = res.isNew
+                ? `<span class="reveal-tag-new">★ MỚI!</span>`
+                : `<span class="reveal-tag-dupe">+1 MẢNH</span>`;
+
+            return `
+                <div class="reveal-card-item ${tierClass}">
+                    ${tagHtml}
+                    <div class="reveal-icon" style="filter: drop-shadow(0 0 6px ${tier.color});">${skill.icon}</div>
+                    <span class="reveal-name" style="color: ${tier.color};">${skill.name}</span>
+                    <span class="reveal-badge" style="background: ${tier.bg}; color: ${tier.color}; border: 1px solid ${tier.border};">${tier.name}</span>
+                </div>
+            `;
+        }).join("");
+
+        const newCount = results.filter(r => r.isNew).length;
+        let summaryText = `Tầm Đạo thành công ${results.length} lần! `;
+        if (newCount > 0) {
+            summaryText += `🎉 Giác ngộ <strong>${newCount}</strong> Đại Thần Thông mới! `;
+        }
+        if (rollResult.shardsGained > 0) {
+            summaryText += `✨ Phân giải trùng nhận <strong>+${rollResult.shardsGained}</strong> Mảnh Cơ Duyên. `;
+        }
+        if (rollResult.ticketsForged > 0) {
+            summaryText += `🎫 Đã tự động ngưng tụ thành <strong>+${rollResult.ticketsForged}</strong> Vé Tầm Đạo mới!`;
+        }
+
+        summaryEl.innerHTML = summaryText;
+        modal.style.display = "flex";
+    }
+
+    closeGachaRevealModal() {
+        const modal = document.getElementById("gacha-reveal-modal");
+        if (modal) modal.style.display = "none";
+    }
 }
 
 if (typeof window !== "undefined") {
     window.UIController = UIController;
+}
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = { UIController };
 }

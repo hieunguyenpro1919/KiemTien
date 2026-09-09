@@ -644,3 +644,89 @@
         font-size: 11px;
     }
 }
+
+/* ================= HỆ THỐNG NỘ KHÍ & ĐẠI THẦN THÔNG TRONG CHIẾN ĐẤU ================= */
+.fighter-rage-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #ff9100;
+    margin-top: 4px;
+    margin-bottom: 2px;
+}
+
+.combat-rage-bar-outer {
+    position: relative;
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 61, 0, 0.15);
+    border: 1px solid rgba(255, 61, 0, 0.4);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.combat-rage-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff9100, #ff3d00, #d50000);
+    border-radius: 3px;
+    transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 8px rgba(255, 61, 0, 0.6);
+}
+
+/* Nút thi triển Đại Thần Thông */
+.combat-ultimate-btn {
+    position: relative;
+    background: linear-gradient(135deg, rgba(30, 20, 60, 0.95), rgba(74, 20, 140, 0.85));
+    border: 2px solid #7c4dff;
+    border-radius: 10px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(124, 77, 255, 0.25);
+}
+
+.combat-ultimate-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    filter: grayscale(0.3);
+}
+
+.combat-ultimate-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+}
+
+.combat-ultimate-badge {
+    font-size: 8px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    font-weight: 700;
+    background: linear-gradient(90deg, #ffd700, #ff9100);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Hiệu ứng bốc lửa cuồng nộ khi Nộ Khí đầy */
+.combat-ultimate-btn.ultimate-ready {
+    border-color: #ffd700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.7), 0 0 25px rgba(255, 61, 0, 0.5);
+    animation: ultReadyPulse 1.2s infinite alternate ease-in-out;
+    filter: none;
+    opacity: 1;
+}
+
+@keyframes ultReadyPulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.6), 0 0 20px rgba(255, 61, 0, 0.4);
+    }
+    100% {
+        transform: scale(1.04);
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.9), 0 0 35px rgba(255, 61, 0, 0.8);
+    }
+}

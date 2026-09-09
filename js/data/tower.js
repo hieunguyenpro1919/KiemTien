@@ -78,6 +78,44 @@ class TowerSystem {
     }
 
     /**
+     * Tính toán lượng Tinh Nguyên thưởng cân bằng cho cảnh giới Vô Cực theo tầng:
+     * - Tầng 1 - 50: 1 Tinh Nguyên / tầng
+     * - Tầng 51 - 100: 2 Tinh Nguyên / tầng
+     * - Tầng 101 - 200: 4 Tinh Nguyên / tầng
+     * - Tầng 201 - 300: 8 Tinh Nguyên / tầng
+     * - Tầng 301 - 400: 15 Tinh Nguyên / tầng
+     * - Tầng 401+: 25 + Math.floor((floor - 400) * 1.5) Tinh Nguyên / tầng
+     * - Boss (chia hết cho 10): +50% thưởng
+     * - Tinh Anh (chia hết cho 5): +25% thưởng
+     */
+    static getFloorTinhNguyen(floor) {
+        floor = Math.max(1, parseInt(floor, 10) || 1);
+        let base = 1;
+        if (floor <= 50) {
+            base = 1;
+        } else if (floor <= 100) {
+            base = 2;
+        } else if (floor <= 200) {
+            base = 4;
+        } else if (floor <= 300) {
+            base = 8;
+        } else if (floor <= 400) {
+            base = 15;
+        } else {
+            base = 25 + Math.floor((floor - 400) * 1.5);
+        }
+
+        const isBoss = (floor % 10 === 0);
+        const isElite = (!isBoss && floor % 5 === 0);
+        if (isBoss) {
+            return Math.floor(base * 1.5);
+        } else if (isElite) {
+            return Math.floor(base * 1.25);
+        }
+        return base;
+    }
+
+    /**
      * Sinh quái vật Hư Không Tháp theo tầng (Procedural Scaling)
      */
     static generateTowerStage(floor) {
@@ -120,15 +158,9 @@ class TowerSystem {
         const monsterDef = Math.min(1e12, Math.floor(rawDef));
         const attackSpeed = isBoss ? 1.4 : (isElite ? 1.7 : 2.0);
 
-        // Phần thưởng Tu Vi & Linh Thạch (Từ Tầng 400 trở lên trực tiếp thưởng Tinh Nguyên)
-        let tuVi = 0;
-        let tinhNguyen = 0;
-        if (floor >= 400) {
-            tuVi = 0;
-            tinhNguyen = Math.floor(50 + (floor - 400) * 10 + Math.pow(1.03, floor - 400));
-        } else {
-            tuVi = Math.min(1e15, Math.floor(TOWER_CONFIG.BASE_EXP * Math.pow(1.10, floor)));
-        }
+        // Phần thưởng Tu Vi (cho tiền Vô Cực) & Tinh Nguyên (cho cảnh giới Vô Cực)
+        const tuVi = Math.min(2000000000, Math.floor(TOWER_CONFIG.BASE_EXP * Math.pow(1.06, floor)));
+        const tinhNguyen = this.getFloorTinhNguyen(floor);
 
         let linhThach = Math.floor(TOWER_CONFIG.BASE_GOLD * Math.pow(1.09, floor));
         let honNguyen = 0;
@@ -136,6 +168,12 @@ class TowerSystem {
         if (linhThach >= 100000000000) {
             honNguyen = Math.floor(linhThach / 1000000000);
             linhThach = linhThach % 1000000000;
+        }
+
+        // Mốc tầng lớn (50, 100, 150...): Thưởng Vé Tầm Đạo quý hiếm
+        let gachaTickets = 0;
+        if (floor % 50 === 0) {
+            gachaTickets = floor >= 300 ? 2 : 1;
         }
 
         // Cơ chế Kim Thân Hộ Thể (Damage Cap)
@@ -169,6 +207,7 @@ class TowerSystem {
                 tinhNguyen: tinhNguyen,
                 linhThach: linhThach,
                 honNguyen: honNguyen,
+                gachaTickets: gachaTickets,
                 dropChance: 0,
                 possibleDrops: []
             }
@@ -178,8 +217,10 @@ class TowerSystem {
     /**
      * Tính toán tài nguyên khi Quét Nhanh (Sweep)
      * Thưởng từ Tầng 1 đến Tầng (highestFloor - 5)
+     * - Phân lập rõ ràng: Người chơi Vô Cực chỉ nhận Tinh Nguyên (totalTuVi = 0)
+     *   Người chơi tiền Vô Cực chỉ nhận Tu Vi (totalTinhNguyen = 0)
      */
-    static calculateSweepRewards(highestFloor) {
+    static calculateSweepRewards(highestFloor, isVoCuc = false) {
         if (!highestFloor || highestFloor < TOWER_CONFIG.SWEEP_UNLOCK_FLOOR) {
             return null;
         }
@@ -190,11 +231,10 @@ class TowerSystem {
         let totalLinhThach = 0;
 
         for (let f = 1; f <= maxSweepFloor; f++) {
-            if (f >= 400) {
-                const tinh = Math.floor(50 + (f - 400) * 10 + Math.pow(1.03, f - 400));
-                totalTinhNguyen += tinh;
+            if (isVoCuc) {
+                totalTinhNguyen += this.getFloorTinhNguyen(f);
             } else {
-                const exp = Math.min(1e15, Math.floor(TOWER_CONFIG.BASE_EXP * Math.pow(1.10, f)));
+                const exp = Math.min(2000000000, Math.floor(TOWER_CONFIG.BASE_EXP * Math.pow(1.06, f)));
                 totalTuVi += exp;
             }
             const gold = Math.min(1e15, Math.floor(TOWER_CONFIG.BASE_GOLD * Math.pow(1.09, f)));
@@ -210,11 +250,19 @@ class TowerSystem {
         return {
             fromFloor: 1,
             toFloor: maxSweepFloor,
+            isVoCuc: Boolean(isVoCuc),
             totalTuVi: Math.floor(totalTuVi),
             totalTinhNguyen: Math.floor(totalTinhNguyen),
             totalLinhThach: Math.floor(totalLinhThach),
             totalHonNguyen: totalHonNguyen
         };
+    }
+
+    /**
+     * Lấy dữ liệu ải tương ứng tầng tháp
+     */
+    static getStage(floor) {
+        return this.generateTowerStage(floor);
     }
 
     /**
@@ -228,4 +276,8 @@ class TowerSystem {
 if (typeof window !== "undefined") {
     window.TOWER_CONFIG = TOWER_CONFIG;
     window.TowerSystem = TowerSystem;
+}
+
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = { TOWER_CONFIG, TowerSystem };
 }
