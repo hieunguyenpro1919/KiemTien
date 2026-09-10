@@ -42,9 +42,9 @@ const ULTIMATE_SKILL_DATABASE = [
         rageCost: 100,
         icon: "⚔️",
         vfx: "berserk_frenzy",
-        desc: "Chiến ý bất diệt, quyền kình xé toạc hư không! Trong 8 giây kích phát: Tăng +200% Tốc Độ Đánh, đồng thời đòn đánh thường biến thành SÁT THƯƠNG CHUẨN (gây 250% Công Vật Lí bỏ qua giáp).",
-        detail: "Chiến ý bất diệt, quyền kình xé toạc hư không! Trong 8 giây kích phát: Tăng +200% Tốc Độ Đánh, đồng thời đòn đánh thường biến thành SÁT THƯƠNG CHUẨN (gây 250% Công Vật Lí bỏ qua giáp).",
-        shortDesc: "+200% Tốc Đánh, đánh thường thành Sát Thương Chuẩn trong 8s"
+        desc: "Chiến ý bất diệt, quyền kình xé toạc hư không! Trong 8 giây kích phát: Tăng +300% Tốc Độ Đánh, đòn đánh thường hóa thành SÁT THƯƠNG CHUẨN cực đại (800% Công Vật Lí), ĐÁNH THẲNG VÀO MÁU XUYÊN KHIÊN & XUYÊN GIÁP (vẫn tuân thủ Kim Thân của Boss).",
+        detail: "Chiến ý bất diệt, quyền kình xé toạc hư không! Trong 8 giây kích phát: Tăng +300% Tốc Độ Đánh, đòn đánh thường hóa thành SÁT THƯƠNG CHUẨN cực đại (800% Công Vật Lí), ĐÁNH THẲNG VÀO MÁU XUYÊN KHIÊN & XUYÊN GIÁP (vẫn tuân thủ Kim Thân của Boss).",
+        shortDesc: "+300% Tốc Đánh, đánh thường thành Sát Thương Chuẩn (800% Vật Lí) xuyên Khiên & Giáp trong 8s"
     },
 
     // ================= [3] LINH CẤP (Tỉ lệ 70%) =================

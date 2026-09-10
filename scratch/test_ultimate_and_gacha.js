@@ -222,26 +222,41 @@ assert.deepStrictEqual(combat.skillCooldowns, [0, 0, 0], "Toàn bộ 3 skill ph�
 assert.strictEqual(combat.playerRage, 0);
 console.log("-> PASS 7.2: Tuế Nguyệt hồi toàn bộ chiêu thức ngay tức khắc.");
 
-// 7.3. Ý Chí Bất Tận: +200% tốc đánh, đánh thường thành sát thương chuẩn 250% công vật lí xuyên giáp & Kim Thân
+// 7.3. Ý Chí Bất Tận: +300% tốc đánh, sát thương chuẩn 800% Công Vật Lí, XUYÊN KHIÊN đánh thẳng vào máu nhưng TUÂN THỦ KIM THÂN
 p.equippedUltimate = "ult_thanh_y_chi_bat_tan";
 resetCombat(combat, p);
 combat.playerRage = 100;
 combat.useUltimate();
 assert.strictEqual(combat.ultimateBuffYChi, 8, "Thời gian buff Ý Chí Bất Tận là 8s");
 
-// Test đánh thường trong lúc buff
+// Test 7.3.1: Đánh thường scale 800% Công Vật Lí và XUYÊN KHIÊN BOSS
 combat.monster.isBoss = true;
-combat.monsterMaxHp = 1000000;
-combat.monsterHp = 1000000;
-combat.monster.defense = 999999;
+combat.monsterMaxHp = 10000000; // 10 Triệu HP
+combat.monsterHp = 10000000;
+combat.monsterShield = 5000000; // Khiên Boss 5 Triệu cực dày
+combat.monster.defense = 999999; // Giáp cực lớn
 p.statVatLi = 500;
 const pStats = p.getTotalStats();
 combat.playerBasicAttack();
-const expectedDmg = Math.floor(pStats.vatLi * 2.5);
-const isRegular = (combat.monsterHp === 1000000 - expectedDmg);
-const isCrit = (combat.monsterHp === 1000000 - Math.floor(expectedDmg * 1.65));
-assert(isRegular || isCrit, "Đánh thường phải gây sát thương chuẩn (hoặc bạo kích chuẩn) theo 250% Công Vật Lí");
-console.log("-> PASS 7.3: Ý Chí Bất Tận đánh thường chuẩn xuyên thủ & Kim Thân.");
+
+const expectedDmg = Math.floor(pStats.vatLi * 8.0); // 500 * 8.0 = 4.000
+const isRegular = (combat.monsterHp === 10000000 - expectedDmg);
+const isCrit = (combat.monsterHp === 10000000 - Math.floor(expectedDmg * 1.75));
+assert(isRegular || isCrit, "Đánh thường phải gây sát thương chuẩn scale theo 800% Công Vật Lí");
+assert.strictEqual(combat.monsterShield, 5000000, "Đòn đánh Ý Chí Bất Tận phải XUYÊN THẲNG QUA KHIÊN BOSS (khiên không bị trừ và không chặn)");
+console.log("-> PASS 7.3.1: Ý Chí Bất Tận scale 800% Vật Lí, XUYÊN QUA KHIÊN BOSS đánh thẳng vào máu!");
+
+// Test 7.3.2: Tuân thủ Kim Thân Hộ Thể (Damage Cap)
+combat.monsterMaxHp = 1000000; // Boss 1 Triệu HP
+combat.monsterHp = 1000000;
+combat.monster.damageCapPct = 0.20; // Trần 20% (200.000)
+combat.monster.breakCapPct = 0.35; // Trần 35% khi bạo kích (350.000)
+p.statVatLi = 1000000; // 800% = 8 Triệu sát thương (vượt xa máu Boss)
+
+combat.playerBasicAttack();
+const dmgDealt = 1000000 - combat.monsterHp;
+assert(dmgDealt === 200000 || dmgDealt === 350000, `Sát thương phải bị Kim Thân giới hạn ở trần (200.000 hoặc 350.000), thực tế: ${dmgDealt}`);
+console.log(`-> PASS 7.3.2: Ý Chí Bất Tận TUÂN THỦ KIM THÂN (sát thương chạm trần ${dmgDealt.toLocaleString()} HP)!`);
 
 // 7.4. Vô Tổn: Khiên = 600% Công Phép + 30% Max HP
 p.equippedUltimate = "ult_linh_vo_ton";

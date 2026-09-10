@@ -229,9 +229,9 @@ class CombatEngine {
             }
         }
 
-        // Đòn đánh thường của người chơi (mỗi 1.5 giây, tăng 200% tốc đánh khi kích hoạt Ý Chí Bất Tận)
+        // Đòn đánh thường của người chơi (mỗi 1.5 giây, tăng 300% tốc đánh khi kích hoạt Ý Chí Bất Tận)
         if (this.playerStunTimer <= 0) {
-            const atkSpeedMult = (this.ultimateBuffYChi > 0) ? 3.0 : 1.0;
+            const atkSpeedMult = (this.ultimateBuffYChi > 0) ? 4.0 : 1.0;
             this.playerAttackTimer += effectiveDt * atkSpeedMult;
             if (this.playerAttackTimer >= 1.5) {
                 this.playerAttackTimer = 0;
@@ -274,12 +274,12 @@ class CombatEngine {
         let capPct;
 
         if (isSpecial) {
-            capPct = this.monster.breakCapPct !== undefined 
-                ? this.monster.breakCapPct 
+            capPct = this.monster.breakCapPct !== undefined
+                ? this.monster.breakCapPct
                 : (isSupreme ? 0.30 : 0.40);
         } else {
-            capPct = this.monster.damageCapPct !== undefined 
-                ? this.monster.damageCapPct 
+            capPct = this.monster.damageCapPct !== undefined
+                ? this.monster.damageCapPct
                 : (isSupreme ? 0.20 : 0.25);
         }
 
@@ -313,11 +313,20 @@ class CombatEngine {
         let capResult = { damage: 0, isCapped: false, isBreak: false, capPct: 0 };
 
         if (isYChi) {
-            // Hiệu ứng "Ý Chí Bất Tận": Sát thương chuẩn scale theo Vật Lí (250%), BỎ QUA GIÁP VÀ KIM THÂN!
-            let baseDmg = Math.floor(pStats.vatLi * 2.5);
+            // Hiệu ứng "Ý Chí Bất Tận":
+            // 1. Tăng mạnh hệ số scale: 800% Công Vật Lí!
+            // 2. SÁT THƯƠNG CHUẨN XUYÊN GIÁP & XUYÊN KHIÊN BOSS (đánh thẳng vào máu)
+            // 3. KHÔNG BỎ QUA KIM THÂN: Vẫn tuân thủ Damage Cap của Kim Thân!
+            let baseDmg = Math.floor(pStats.vatLi * 80.0);
             actualDmg = Math.max(1, baseDmg);
-            if (isCrit) actualDmg = Math.floor(actualDmg * 1.65);
-            capResult = { damage: actualDmg, isCapped: false, isBreak: true, capPct: 1.0 };
+            if (isCrit) actualDmg = Math.floor(actualDmg * 1.75);
+
+            // Áp dụng Kim Thân Hộ Thể ("nhưng không bỏ qua kim thân")
+            capResult = this.applyDamageCap(actualDmg, isCrit);
+            actualDmg = capResult.damage;
+
+            // ĐÁNH THẲNG VÀO MÁU: BỎ QUA HOÀN TOÀN KHIÊN CỦA BOSS!
+            this.monsterHp = Math.max(0, this.monsterHp - actualDmg);
         } else {
             // Sát thương = max(1, (Vật lí + Phép * 0.3) - Giáp quái)
             let baseDmg = pStats.vatLi + Math.floor(pStats.phep * 0.3);
@@ -327,30 +336,30 @@ class CombatEngine {
             // Áp dụng Kim Thân Hộ Thể (isCrit kích hoạt Phá Kim Thân)
             capResult = this.applyDamageCap(actualDmg, isCrit);
             actualDmg = capResult.damage;
-        }
 
-        // Bào mòn khiên Boss trước nếu Boss có khiên
-        if (this.monsterShield > 0) {
-            if (this.monsterShield >= actualDmg) {
-                this.monsterShield -= actualDmg;
-                if (this.particles) {
-                    const mPos = this.getMonsterCenter();
-                    this.particles.addFloatingText(`Khiên Boss -${actualDmg}`, mPos.x, mPos.y - 25, "#00d2d3");
-                }
-                actualDmg = 0;
-            } else {
-                const absorbed = this.monsterShield;
-                actualDmg -= this.monsterShield;
-                this.monsterShield = 0;
-                if (this.particles) {
-                    const mPos = this.getMonsterCenter();
-                    this.particles.addFloatingText(`Vỡ Khiên Boss -${absorbed}`, mPos.x, mPos.y - 25, "#00d2d3");
+            // Bào mòn khiên Boss trước nếu Boss có khiên
+            if (this.monsterShield > 0) {
+                if (this.monsterShield >= actualDmg) {
+                    this.monsterShield -= actualDmg;
+                    if (this.particles) {
+                        const mPos = this.getMonsterCenter();
+                        this.particles.addFloatingText(`Khiên Boss -${actualDmg}`, mPos.x, mPos.y - 25, "#00d2d3");
+                    }
+                    actualDmg = 0;
+                } else {
+                    const absorbed = this.monsterShield;
+                    actualDmg -= this.monsterShield;
+                    this.monsterShield = 0;
+                    if (this.particles) {
+                        const mPos = this.getMonsterCenter();
+                        this.particles.addFloatingText(`Vỡ Khiên Boss -${absorbed}`, mPos.x, mPos.y - 25, "#00d2d3");
+                    }
                 }
             }
-        }
 
-        if (actualDmg > 0) {
-            this.monsterHp = Math.max(0, this.monsterHp - actualDmg);
+            if (actualDmg > 0) {
+                this.monsterHp = Math.max(0, this.monsterHp - actualDmg);
+            }
         }
 
         // Hiệu ứng và âm thanh
@@ -364,7 +373,16 @@ class CombatEngine {
             const mPos = this.getMonsterCenter();
             this.particles.emitSlash(mPos.x, mPos.y);
             if (isYChi) {
-                this.particles.addFloatingText(isCrit ? `⚔️ BẠO KÍCH CHUẨN! -${actualDmg}` : `⚔️ SÁT THƯƠNG CHUẨN! -${actualDmg}`, mPos.x, mPos.y - 25, "#ff3d00", true);
+                const hadShield = (this.monsterShield > 0);
+                const tag = hadShield ? " (XUYÊN KHIÊN)!" : "!";
+                this.particles.addFloatingText(isCrit ? `⚔️ BẠO KÍCH CHUẨN${tag} -${actualDmg}` : `⚔️ SÁT THƯƠNG CHUẨN${tag} -${actualDmg}`, mPos.x, mPos.y - 25, "#ff3d00", true);
+                if (capResult.isCapped) {
+                    if (capResult.isBreak) {
+                        this.particles.addFloatingText("PHÁ KIM THÂN!", mPos.x, mPos.y - 48, "#ff9100", true);
+                    } else {
+                        this.particles.addFloatingText("KIM THÂN!", mPos.x, mPos.y - 48, "#ffd700", true);
+                    }
+                }
             } else {
                 this.particles.addFloatingText(isCrit ? `BẠO! -${actualDmg}` : `-${actualDmg}`, mPos.x, mPos.y - 20, isCrit ? "#ffca28" : "#fff", isCrit);
                 if (capResult.isCapped) {
@@ -378,7 +396,11 @@ class CombatEngine {
         }
 
         if (isYChi) {
-            this.addCombatLog(`⚔️ [Ý CHÍ BẤT TẬN] Quyền kình xé toạc hư không, giáng đòn SÁT THƯƠNG CHUẨN ${actualDmg.toLocaleString()} HP lên [${this.monster.name}]!`, "pha-kim-than");
+            if (capResult.isCapped) {
+                this.addCombatLog(`⚔️ [Ý CHÍ BẤT TẬN] Quyền kình xé toạc hư không, XUYÊN KHIÊN giáng đòn SÁT THƯƠNG CHUẨN ${actualDmg.toLocaleString()} HP thẳng vào máu [${this.monster.name}] (Chạm trần Kim Thân ${Math.round(capResult.capPct * 100)}% Máu)!`, "pha-kim-than");
+            } else {
+                this.addCombatLog(`⚔️ [Ý CHÍ BẤT TẬN] Quyền kình xé toạc hư không, XUYÊN KHIÊN giáng đòn SÁT THƯƠNG CHUẨN ${actualDmg.toLocaleString()} HP thẳng vào máu [${this.monster.name}]!`, "pha-kim-than");
+            }
         } else if (capResult.isCapped) {
             if (capResult.isBreak) {
                 this.addCombatLog(`💥 [PHÁ KIM THÂN] Đòn bạo kích xé rách Kim Thân của [${this.monster.name}], gây ${actualDmg.toLocaleString()} sát thương (Trần ${Math.round(capResult.capPct * 100)}% Máu)!`, "pha-kim-than");
@@ -1052,10 +1074,10 @@ class CombatEngine {
                 if (this.particles) {
                     this.particles.emitSlash(pPos.x, pPos.y, "#ff3d00");
                     this.particles.addFloatingText("⚔️ Ý CHÍ BẤT TẬN (8s)!", pPos.x, pPos.y - 35, "#ff9100", true);
-                    this.particles.addFloatingText("+200% TỐC ĐÁNH & SÁT THƯƠNG CHUẨN!", pPos.x, pPos.y - 60, "#ffd700", true);
+                    this.particles.addFloatingText("+300% TỐC ĐÁNH & SÁT THƯƠNG CHUẨN XUYÊN KHIÊN!", pPos.x, pPos.y - 60, "#ffd700", true);
                 }
 
-                this.addCombatLog(`⚔️ [ĐẠI THẦN THÔNG - Ý CHÍ BẤT TẬN] Quyền ý vô song! Trong 8s nhận +200% Tốc Đánh và đòn đánh thường hóa thành SÁT THƯƠNG CHUẨN xé nát quy tắc!`, "buff");
+                this.addCombatLog(`⚔️ [ĐẠI THẦN THÔNG - Ý CHÍ BẤT TẬN] Quyền ý vô song! Trong 8s nhận +300% Tốc Đánh và đòn đánh thường hóa thành SÁT THƯƠNG CHUẨN (800% Vật Lí) ĐÁNH THẲNG VÀO MÁU XUYÊN KHIÊN!`, "buff");
                 break;
             }
 
