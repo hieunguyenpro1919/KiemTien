@@ -239,12 +239,12 @@ p.statVatLi = 500;
 const pStats = p.getTotalStats();
 combat.playerBasicAttack();
 
-const expectedDmg = Math.floor(pStats.vatLi * 8.0); // 500 * 8.0 = 4.000
+const expectedDmg = Math.floor(pStats.vatLi * 80.0); // 500 * 80.0 = 40.000
 const isRegular = (combat.monsterHp === 10000000 - expectedDmg);
 const isCrit = (combat.monsterHp === 10000000 - Math.floor(expectedDmg * 1.75));
-assert(isRegular || isCrit, "Đánh thường phải gây sát thương chuẩn scale theo 800% Công Vật Lí");
+assert(isRegular || isCrit, "Đánh thường phải gây sát thương chuẩn scale theo 8000% Công Vật Lí");
 assert.strictEqual(combat.monsterShield, 5000000, "Đòn đánh Ý Chí Bất Tận phải XUYÊN THẲNG QUA KHIÊN BOSS (khiên không bị trừ và không chặn)");
-console.log("-> PASS 7.3.1: Ý Chí Bất Tận scale 800% Vật Lí, XUYÊN QUA KHIÊN BOSS đánh thẳng vào máu!");
+console.log("-> PASS 7.3.1: Ý Chí Bất Tận scale 8000% Vật Lí, XUYÊN QUA KHIÊN BOSS đánh thẳng vào máu!");
 
 // Test 7.3.2: Tuân thủ Kim Thân Hộ Thể (Damage Cap)
 combat.monsterMaxHp = 1000000; // Boss 1 Triệu HP

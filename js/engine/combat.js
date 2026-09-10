@@ -589,25 +589,44 @@ class CombatEngine {
 
         } else if (skill.type === "ho_the") {
             const shieldAmount = Math.floor(this.playerMaxHp * skill.multiplier);
-            this.playerShield = Math.min(Math.floor(this.playerMaxHp * 1.2), this.playerShield + shieldAmount);
-            this.sound.playShield();
+            const maxShieldCap = Math.max(Math.floor(this.playerMaxHp * 1.2), Math.floor(this.playerMaxHp * (skill.multiplier || 1.2)));
+            this.playerShield = Math.min(maxShieldCap, (this.playerShield || 0) + shieldAmount);
+            if (this.sound && typeof this.sound.playShield === "function") {
+                this.sound.playShield();
+            }
 
             if (this.particles) {
                 this.particles.emitMeditationQi(pPos.x, pPos.y, "#00d2d3");
-                this.particles.addFloatingText(`+${shieldAmount} Khiên`, pPos.x, pPos.y - 20, "#00d2d3");
+                this.particles.addFloatingText(`+${shieldAmount.toLocaleString()} Khiên`, pPos.x, pPos.y - 20, "#00d2d3");
             }
-            this.addCombatLog(`Thi triển [${skill.name}]! Nhận lớp khiên hộ thể ${shieldAmount} HP!`, "buff");
+            this.addCombatLog(`Thi triển [${skill.name}]! Nhận lớp khiên hộ thể ${shieldAmount.toLocaleString()} HP!`, "buff");
 
         } else if (skill.type === "tri_lieu") {
-            const healAmount = Math.floor(pStats.phep * skill.multiplier + this.playerMaxHp * 0.15);
+            let healAmount = Math.floor(pStats.phep * skill.multiplier + this.playerMaxHp * 0.15);
+            if (skill.healFullHp) {
+                healAmount = Math.max(healAmount, this.playerMaxHp);
+            }
             this.playerHp = Math.min(this.playerMaxHp, this.playerHp + healAmount);
-            this.sound.playHeal();
+            if (this.sound && typeof this.sound.playHeal === "function") {
+                this.sound.playHeal();
+            }
+
+            let addedShield = 0;
+            if (skill.shieldMultiplier) {
+                addedShield = Math.floor(this.playerMaxHp * skill.shieldMultiplier);
+                const maxShieldCap = Math.max(Math.floor(this.playerMaxHp * 1.5), (this.playerShield || 0) + addedShield);
+                this.playerShield = Math.min(maxShieldCap, (this.playerShield || 0) + addedShield);
+            }
 
             if (this.particles) {
                 this.particles.emitMeditationQi(pPos.x, pPos.y, "#2ecc71");
-                this.particles.addFloatingText(`+${healAmount} HP`, pPos.x, pPos.y - 20, "#2ecc71");
+                this.particles.addFloatingText(`+${healAmount.toLocaleString()} HP`, pPos.x, pPos.y - 20, "#2ecc71");
+                if (addedShield > 0) {
+                    this.particles.addFloatingText(`+${addedShield.toLocaleString()} Khiên`, pPos.x, pPos.y - 45, "#00d2d3");
+                }
             }
-            this.addCombatLog(`Thi triển [${skill.name}]! Khôi phục ${healAmount} sinh lực!`, "heal");
+            const shieldMsg = addedShield > 0 ? ` và nhận thêm ${addedShield.toLocaleString()} Khiên Hộ Mệnh` : "";
+            this.addCombatLog(`Thi triển [${skill.name}]! Khôi phục ${healAmount.toLocaleString()} sinh lực${shieldMsg}!`, "heal");
         }
 
         if (this.monsterHp <= 0) {

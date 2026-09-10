@@ -66,6 +66,7 @@ if (btFail.success || !btFail.isVoCucBlocked) {
 
 // Đánh bại Ải 22 (stage_vo_cuc)
 p2.clearedStages.push("stage_vo_cuc");
+p2.breakthroughBonusRate = 100; // Đảm bảo tỉ lệ thành công 100% không bị RNG
 console.log("Đã vượt Ải 22, có thể đột phá không?", p2.canBreakthrough());
 let btSuccess = p2.breakthrough();
 console.log("Kết quả đột phá sau Ải 22:", btSuccess.success, "Title:", btSuccess.newTitle, "isVoCuc:", p2.isVoCuc, "Tier:", p2.tierIndex, "Tinh Nguyên:", p2.tinhNguyen);

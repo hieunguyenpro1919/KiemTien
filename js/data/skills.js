@@ -483,6 +483,36 @@ const SKILL_DATABASE = [
         desc: "Dung hợp ức vạn pháp tắc đạo môn thành một đòn hủy diệt tối hậu. Gây 18,000,000% sát thương Phép."
     },
     {
+        id: "skill_dai_dao_hon_nguyen_thuan",
+        name: "Hỗn Nguyên Thái Sơ Thuẫn",
+        type: "ho_the",
+        reqRealm: 11,
+        reqTier: 400, // Mốc Tầng 401 Cảnh Giới Vô Cực
+        currency: "hon_nguyen",
+        price: 50000000, // 50.000.000 Hỗn Nguyên Thạch (tương đương 50.000.000 Tỷ Linh Thạch)
+        cooldown: 14,
+        multiplier: 5.0, // Nhận khiên bằng 500% Max HP
+        icon: "🛡️",
+        vfx: "golden_shield",
+        desc: "Dẫn khí Hỗn Nguyên thuở sơ khai đúc thành vách ngăn bất hoại, hấp thụ sát thương bằng 500% Máu tối đa."
+    },
+    {
+        id: "skill_dai_dao_bat_diet_sinh_co",
+        name: "Đại Đạo Bất Diệt Luân Hồi Quyết",
+        type: "tri_lieu",
+        reqRealm: 11,
+        reqTier: 700, // Mốc Tầng 701 Cảnh Giới Vô Cực
+        currency: "hon_nguyen",
+        price: 1000000000, // 1.000.000.000 Hỗn Nguyên Thạch (tương đương 1.000.000.000 Tỷ Linh Thạch)
+        cooldown: 15,
+        multiplier: 25.0,
+        healFullHp: true, // Lập tức hồi phục 100% Khí Huyết
+        shieldMultiplier: 0.8, // Nhận thêm khiên bằng 80% HP tối đa
+        icon: "☯️",
+        vfx: "celestial_aura",
+        desc: "Vận chuyển luân hồi đạo pháp, lập tức hồi phục 100% Khí Huyết và nhận thêm khiên hộ mệnh bằng 80% HP tối đa."
+    },
+    {
         id: "skill_cuc_dao_dot_mau",
         name: "Cực Đạo Hồng Mông Thôn Huyết Quyết",
         type: "dot_mau",

@@ -455,8 +455,8 @@ class UIController {
         }
 
         // Trường hợp đặc biệt: Cảnh Giới Vô Cực hoặc Bình Cảnh Tầng 100
-        const isAtVoCucBottleneck = !this.player.isVoCuc && this.player.realmIndex >= 11 && this.player.tierIndex >= 99;
         const hasClearedVoCuc = this.player.clearedStages && this.player.clearedStages.includes("stage_vo_cuc");
+        const isAtVoCucBottleneck = this.player.realmIndex >= 11 && this.player.tierIndex >= 99 && !hasClearedVoCuc;
 
         // Bình cảnh Ải 23: Cảnh Giới Vô Cực sau mỗi 100 tầng đột phá (Tầng 200, 300, 400...)
         const isAtVanThienDiaBottleneck = this.player.isVoCuc && (this.player.tierIndex + 1) % 100 === 0;
@@ -607,7 +607,7 @@ class UIController {
     }
 
     handleBreakthrough() {
-        if (this.player.realmIndex >= 11 && this.player.tierIndex >= 99 && !this.player.isVoCuc) {
+        if (this.player.realmIndex >= 11 && this.player.tierIndex >= 99) {
             const hasClearedVoCuc = this.player.clearedStages && this.player.clearedStages.includes("stage_vo_cuc");
             if (!hasClearedVoCuc) {
                 this.showToast("⚠️ Cần đánh bại [Ải 22: Hư Vô Bản Nguyên Cảnh] mới có thể tiếp tục đột phá!", "warning", "toast-breakthrough");
@@ -674,7 +674,7 @@ class UIController {
     }
 
     handleQuickBreakthrough() {
-        if (this.player.realmIndex >= 11 && this.player.tierIndex >= 99 && !this.player.isVoCuc) {
+        if (this.player.realmIndex >= 11 && this.player.tierIndex >= 99) {
             const hasClearedVoCuc = this.player.clearedStages && this.player.clearedStages.includes("stage_vo_cuc");
             if (!hasClearedVoCuc) {
                 this.showToast("⚠️ Cần đánh bại [Ải 22: Hư Vô Bản Nguyên Cảnh] mới có thể tiếp tục đột phá!", "warning");
@@ -2908,7 +2908,7 @@ class UIController {
                     Yêu cầu Cảnh Giới: <strong style="color: ${canLearn ? '#4caf50' : '#ff5252'}">${reqTitle}</strong>
                 </div>
                 <div class="skill-shop-footer">
-                    <span class="skill-price">💎 ${this.formatNumber(skill.price)} Linh Thạch</span>
+                    <span class="skill-price">${skill.currency === "hon_nguyen" ? `🌀 ${this.formatNumber(skill.price)} Hỗn Nguyên` : `💎 ${this.formatNumber(skill.price)} Linh Thạch`}</span>
                     ${learned
                     ? `<button class="btn-sm btn-disabled" disabled>Đã Lĩnh Ngộ</button>`
                     : canLearn
@@ -3497,7 +3497,9 @@ class UIController {
             } else if (skill.type === "ho_the") {
                 effectHtml = `<div class="tooltip-stat-badge"><span>🛡️ Cương Khí Hộ Thể:</span> <strong>Khiên ${Math.round(skill.multiplier * 100)}% Máu Tối Đa</strong></div>`;
             } else if (skill.type === "tri_lieu") {
-                effectHtml = `<div class="tooltip-stat-badge"><span>💚 Hiệu Quả Hồi Máu:</span> <strong>${Math.round(skill.multiplier * 100)}% Công Phép</strong></div>`;
+                const healDesc = skill.healFullHp ? "Hồi 100% Khí Huyết" : `${Math.round(skill.multiplier * 100)}% Công Phép`;
+                const shieldDesc = skill.shieldMultiplier ? ` + Khiên ${Math.round(skill.shieldMultiplier * 100)}% Max HP` : "";
+                effectHtml = `<div class="tooltip-stat-badge"><span>💚 Hiệu Quả Trị Liệu:</span> <strong>${healDesc}${shieldDesc}</strong></div>`;
             }
         }
 
@@ -3632,7 +3634,7 @@ class UIController {
             const isUnlocked = unlockedList.includes(skill.id);
             const isEquipped = equippedId === skill.id;
             const tier = UltimateSkillSystem.getTier(skill.tier);
-            const tierClass = skill.tier === "THAN" ? "tier-than" : (skill.tier === "THANH" ? "tier-thanh" : "tier-linh");
+            const tierClass = `tier-${(skill.tier || "linh").toLowerCase()}`;
 
             let actionBtn = "";
             if (!isUnlocked) {
@@ -3737,7 +3739,7 @@ class UIController {
         cardsEl.innerHTML = results.map(res => {
             const skill = res.skill;
             const tier = UltimateSkillSystem.getTier(skill.tier);
-            const tierClass = skill.tier === "THAN" ? "tier-than" : (skill.tier === "THANH" ? "tier-thanh" : "tier-linh");
+            const tierClass = `tier-${(skill.tier || "linh").toLowerCase()}`;
 
             const tagHtml = res.isNew
                 ? `<span class="reveal-tag-new">★ MỚI!</span>`

@@ -183,7 +183,7 @@ class Player {
      */
     canBreakthrough() {
         // 1. Kiểm tra điều kiện Ải 22: Tầng 100 Đại Đạo Chí Cao Vô Thượng
-        if (this.realmIndex >= 11 && this.tierIndex >= 99 && !this.isVoCuc) {
+        if (this.realmIndex >= 11 && this.tierIndex >= 99) {
             const hasClearedVoCuc = this.clearedStages && this.clearedStages.includes("stage_vo_cuc");
             if (!hasClearedVoCuc) {
                 return false;
@@ -257,8 +257,8 @@ class Player {
     breakthrough() {
         const maxTuVi = this.getMaxTuVi();
 
-        // 1. Kiểm tra điều kiện Ải 22 cho người chơi Tầng 100 Đại Đạo Chí Cao Vô Thượng (chưa bước vào Vô Cực)
-        if (this.realmIndex >= 11 && this.tierIndex >= 99 && !this.isVoCuc) {
+        // 1. Kiểm tra điều kiện Ải 22 cho người chơi Tầng 100 Đại Đạo Chí Cao Vô Thượng (chưa bước vào Vô Cực hoặc chưa vượt Ải 22)
+        if (this.realmIndex >= 11 && this.tierIndex >= 99) {
             const hasClearedVoCuc = this.clearedStages && this.clearedStages.includes("stage_vo_cuc");
             if (!hasClearedVoCuc) {
                 return {
@@ -436,7 +436,7 @@ class Player {
 
         for (let i = 0; i < maxIterations; i++) {
             // Kiểm tra các điều kiện bình cảnh trước khi đột phá
-            if (this.realmIndex >= 11 && this.tierIndex >= 99 && !this.isVoCuc) {
+            if (this.realmIndex >= 11 && this.tierIndex >= 99) {
                 const hasClearedVoCuc = this.clearedStages && this.clearedStages.includes("stage_vo_cuc");
                 if (!hasClearedVoCuc) {
                     stopReason = "blocked_stage_22";
@@ -751,12 +751,33 @@ class Player {
             return { success: false, msg: `Chưa đạt cảnh giới yêu cầu để lĩnh ngộ (${RealmSystem.getFullRealmTitle(skill.reqRealm, skill.reqTier)})!` };
         }
 
-        // Kiểm tra tiền Linh Thạch
-        if (this.linhThach < skill.price) {
-            return { success: false, msg: "Không đủ Linh Thạch để thỉnh bí tịch!" };
+        // Kiểm tra tiền tệ (Hỗn Nguyên Thạch hoặc Linh Thạch)
+        const isHonNguyen = skill.currency === "hon_nguyen";
+        if (isHonNguyen) {
+            const currentHN = this.honNguyen || 0;
+            if (currentHN >= skill.price) {
+                this.honNguyen -= skill.price;
+            } else {
+                // Tự động nén từ Linh Thạch nếu có đủ (1 Tỷ Linh Thạch = 1 Hỗn Nguyên)
+                const needHN = skill.price - currentHN;
+                const needLT = needHN * 1000000000;
+                if ((this.linhThach || 0) >= needLT) {
+                    this.linhThach -= needLT;
+                    this.honNguyen = 0;
+                } else {
+                    return { 
+                        success: false, 
+                        msg: `Không đủ Hỗn Nguyên Thạch! Cần ${skill.price.toLocaleString()} 🌀 (hoặc ${(skill.price * 1000000000).toLocaleString("vi-VN")} 💎 Linh Thạch).` 
+                    };
+                }
+            }
+        } else {
+            if (this.linhThach < skill.price) {
+                return { success: false, msg: "Không đủ Linh Thạch để thỉnh bí tịch!" };
+            }
+            this.linhThach -= skill.price;
         }
 
-        this.linhThach -= skill.price;
         this.learnedSkills.push(skillId);
 
         // Tự động trang bị vào ô trống nếu còn slot
