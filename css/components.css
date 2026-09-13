@@ -3240,6 +3240,17 @@
     box-shadow: 0 6px 25px rgba(255, 215, 0, 0.7);
 }
 
+.btn-roll-all {
+    background: linear-gradient(135deg, #7b1fa2, #00b0ff);
+    border: 1px solid #b388ff;
+    color: #fff;
+}
+
+.btn-roll-all:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(0, 176, 255, 0.6);
+}
+
 /* --- BÁCH KHOA TOÀN THƯ ĐẠI THẦN THÔNG (CODEX) --- */
 .gacha-codex-grid {
     display: grid;
@@ -3507,4 +3518,730 @@
     padding: 12px;
     color: var(--text-muted);
     font-size: 12px;
+}
+
+/* ==========================================================================
+   HỆ THỐNG TAM ĐẠI THẦN THÚ & CƠ CHẾ NUÔI DƯỠNG (DIVINE BEAST SYSTEM)
+   ========================================================================== */
+
+.pets-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Header Banner Thần Thú */
+.pets-header-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 27, 75, 0.95) 50%, rgba(15, 23, 42, 0.9) 100%);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 16px;
+    padding: 20px 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 215, 0, 0.08);
+}
+
+.pets-header-left {
+    flex: 1;
+    min-width: 300px;
+}
+
+.pets-main-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #ffd700;
+    margin: 0 0 8px 0;
+    text-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+    letter-spacing: 0.5px;
+}
+
+.pets-subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.5;
+}
+
+/* Header Active Status */
+.pet-active-badge-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid #10b981;
+    border-radius: 30px;
+    padding: 8px 18px;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+}
+
+.pet-inactive-badge-bar {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 30px;
+    padding: 8px 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.active-pulse-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #00e676;
+    box-shadow: 0 0 10px #00e676;
+    animation: pulseGlow 1.5s infinite alternate;
+}
+
+.pet-realm-chip {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1px solid currentColor;
+    font-weight: 600;
+}
+
+/* 3 Thẻ Chọn Thần Thú (Selector Grid) */
+.pet-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.pet-selector-card {
+    position: relative;
+    background: rgba(15, 23, 42, 0.85);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.pet-selector-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--pet-theme);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 18px var(--pet-theme);
+}
+
+.pet-selector-card.is-selected {
+    border-color: var(--pet-theme);
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+    box-shadow: 0 0 25px var(--pet-theme), inset 0 0 15px rgba(255, 255, 255, 0.05);
+}
+
+.pet-selector-card.is-active {
+    border-image: linear-gradient(to bottom right, #ffd700, var(--pet-theme)) 1;
+}
+
+.pet-selector-card.is-locked {
+    opacity: 0.75;
+    filter: grayscale(35%);
+}
+
+.pet-card-glow {
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, var(--pet-theme) 0%, transparent 65%);
+    opacity: 0.06;
+    pointer-events: none;
+}
+
+.pet-card-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.pet-card-icon-box {
+    font-size: 38px;
+    line-height: 1;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pet-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.pet-card-name {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.pet-card-role {
+    align-self: flex-start;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.pet-card-mid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pet-card-status-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.badge-active {
+    background: rgba(255, 215, 0, 0.2);
+    color: #ffd700;
+    border: 1px solid #ffd700;
+}
+
+.badge-unlocked {
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    border: 1px solid #38bdf8;
+}
+
+.badge-locked {
+    background: rgba(148, 163, 184, 0.1);
+    color: #94a3b8;
+    border: 1px solid #475569;
+}
+
+.pet-card-shards {
+    font-size: 11px;
+    color: #cbd5e1;
+}
+
+.pet-card-quick-stats {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* Khu Vực Chi Tiết & Nuôi Dưỡng (2 Cột) */
+.pet-details-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 20px;
+}
+
+.pet-col-left, .pet-col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Giao diện Locked Showcase */
+.pet-locked-showcase {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    padding: 36px;
+    background: radial-gradient(circle at center, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border: 1px dashed rgba(255, 215, 0, 0.4);
+    border-radius: 16px;
+}
+
+.pet-locked-avatar-wrap {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+}
+
+.pet-locked-icon {
+    font-size: 72px;
+    opacity: 0.35;
+    filter: blur(1px);
+}
+
+.pet-locked-overlay-icon {
+    position: absolute;
+    font-size: 36px;
+    color: #ffd700;
+    filter: drop-shadow(0 0 10px rgba(0,0,0,0.8));
+}
+
+.pet-locked-info {
+    flex: 1;
+}
+
+.pet-locked-title {
+    font-size: 24px;
+    font-weight: 800;
+    margin: 0 0 8px 0;
+}
+
+.pet-locked-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.pet-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 6px;
+}
+
+.pet-locked-lore {
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    font-style: italic;
+}
+
+.pet-locked-previews {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.preview-box {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.preview-box strong {
+    font-size: 13px;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.preview-box p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Thẻ Profile Thần Thú */
+.pet-profile-card {
+    padding: 20px;
+}
+
+.pet-profile-top {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 14px;
+}
+
+.pet-avatar-stage {
+    width: 76px;
+    height: 76px;
+    border-radius: 18px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pet-avatar-icon {
+    font-size: 48px;
+    line-height: 1;
+}
+
+.pet-profile-meta {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pet-profile-name {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0;
+}
+
+.pet-profile-desc {
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin: 0 0 16px 0;
+    font-style: italic;
+}
+
+.pet-deploy-action-wrap {
+    margin-top: 10px;
+}
+
+/* Thẻ Tiến Trình Cảnh Giới */
+.pet-realm-panel {
+    padding: 18px;
+}
+
+.pet-exp-container {
+    margin-top: 10px;
+}
+
+.pet-exp-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #cbd5e1;
+    margin-bottom: 6px;
+}
+
+.pet-exp-bar-outer {
+    width: 100%;
+    height: 14px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.pet-exp-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.4s ease-out;
+}
+
+.btn-breakthrough-pet {
+    background: linear-gradient(135deg, #ffd700, #ff6f00) !important;
+    color: #1a0033 !important;
+    font-weight: 800 !important;
+    font-size: 14px !important;
+    padding: 12px !important;
+    box-shadow: 0 4px 18px rgba(255, 215, 0, 0.4) !important;
+}
+
+.pet-max-badge {
+    text-align: center;
+    padding: 12px;
+    background: rgba(255, 215, 0, 0.15);
+    border: 1px solid #ffd700;
+    border-radius: 8px;
+    color: #ffd700;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+/* Thẻ Nuôi Dưỡng Tu Vi (Feed Pills) */
+.pet-feed-panel {
+    padding: 18px;
+}
+
+.pet-feed-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.pet-feed-pill-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 8px 12px;
+    transition: all 0.2s;
+}
+
+.pet-feed-pill-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 215, 0, 0.3);
+}
+
+.feed-pill-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.feed-pill-icon {
+    font-size: 22px;
+}
+
+.feed-pill-texts {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.feed-pill-name {
+    font-size: 13px;
+}
+
+.feed-pill-gain {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.feed-pill-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-feed-btn {
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid #38bdf8;
+    color: #38bdf8;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-feed-btn:hover {
+    background: #38bdf8;
+    color: #0f172a;
+}
+
+/* Cột Phải: Bảng Thuộc Tính */
+.pet-stats-panel {
+    padding: 18px;
+}
+
+.pet-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.pet-stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
+.pet-stat-item.highlight-stat {
+    grid-column: 1 / -1;
+    background: rgba(255, 215, 0, 0.08);
+    border-color: rgba(255, 215, 0, 0.25);
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.stat-value {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* Thẻ Nội Tại Vĩnh Cửu */
+.pet-passive-panel {
+    padding: 16px 20px;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.7));
+}
+
+.pet-passive-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.passive-icon {
+    font-size: 28px;
+}
+
+.passive-badge {
+    font-size: 10px;
+    font-weight: 700;
+    color: #ffd700;
+    letter-spacing: 0.5px;
+}
+
+.passive-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.passive-desc {
+    margin: 0;
+    font-size: 13px;
+    color: #cbd5e1;
+    line-height: 1.5;
+}
+
+/* Thẻ Thần Thông 12 Cấp (Skill Upgrade Panel) */
+.pet-skill-upgrade-panel {
+    padding: 20px;
+}
+
+.skill-current-box, .skill-next-box {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 10px;
+}
+
+.skill-box-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #ffd700;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.skill-box-desc {
+    margin: 0;
+    font-size: 13px;
+    color: #e2e8f0;
+    line-height: 1.5;
+}
+
+.skill-upgrade-section {
+    margin-top: 14px;
+}
+
+.skill-cost-checklist {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.checklist-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #cbd5e1;
+    margin-bottom: 4px;
+}
+
+.cost-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.cost-item.is-met {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.cost-item.is-unmet {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.cost-status-icon {
+    font-weight: 800;
+    width: 14px;
+}
+
+/* Thần Thú Trợ Chiến Trong Đấu Trường (Combat Pet Widget) */
+.combat-pet-widget {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 12px;
+    padding: 8px 14px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    margin-top: 10px;
+}
+
+.combat-pet-avatar-box {
+    width: 44px;
+    height: 44px;
+    font-size: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.combat-pet-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.combat-pet-status-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Thẻ kết quả rút Thần Thú trong Gacha Modal */
+.pet-reveal-card {
+    background: radial-gradient(circle at center, rgba(255, 215, 0, 0.15) 0%, rgba(15, 23, 42, 0.95) 80%) !important;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.4) !important;
+}
+
+/* Responsive Cho Giao Diện Thần Thú */
+@media (max-width: 900px) {
+    .pet-selector-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pet-details-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .pet-locked-showcase {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .pet-locked-previews {
+        grid-template-columns: 1fr;
+    }
 }

@@ -35,6 +35,17 @@ class CombatEngine {
         this.playerAttackTimer = 0;
         this.monsterAttackTimer = 0;
 
+        // Thần Thú Trợ Chiến
+        this.pet = null;
+        this.petStats = null;
+        this.petHp = 0;
+        this.petMaxHp = 0;
+        this.petShield = 0;
+        this.petAttackTimer = 0;
+        this.petSkillTimer = 0;
+        this.isPetBuffDoubleDmg = false;
+        this.petRageBuffTimer = 0;
+
         // Tốc độ trận đấu (x1, x2, x3)
         const savedSpeed = (typeof localStorage !== "undefined") ? parseInt(localStorage.getItem("tu_tien_combat_speed") || "1", 10) : 1;
         this.speedMultiplier = [1, 2, 3].includes(savedSpeed) ? savedSpeed : 1;
@@ -94,6 +105,56 @@ class CombatEngine {
         this.monsterBurnPctPerTick = 0.03;
         this.monsterBurnBonus = 0;
 
+        // Khởi tạo Thần Thú Trợ Chiến
+        this.pet = null;
+        this.petStats = null;
+        this.petHp = 0;
+        this.petMaxHp = 0;
+        this.petShield = 0;
+        this.petAttackTimer = 0;
+        this.petSkillTimer = 0;
+        this.isPetBuffDoubleDmg = false;
+        this.petRageBuffTimer = 0;
+
+        if (this.player.activePetId && this.player.pets && this.player.pets[this.player.activePetId]?.unlocked) {
+            const petId = this.player.activePetId;
+            const petData = this.player.pets[petId];
+            const petSys = (typeof PetSystem !== "undefined") ? PetSystem : (typeof require !== "undefined" ? require("../data/pets.js").PetSystem : null);
+            if (petSys) {
+                const petDef = petSys.getPetById(petId);
+                const calcStats = petSys.calculatePetStats(petId, petData.realm);
+                const sInfo = petSys.getSkillInfo(petId, petData.skillLevel);
+                this.pet = {
+                    ...petDef,
+                    realm: petData.realm,
+                    skillLevel: petData.skillLevel,
+                    stats: calcStats,
+                    skillInfo: sInfo
+                };
+                this.petStats = calcStats;
+                this.petHp = calcStats.maxHp;
+                this.petMaxHp = calcStats.maxHp;
+                this.petShield = 0;
+
+                // Kích hoạt Nội tại Thần Thú khi vào trận:
+                if (petId === "pet_tank") {
+                    // Tank [Bá Thể Bất Diệt]: Tăng 20% Máu tối đa cho cả Chủ & Thú, Thú nhận khiên 200% Max HP
+                    this.playerMaxHp = Math.floor(this.playerMaxHp * 1.2);
+                    this.playerHp = this.playerMaxHp;
+                    this.petMaxHp = Math.floor(this.petMaxHp * 1.2);
+                    this.petHp = this.petMaxHp;
+                    this.petShield = Math.floor(this.petMaxHp * 2.0);
+                    this.addCombatLog(`🐢 [HỘ VỆ] [${this.pet.name}] xuất chiến! Kích hoạt [Bá Thể Bất Diệt]: Tăng 20% Máu cho chủ và thú, ngưng kết ${this.petShield.toLocaleString()} Khiên Hộ Thể!`, "buff");
+                } else if (petId === "pet_buff") {
+                    // Buff [Vĩnh Kiếp]: Sát thương của chủ nhân vĩnh viễn tăng gấp 2 lần (+100% Total DMG)
+                    this.isPetBuffDoubleDmg = true;
+                    this.addCombatLog(`🦅 [PHỤ TRỢ] [${this.pet.name}] xuất chiến! Kích hoạt [Vĩnh Kiếp]: Toàn bộ sát thương của Đạo Hữu tăng gấp 2 lần (+100% Total DMG)!`, "buff");
+                } else if (petId === "pet_dps") {
+                    this.addCombatLog(`🐉 [KÍCH SÁT] [${this.pet.name}] xuất chiến! Kích hoạt [Hủy Thiên Diệt Địa]: Mọi đòn đánh xé toạc chân thân, bỏ qua Giáp & Kim Thân!`, "buff");
+                }
+            }
+        }
+
         // Tạo quái vật từ dữ liệu ải
         this.monster = {
             ...stage.monster,
@@ -139,6 +200,8 @@ class CombatEngine {
         this.monsterBurnTickTimer = 0;
         this.ultimateBuffYChi = 0;
         this.ultimateBuffBatKham = 0;
+        this.isPetBuffDoubleDmg = false;
+        this.petRageBuffTimer = 0;
         if (this.combatInterval) {
             clearInterval(this.combatInterval);
             this.combatInterval = null;
@@ -200,12 +263,15 @@ class CombatEngine {
             this.monsterBurnTickTimer = 0;
         }
 
-        // Xử lý đếm lùi buff của Đại Thần Thông
+        // Xử lý đếm lùi buff của Đại Thần Thông & Thần Thú
         if (this.ultimateBuffYChi > 0) {
             this.ultimateBuffYChi = Math.max(0, this.ultimateBuffYChi - effectiveDt);
         }
         if (this.ultimateBuffBatKham > 0) {
             this.ultimateBuffBatKham = Math.max(0, this.ultimateBuffBatKham - effectiveDt);
+        }
+        if (this.petRageBuffTimer > 0) {
+            this.petRageBuffTimer = Math.max(0, this.petRageBuffTimer - effectiveDt);
         }
 
         // Giảm thời gian hồi chiêu của 3 kỹ năng
@@ -229,13 +295,45 @@ class CombatEngine {
             }
         }
 
-        // Đòn đánh thường của người chơi (mỗi 1.5 giây, tăng 300% tốc đánh khi kích hoạt Ý Chí Bất Tận)
+        // Đòn đánh thường của người chơi (mỗi 1.5 giây, tăng 300% tốc đánh khi kích hoạt Ý Chí Bất Tận, tăng 10x khi Cuồng Nộ)
         if (this.playerStunTimer <= 0) {
-            const atkSpeedMult = (this.ultimateBuffYChi > 0) ? 4.0 : 1.0;
+            let atkSpeedMult = (this.ultimateBuffYChi > 0) ? 4.0 : 1.0;
+            if (this.petRageBuffTimer > 0) {
+                atkSpeedMult = Math.max(atkSpeedMult, 10.0);
+            }
             this.playerAttackTimer += effectiveDt * atkSpeedMult;
             if (this.playerAttackTimer >= 1.5) {
                 this.playerAttackTimer = 0;
                 this.playerBasicAttack();
+            }
+        }
+
+        // Xử lý hành động của Thần Thú Trợ Chiến
+        if (this.pet && this.monsterHp > 0 && this.playerHp > 0) {
+            if (this.pet.id === "pet_dps") {
+                // Thần Thú DPS tung chiêu Tước Đoạt
+                this.petSkillTimer += effectiveDt;
+                const skillCd = this.pet.skillInfo?.cooldown || 20;
+                if (this.petSkillTimer >= skillCd) {
+                    this.petSkillTimer = 0;
+                    this.petCastDpsSkill();
+                }
+
+                // Thần Thú DPS đánh thường (Sát thương chuẩn)
+                this.petAttackTimer += effectiveDt;
+                const petAtkSpd = this.petStats?.attackSpeed || 1.6;
+                if (this.petAttackTimer >= petAtkSpd) {
+                    this.petAttackTimer = 0;
+                    this.petDpsAttack();
+                }
+            } else if (this.pet.id === "pet_buff") {
+                // Thần Thú Buff tung chiêu Đại Đạo Cuồng Nộ
+                this.petSkillTimer += effectiveDt;
+                const skillCd = this.pet.skillInfo?.cooldown || 25;
+                if (this.petSkillTimer >= skillCd) {
+                    this.petSkillTimer = 0;
+                    this.petCastBuffSkill();
+                }
             }
         }
 
@@ -316,13 +414,18 @@ class CombatEngine {
             // Hiệu ứng "Ý Chí Bất Tận":
             // 1. Tăng mạnh hệ số scale: 800% Công Vật Lí!
             // 2. SÁT THƯƠNG CHUẨN XUYÊN GIÁP & XUYÊN KHIÊN BOSS (đánh thẳng vào máu)
-            // 3. KHÔNG BỎ QUA KIM THÂN: Vẫn tuân thủ Damage Cap của Kim Thân!
+            // 3. KHÔNG BỎ QUA KIM THÂN: Vẫn tuân thủ Damage Cap của Kim Thân (trừ khi có buff Cuồng Nộ)
             let baseDmg = Math.floor(pStats.vatLi * 80.0);
+            if (this.isPetBuffDoubleDmg) baseDmg *= 2;
             actualDmg = Math.max(1, baseDmg);
             if (isCrit) actualDmg = Math.floor(actualDmg * 1.75);
 
-            // Áp dụng Kim Thân Hộ Thể ("nhưng không bỏ qua kim thân")
-            capResult = this.applyDamageCap(actualDmg, isCrit);
+            // Áp dụng Kim Thân Hộ Thể (Trừ khi có buff Cuồng Nộ từ Thần Thú Buff)
+            if (this.petRageBuffTimer > 0) {
+                capResult = { damage: actualDmg, isCapped: false, isBreak: true, capPct: 1 };
+            } else {
+                capResult = this.applyDamageCap(actualDmg, isCrit);
+            }
             actualDmg = capResult.damage;
 
             // ĐÁNH THẲNG VÀO MÁU: BỎ QUA HOÀN TOÀN KHIÊN CỦA BOSS!
@@ -330,11 +433,16 @@ class CombatEngine {
         } else {
             // Sát thương = max(1, (Vật lí + Phép * 0.3) - Giáp quái)
             let baseDmg = pStats.vatLi + Math.floor(pStats.phep * 0.3);
+            if (this.isPetBuffDoubleDmg) baseDmg *= 2;
             actualDmg = Math.max(1, baseDmg - Math.floor(this.monster.defense * 0.4));
             if (isCrit) actualDmg = Math.floor(actualDmg * 1.65);
 
-            // Áp dụng Kim Thân Hộ Thể (isCrit kích hoạt Phá Kim Thân)
-            capResult = this.applyDamageCap(actualDmg, isCrit);
+            // Áp dụng Kim Thân Hộ Thể (Trừ khi có buff Cuồng Nộ từ Thần Thú Buff: Bỏ qua Kim Thân)
+            if (this.petRageBuffTimer > 0) {
+                capResult = { damage: actualDmg, isCapped: false, isBreak: true, capPct: 1 };
+            } else {
+                capResult = this.applyDamageCap(actualDmg, isCrit);
+            }
             actualDmg = capResult.damage;
 
             // Bào mòn khiên Boss trước nếu Boss có khiên
@@ -423,6 +531,107 @@ class CombatEngine {
     }
 
     /**
+     * Đòn đánh thường của Thần Thú Kích Sát (DPS - Cửu U Ma Long)
+     * HOÀN TOÀN BỎ QUA KIM THÂN VÀ HỘ GIÁP & KHIÊN CỦA BOSS (Sát thương chuẩn đánh thẳng vào máu!)
+     */
+    petDpsAttack() {
+        if (!this.isActive || this.monsterHp <= 0 || !this.pet) return;
+
+        // Sát thương chuẩn = Công Vật Lí + Công Phép của Thần Thú
+        const dmg = Math.max(1, (this.petStats?.vatLi || 0) + (this.petStats?.phep || 0));
+
+        // Trừ trực tiếp vào máu Boss (bỏ qua Kim Thân, Giáp và Khiên)
+        this.monsterHp = Math.max(0, this.monsterHp - dmg);
+
+        if (this.sound && typeof this.sound.playThunder === "function") this.sound.playThunder();
+        this.shakeElement("monster-avatar-box");
+
+        if (this.particles) {
+            const mPos = this.getMonsterCenter();
+            if (typeof this.particles.emitThunder === "function") this.particles.emitThunder(mPos.x, mPos.y);
+            if (typeof this.particles.addFloatingText === "function") {
+                this.particles.addFloatingText(`🐉 -${dmg.toLocaleString()} (CHUẨN)`, mPos.x, mPos.y - 35, "#ff3838", true);
+            }
+        }
+        this.addCombatLog(`🐉 [${this.pet.name}] vung vuốt xé toạc hư không, gây ${dmg.toLocaleString()} sát thương chuẩn (XUYÊN KIM THÂN & GIÁP)!`, "crit");
+
+        if (this.monsterHp <= 0) {
+            this.updateUI();
+            this.stopBattle();
+            const delay = Math.max(180, Math.round(450 / (this.speedMultiplier || 1)));
+            setTimeout(() => {
+                this.handleVictory();
+            }, delay);
+        }
+    }
+
+    /**
+     * Thi triển Thần Thông [Tước Đoạt Sinh Mệnh] của Thần Thú DPS
+     * Đoạt % Máu hiện tại của Boss và hồi máu đồng thời cho cả Thần Thú và Chủ Nhân
+     */
+    petCastDpsSkill() {
+        if (!this.isActive || this.monsterHp <= 0 || !this.pet) return;
+
+        const drainPct = (this.pet.skillInfo?.drainPct || 20) / 100;
+        const drained = Math.max(1, Math.floor(this.monsterHp * drainPct));
+
+        // Trừ trực tiếp máu Boss
+        this.monsterHp = Math.max(0, this.monsterHp - drained);
+
+        // Hồi phục đồng thời cho Thần Thú và Chủ Nhân
+        const oldPlayerHp = this.playerHp;
+        this.playerHp = Math.min(this.playerMaxHp, this.playerHp + drained);
+        const playerHealed = this.playerHp - oldPlayerHp;
+
+        this.petHp = Math.min(this.petMaxHp, (this.petHp || 0) + drained);
+
+        if (this.sound && typeof this.sound.playHeal === "function") this.sound.playHeal();
+        this.shakeElement("monster-avatar-box");
+
+        if (this.particles) {
+            const mPos = this.getMonsterCenter();
+            const pPos = this.getPlayerCenter();
+            if (typeof this.particles.emitFire === "function") this.particles.emitFire(mPos.x, mPos.y);
+            if (typeof this.particles.addFloatingText === "function") {
+                this.particles.addFloatingText(`🩸 TƯỚC ĐOẠT -${drained.toLocaleString()}`, mPos.x, mPos.y - 35, "#ff1744", true);
+                this.particles.addFloatingText(`+${playerHealed.toLocaleString()} HP`, pPos.x, pPos.y - 20, "#2ecc71");
+            }
+        }
+
+        this.addCombatLog(`🩸 [${this.pet.name}] thi triển [${this.pet.skillInfo?.name || "Tước Đoạt"}]! Cưỡng chế đoạt ${drained.toLocaleString()} Máu của [${this.monster.name}], hồi phục cho Thần Thú và Đạo Hữu!`, "heal");
+
+        if (this.monsterHp <= 0) {
+            this.updateUI();
+            this.stopBattle();
+            const delay = Math.max(180, Math.round(450 / (this.speedMultiplier || 1)));
+            setTimeout(() => {
+                this.handleVictory();
+            }, delay);
+        }
+    }
+
+    /**
+     * Thi triển Thần Thông [Đại Đạo Cuồng Nộ] của Thần Thú Buff (Cửu Thiên Phượng Hoàng)
+     * Tăng 10x tốc đánh và đòn đánh xuyên Kim Thân cho chủ nhân
+     */
+    petCastBuffSkill() {
+        if (!this.isActive || this.monsterHp <= 0 || !this.pet) return;
+
+        const duration = this.pet.skillInfo?.duration || 5.0;
+        this.petRageBuffTimer = duration;
+
+        if (this.sound && typeof this.sound.playFireSpell === "function") this.sound.playFireSpell();
+
+        if (this.particles) {
+            const pPos = this.getPlayerCenter();
+            this.particles.emitMeditationQi(pPos.x, pPos.y, "#ffd700");
+            this.particles.addFloatingText("🔥 ĐẠI ĐẠO CUỒNG NỘ (10x SPD)!", pPos.x, pPos.y - 45, "#ffd700", true);
+        }
+
+        this.addCombatLog(`🔥 [${this.pet.name}] khai mở [Đại Đạo Cuồng Nộ]! Chủ Nhân nhận gấp 10 lần Tốc độ đánh và ĐÒN ĐÁNH XUYÊN KIM THÂN trong ${duration}s!`, "buff");
+    }
+
+    /**
      * Thi triển 1 trong 3 kỹ năng được trang bị
      */
     useSkill(slotIndex) {
@@ -453,6 +662,7 @@ class CombatEngine {
         if (skill.type === "vat_li") {
             const isCrit = Math.random() * 100 < pStats.baoKich;
             let rawDmg = Math.floor(pStats.vatLi * skill.multiplier);
+            if (this.isPetBuffDoubleDmg) rawDmg *= 2;
             let finalDmg = Math.max(1, rawDmg - Math.floor(this.monster.defense * 0.3));
             if (isCrit) finalDmg = Math.floor(finalDmg * 1.7);
 
@@ -505,6 +715,7 @@ class CombatEngine {
         } else if (skill.type === "phep") {
             const isCrit = Math.random() * 100 < pStats.baoKich;
             let rawDmg = Math.floor(pStats.phep * skill.multiplier);
+            if (this.isPetBuffDoubleDmg) rawDmg *= 2;
             const mResist = this.monster.magicResist !== undefined ? this.monster.magicResist : Math.floor(this.monster.defense * 0.7);
             let finalDmg = Math.max(1, rawDmg - Math.floor(mResist * 0.3));
             if (isCrit) finalDmg = Math.floor(finalDmg * 1.7);
@@ -648,6 +859,65 @@ class CombatEngine {
      */
     monsterAttack() {
         if (!this.isActive || this.playerHp <= 0) return;
+
+        // Nếu Thần Thú Hộ Vệ (Tank) còn sống: Quái sẽ tấn công Thần Thú trước (Bia thịt hộ chủ)
+        if (this.pet && this.pet.id === "pet_tank" && this.petHp > 0) {
+            let petRawDmg = this.monster.attack;
+            let petActualDmg = Math.max(1, petRawDmg - Math.floor((this.petStats?.phongThu || 0) * 0.5));
+
+            // Khiên Thần Thú hấp thụ trước
+            if (this.petShield > 0) {
+                if (this.petShield >= petActualDmg) {
+                    this.petShield -= petActualDmg;
+                    if (this.particles) {
+                        const pPos = this.getPlayerCenter();
+                        this.particles.addFloatingText(`Huyền Vũ Chắn -${petActualDmg}`, pPos.x - 30, pPos.y - 20, "#00d2d3");
+                    }
+                    petActualDmg = 0;
+                } else {
+                    petActualDmg -= this.petShield;
+                    this.petShield = 0;
+                }
+            }
+
+            if (petActualDmg > 0) {
+                this.petHp = Math.max(0, this.petHp - petActualDmg);
+                if (this.particles) {
+                    const pPos = this.getPlayerCenter();
+                    this.particles.addFloatingText(`Huyền Vũ -${petActualDmg}`, pPos.x - 30, pPos.y - 20, "#ff5252");
+                }
+            }
+
+            // Kích hoạt Phản Sát: Phản ngược % sát thương về phía Boss
+            const reflectPct = (this.pet.skillInfo?.reflectPct || 10) / 100;
+            const reflectedDmg = Math.max(1, Math.floor(petRawDmg * reflectPct));
+            this.monsterHp = Math.max(0, this.monsterHp - reflectedDmg);
+
+            if (this.particles) {
+                const mPos = this.getMonsterCenter();
+                this.particles.emitSlash(mPos.x, mPos.y, "#ffd700");
+                this.particles.addFloatingText(`💥 PHẢN -${reflectedDmg.toLocaleString()}`, mPos.x, mPos.y - 30, "#ffd700", true);
+            }
+            if (this.sound && typeof this.sound.playShield === "function") this.sound.playShield();
+            this.shakeElement("monster-avatar-box");
+            this.addCombatLog(`🐢 [PHẢN SÁT] [${this.pet.name}] gánh ${petRawDmg} sát thương và phản ngược ${reflectedDmg.toLocaleString()} sát thương về phía [${this.monster.name}]!`, "damage");
+
+            if (this.petHp <= 0) {
+                this.petHp = 0;
+                this.addCombatLog(`⚠️ [${this.pet.name}] đã kiệt sức trọng thương! Kẻ địch chuyển mục tiêu sang Đạo Hữu!`, "warning");
+            }
+
+            if (this.monsterHp <= 0) {
+                this.updateUI();
+                this.stopBattle();
+                const delay = Math.max(180, Math.round(450 / (this.speedMultiplier || 1)));
+                setTimeout(() => {
+                    this.handleVictory();
+                }, delay);
+                return;
+            }
+            return; // Quái đã ra đòn xong lượt này vào Thú
+        }
 
         this.addRage(4); // Bị đánh +4 Nộ Khí
 
@@ -1363,6 +1633,52 @@ class CombatEngine {
                 }
             } else {
                 enrageBox.style.display = "none";
+            }
+        }
+
+        // Cập nhật hiển thị Thần Thú trong combat
+        const petWidget = document.getElementById("combat-pet-widget");
+        if (petWidget) {
+            if (this.pet) {
+                petWidget.style.display = "flex";
+                const petIcon = document.getElementById("combat-pet-icon");
+                const petName = document.getElementById("combat-pet-name");
+                const petHpBar = document.getElementById("combat-pet-hp-bar");
+                const petShieldBar = document.getElementById("combat-pet-shield-bar");
+                const petHpText = document.getElementById("combat-pet-hp-text");
+                const petStatus = document.getElementById("combat-pet-status");
+
+                if (petIcon) petIcon.innerText = this.pet.icon || "🐾";
+                if (petName) petName.innerText = this.pet.name || "Thần Thú";
+
+                const petHpPct = Math.max(0, Math.min(100, (this.petHp / this.petMaxHp) * 100));
+                if (petHpBar) petHpBar.style.width = `${petHpPct}%`;
+
+                if (petShieldBar) {
+                    const petShieldPct = Math.min(100, ((this.petShield || 0) / this.petMaxHp) * 100);
+                    petShieldBar.style.width = `${petShieldPct}%`;
+                    petShieldBar.style.display = (this.petShield > 0) ? "block" : "none";
+                }
+
+                if (petHpText) {
+                    const shieldStr = (this.petShield > 0) ? ` (+${formatHp(this.petShield)} 🛡️)` : "";
+                    petHpText.innerText = `${formatHp(this.petHp)} / ${formatHp(this.petMaxHp)}${shieldStr}`;
+                }
+
+                if (petStatus) {
+                    if (this.petHp <= 0) {
+                        petStatus.innerText = "Trọng Thương";
+                        petStatus.style.color = "#ff5252";
+                    } else if (this.petRageBuffTimer > 0) {
+                        petStatus.innerText = `Cuồng Nộ (${this.petRageBuffTimer.toFixed(1)}s)`;
+                        petStatus.style.color = "#ffd700";
+                    } else {
+                        petStatus.innerText = this.pet.roleName || "";
+                        petStatus.style.color = this.pet.themeColor || "#fff";
+                    }
+                }
+            } else {
+                petWidget.style.display = "none";
             }
         }
     }

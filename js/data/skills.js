@@ -590,3 +590,6 @@ if (typeof window !== "undefined") {
     window.SKILL_DATABASE = SKILL_DATABASE;
     window.SkillSystem = SkillSystem;
 }
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = { SKILL_DATABASE, SkillSystem };
+}

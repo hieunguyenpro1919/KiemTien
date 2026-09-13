@@ -170,8 +170,35 @@ class UltimateSkillSystem {
             }
         }
 
-        const pool = this.getSkillsByTier(chosenTier);
-        if (pool.length === 0) return ULTIMATE_SKILL_DATABASE[0];
+        const pool = this.getSkillsByTier(chosenTier) || [];
+
+        if (chosenTier === "than") {
+            const petSys = (typeof PetSystem !== "undefined") ? PetSystem : (typeof require !== "undefined" ? require("./pets.js").PetSystem : null);
+            if (petSys && typeof petSys.getAllPets === "function") {
+                const pets = petSys.getAllPets().map(p => ({
+                    id: p.id,
+                    petId: p.id,
+                    name: p.name,
+                    icon: p.icon,
+                    tier: "than",
+                    isPet: true,
+                    roleName: p.roleName,
+                    desc: p.lore,
+                    themeColor: p.themeColor,
+                    badgeBg: p.badgeBg
+                }));
+                const combinedThanPool = [...pool, ...pets];
+                if (combinedThanPool.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * combinedThanPool.length);
+                    return combinedThanPool[randomIndex];
+                }
+            }
+        }
+
+        if (!pool || pool.length === 0) {
+            const all = this.getAllSkills();
+            return all.length > 0 ? all[0] : null;
+        }
 
         const randomIndex = Math.floor(Math.random() * pool.length);
         return pool[randomIndex];

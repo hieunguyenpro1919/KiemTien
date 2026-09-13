@@ -93,6 +93,11 @@
                 <span class="nav-text-full">Đài Cầu Đạo</span>
                 <span class="nav-text-short">Cầu Đạo</span>
             </button>
+            <button class="nav-tab-btn" data-tab="pets" id="nav-tab-pets" style="display: none;">
+                <span class="nav-icon">🐾</span>
+                <span class="nav-text-full">Linh Thú Trợ Chiến</span>
+                <span class="nav-text-short">Linh Thú</span>
+            </button>
             <button class="nav-tab-btn" data-tab="shop">
                 <span class="nav-icon">🏪</span>
                 <span class="nav-text-full">Bách Bảo Các</span>
@@ -471,7 +476,7 @@
                                 <span class="gacha-stat-label">Vé Tầm Đạo</span>
                                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                     <strong class="gacha-stat-value text-gold" id="gacha-tickets-count">0 Vé</strong>
-                                    <button class="btn-xs btn-outline-gold" onclick="gameUI.switchTab('shop')">Mua Thêm (Bảo Các)</button>
+                                    <button class="btn-xs btn-outline-gold" onclick="gameUI.openShopForGachaTickets()">Mua Thêm (Bảo Các)</button>
                                 </div>
                             </div>
                         </div>
@@ -498,8 +503,8 @@
                         </div>
                         <div class="altar-rates-badge">
                             <span>Tỉ Lệ: </span>
-                            <strong style="color: #ffd700;">0.2% Thần Cấp (Bảo hiểm 500)</strong> • 
-                            <strong style="color: #e040fb;">2.0% Thánh Cấp (Bảo hiểm 100)</strong> • 
+                            <strong style="color: #ffd700;">0.2% Thần Cấp (Thần Thú & Thần Thông - BH 500)</strong> • 
+                            <strong style="color: #e040fb;">2.0% Thánh Cấp (BH 100)</strong> • 
                             <strong style="color: #00e676;">97.8% Linh Cấp</strong>
                         </div>
                         <!-- Thanh Tiến Độ Bảo Hiểm (Pity Trackers) -->
@@ -538,7 +543,29 @@
                                     <small>Tiêu hao 10 Vé Tầm Đạo</small>
                                 </div>
                             </button>
+                            <button class="btn-gacha-roll btn-roll-all" id="btn-gacha-roll-all" onclick="gameUI.handleGachaRollAll()">
+                                <span class="roll-icon">⚡</span>
+                                <div class="roll-texts">
+                                    <strong>Dùng Hết Vé</strong>
+                                    <small id="gacha-roll-all-desc">Tầm đạo toàn bộ vé</small>
+                                </div>
+                            </button>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Bách Khoa Tam Đại Thần Thú Thượng Cổ (Divine Beast Codex) -->
+                <div class="panel gacha-codex-panel gacha-pets-panel" style="margin-top: 20px; border: 1px solid rgba(255, 215, 0, 0.35); background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 27, 75, 0.9));">
+                    <div class="panel-header">
+                        <div>
+                            <h2 class="panel-title" style="color: #ffd700;"><span>🐾</span> TAM ĐẠI THẦN THÚ THƯỢNG CỔ (THẦN CẤP - TỈ LỆ 0.2% / BẢO HIỂM 500)</h2>
+                            <span style="font-size: 13px; color: #cbd5e1;">
+                                3 Thần Thú độc bản cùng xuất hiện trong pool quay Thần Cấp. Rút lần đầu mở khóa Tab Linh Thú & xuất trận trợ chiến, rút trùng nhận +1 Mảnh Thú Hồn!
+                            </span>
+                        </div>
+                    </div>
+                    <div class="gacha-codex-grid gacha-pets-codex-grid" id="gacha-pets-codex-grid">
+                        <!-- Rendered by JavaScript -->
                     </div>
                 </div>
 
@@ -555,6 +582,32 @@
                     <div class="gacha-codex-grid" id="gacha-codex-grid">
                         <!-- Rendered by JavaScript -->
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB: LINH THÚ TRỢ CHIẾN (TAM ĐẠI THẦN THÚ) ================= -->
+        <section class="tab-page" id="tab-pets" style="display: none;">
+            <div class="pets-container">
+                <!-- Header Banner -->
+                <div class="pets-header-banner">
+                    <div class="pets-header-left">
+                        <h2 class="pets-main-title">🐾 TAM ĐẠI THẦN THÚ & CƠ CHẾ NUÔI DƯỠNG</h2>
+                        <p class="pets-subtitle">
+                            Đồng hành cùng 3 Thần Thú thượng cổ độc bản: <strong>Bắc Hải Huyền Vũ</strong> (Hộ Vệ), <strong>Cửu U Ma Long</strong> (Kích Sát), <strong>Cửu Thiên Phượng Hoàng</strong> (Phụ Trợ). Bồi dưỡng Tu Vi bằng Đan Dược và nâng cấp Thần Thông 12 Cấp để khai mở uy lực chấn thế!
+                        </p>
+                    </div>
+                    <div class="pets-header-status" id="pets-header-active-status"></div>
+                </div>
+
+                <!-- 3 Thẻ Chọn Thần Thú -->
+                <div class="pet-selector-grid" id="pet-selector-grid">
+                    <!-- Rendered by JavaScript -->
+                </div>
+
+                <!-- Khu Vực Chi Tiết & Nuôi Dưỡng Thần Thú Được Chọn -->
+                <div class="pet-details-layout" id="pet-details-layout">
+                    <!-- Rendered by JavaScript -->
                 </div>
             </div>
         </section>
@@ -825,6 +878,24 @@
                                 <div class="combat-rage-bar-fill" id="combat-player-rage-bar" style="width: 0%"></div>
                             </div>
                         </div>
+
+                        <!-- Thần Thú Trợ Chiến Trong Đấu Trường -->
+                        <div class="combat-pet-widget" id="combat-pet-widget" style="display: none;">
+                            <div class="fighter-avatar-box combat-pet-avatar-box">
+                                <span id="combat-pet-icon">🐾</span>
+                            </div>
+                            <div class="combat-pet-info">
+                                <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px;">
+                                    <strong id="combat-pet-name" style="font-size: 13px; color: #ffd700;">Thần Thú</strong>
+                                    <span id="combat-pet-status" class="combat-pet-status-badge">Hộ Vệ</span>
+                                </div>
+                                <div class="combat-hp-bar-outer" style="height: 10px; margin-top: 4px;">
+                                    <div class="combat-hp-bar-fill" id="combat-pet-hp-bar" style="width: 100%; background: linear-gradient(90deg, #00b0ff, #00e676);"></div>
+                                    <div class="combat-shield-bar-fill" id="combat-pet-shield-bar" style="width: 0%; display: none;"></div>
+                                </div>
+                                <small id="combat-pet-hp-text" style="font-size: 10px; color: var(--text-muted);">1,000 / 1,000</small>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Biểu tượng VS -->
@@ -1053,6 +1124,7 @@
     <script src="js/data/titles.js"></script>
     <script src="js/data/stages.js"></script>
     <script src="js/data/tower.js"></script>
+    <script src="js/data/pets.js"></script>
     <script src="js/engine/audio.js"></script>
     <script src="js/engine/particles.js"></script>
     <script src="js/engine/storage.js"></script>

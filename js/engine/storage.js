@@ -12,7 +12,7 @@
 class StorageSystem {
     static SAVE_KEY = "tu_tien_2d_save_v1";
     static BACKUP_KEY = "tu_tien_2d_save_backup";
-    static CURRENT_SAVE_VERSION = 3;
+    static CURRENT_SAVE_VERSION = 4;
 
     /**
      * Tự động sao lưu dự phòng (Safe Write / Auto-Backup)
@@ -227,6 +227,22 @@ class StorageSystem {
             ver = 3;
         }
 
+        // V3 -> V4 Migration:
+        // Cập nhật hệ thống Tam Đại Thần Thú & Cơ Chế Nuôi Dưỡng (activePetId, pets)
+        if (ver < 4) {
+            if (merged.activePetId === undefined) {
+                merged.activePetId = null;
+            }
+            if (!merged.pets || typeof merged.pets !== "object") {
+                merged.pets = {
+                    pet_tank: { unlocked: false, realm: 0, exp: 0, skillLevel: 1, shards: 0 },
+                    pet_dps:  { unlocked: false, realm: 0, exp: 0, skillLevel: 1, shards: 0 },
+                    pet_buff: { unlocked: false, realm: 0, exp: 0, skillLevel: 1, shards: 0 }
+                };
+            }
+            ver = 4;
+        }
+
         merged.saveVersion = this.CURRENT_SAVE_VERSION;
         return merged;
     }
@@ -294,4 +310,5 @@ if (typeof window !== "undefined") {
 
 if (typeof module !== "undefined" && module.exports) {
     module.exports = StorageSystem;
+    module.exports.StorageSystem = StorageSystem;
 }
