@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Giới Thiệu Đồ Án • Kiếm Tiên 3.0</title>
+    <meta name="description" content="Báo cáo đồ án môn học Lập trình JavaScript thuần & ES6+. Thông tin dự án, cấu trúc kỹ thuật và bảng ánh xạ kiến thức.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Cinzel:wght@600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/profile.css">
+</head>
+
+<body class="profile-body">
+    <!-- Navbar -->
+    <header class="profile-navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">
+                <span class="brand-logo">☯️</span>
+                <div class="brand-text">
+                    <span class="brand-main">KIẾM TIÊN 3.0</span>
+                    <span class="brand-sub">HỒ SƠ TU CHÂN</span>
+                </div>
+            </a>
+
+            <nav class="nav-links">
+                <a href="index.html" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-label">Chọn Đạo Thân</span>
+                </a>
+                <a href="profile-create.html" class="nav-item">
+                    <span class="nav-icon">➕</span>
+                    <span class="nav-label">Khởi Tạo</span>
+                </a>
+                <a href="profile-manage.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">Quản Lý & Thống Kê</span>
+                </a>
+                <a href="about.html" class="nav-item active">
+                    <span class="nav-icon">ℹ️</span>
+                    <span class="nav-label">Giới Thiệu Đồ Án</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="profile-main-container">
+        <article class="about-card-wrapper">
+            <!-- Header Báo Cáo -->
+            <div class="about-hero">
+                <span class="hero-eyebrow">BÁO CÁO ĐỒ ÁN MÔN HỌC</span>
+                <h1 class="about-title">KIẾM TIÊN 3.0 - PHÂN HỆ QUẢN LÝ HỒ SƠ NHÂN VẬT</h1>
+                <p class="about-subtitle">
+                    Đồ án cuối khóa môn <strong>Lập Trình JavaScript Thuần & ES6+</strong>. 
+                    Ứng dụng kiến trúc mô-đun chuẩn ES6, thiết kế hướng đối tượng và lưu trữ phân tách nhiều slot độc lập.
+                </p>
+            </div>
+
+            <!-- Khối 1: Thông Tin Dự Án & Tác Giả -->
+            <section class="about-section">
+                <h2 class="about-section-heading">📌 1. THÔNG TIN DỰ ÁN & SINH VIÊN</h2>
+                <div class="info-grid">
+                    <div class="info-box">
+                        <span class="info-label">Tên Dự Án:</span>
+                        <span class="info-value">Kiếm Tiên 3.0 (Tiên Đạo Trường Sinh)</span>
+                    </div>
+                    <div class="info-box">
+                        <span class="info-label">Môn Học:</span>
+                        <span class="info-value">Lập Trình Web Frontend với JavaScript & ES6+</span>
+                    </div>
+                    <div class="info-box">
+                        <span class="info-label">Phân Hệ Thực Hiện:</span>
+                        <span class="info-value">Character Profile Management (Hồ Sơ Nhân Vật)</span>
+                    </div>
+                    <div class="info-box">
+                        <span class="info-label">Công Nghệ Cốt Lõi:</span>
+                        <span class="info-value">HTML5, Vanilla CSS3, ES6+ Modules (Zero External Dependencies)</span>
+                    </div>
+                    <div class="info-box">
+                        <span class="info-label">Môi Trường Chạy:</span>
+                        <span class="info-value">100% Phía Trình Duyệt (GitHub Pages / Offline Ready)</span>
+                    </div>
+                    <div class="info-box">
+                        <span class="info-label">Bảo Toàn Gameplay:</span>
+                        <span class="info-value" style="color: #4ecca3;">100% Tuyệt đối không sửa mã nguồn game cũ</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Khối 2: Bảng Ánh Xạ Kiến Thức Môn Học -->
+            <section class="about-section">
+                <h2 class="about-section-heading">🎯 2. BẢNG ÁNH XẠ KIẾN THỨC MÔN HỌC (RUBRIC MAPPING)</h2>
+                <div class="table-responsive-wrapper">
+                    <table class="rubric-table">
+                        <thead>
+                            <tr>
+                                <th>Tiêu Chí Đánh Giá</th>
+                                <th>Khái Niệm ES6+ / JS Thuần Áp Dụng</th>
+                                <th>Vị Trí Code Minh Chứng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1. Quản lý Dữ liệu & CRUD</strong></td>
+                                <td>
+                                    Mô hình hóa dữ liệu dạng JSON, phân tách khóa lưu trữ cho từng hồ sơ (<code>tu_tien_2d_save_profile_{id}</code>), hàm CRUD chuẩn tách bạch.
+                                </td>
+                                <td><code>js/profile/profile-storage.js</code><br>(Hàm create, update, delete, getProfiles)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2. Biểu Mẫu & Xác Thực (Validation)</strong></td>
+                                <td>
+                                    Thẻ <code>&lt;form&gt;</code> ngữ nghĩa, kiểm tra độ dài 3-20 ký tự, lọc ký tự độc hại chống XSS, kiểm tra trùng tên không phân biệt hoa thường, bộ đếm ghi chú &lt;= 100.
+                                </td>
+                                <td><code>js/profile/create-profile.js</code><br><code>js/profile/edit-profile.js</code></td>
+                            </tr>
+                            <tr>
+                                <td><strong>3. Kiến Trúc Đa Trang (Multi-Page)</strong></td>
+                                <td>
+                                    Tách thành 7 trang HTML độc lập (Cổng chọn, Chơi game, Tạo mới, Sửa, Chi tiết, Quản lý, Giới thiệu) với điều hướng mượt mà, dùng <code>URLSearchParams</code>.
+                                </td>
+                                <td>Tập hợp file <code>*.html</code> ở thư mục gốc</td>
+                            </tr>
+                            <tr>
+                                <td><strong>4. Chuẩn Module ES6+</strong></td>
+                                <td>
+                                    Sử dụng cú pháp <code>import</code>, <code>export</code>, <code>type="module"</code>, Destructuring assignment, Arrow functions, Default parameters, Template literals.
+                                </td>
+                                <td>Thư mục <code>js/profile/*.js</code></td>
+                            </tr>
+                            <tr>
+                                <td><strong>5. Dashboard Thống Kê Tổng Hợp</strong></td>
+                                <td>
+                                    Tính toán thời gian chơi tích lũy, tìm hồ sơ có cảnh giới tu vi cao nhất, hồ sơ hoạt động gần nhất qua mảng và hàm reduce/forEach.
+                                </td>
+                                <td><code>getProfileDashboardStats()</code> trong <code>profile-storage.js</code></td>
+                            </tr>
+                            <tr>
+                                <td><strong>6. Trải Nghiệm Người Dùng (UX)</strong></td>
+                                <td>
+                                    Giao diện Dark Fantasy, kính mờ Glassmorphism, bộ chọn Avatar trực quan 10 biểu tượng, bản xem trước tức thì (Live Preview), thông báo Toast và Modal xác nhận tự chế.
+                                </td>
+                                <td><code>css/profile.css</code><br><code>js/profile/profile-ui.js</code></td>
+                            </tr>
+                            <tr>
+                                <td><strong>7. Tự Động Kế Thừa (Auto-Migration)</strong></td>
+                                <td>
+                                    Tự động kiểm tra bản lưu cũ <code>tu_tien_2d_save_v1</code> và khởi tạo hồ sơ mặc định "Tiêu Viêm" để bảo toàn toàn bộ tiến trình người chơi từ trước.
+                                </td>
+                                <td><code>migrateExistingSaveIfNeeded()</code> trong <code>profile-storage.js</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Khối 3: Sơ Đồ Kiến Trúc Hệ Thống -->
+            <section class="about-section">
+                <h2 class="about-section-heading">🏛️ 3. SƠ ĐỒ KIẾN TRÚC TƯƠNG TÁC DỮ LIỆU</h2>
+                <div class="architecture-diagram">
+                    <pre class="ascii-diagram">
++-----------------------------------------------------------------------------------+
+|                            NGƯỜI DÙNG / TRÌNH DUYỆT                              |
++-----------------------------------------------------------------------------------+
+       |                                      |                          |
+       v                                      v                          v
+ [index.html]                       [profile-create.html]      [profile-manage.html]
+ (Cổng Chọn Hồ Sơ)                   (Biểu Mẫu Khởi Tạo)        (Bảng Quản Lý & Stats)
+       |                                      |                          |
+       +--------------------------------------+--------------------------+
+                                  |
+                                  v
+                    +---------------------------+
+                    | js/profile/profile-ui.js  |  (Toast, Modal, Card, Table)
+                    +---------------------------+
+                                  |
+                                  v
+                  +-------------------------------+
+                  | js/profile/profile-storage.js |  (CRUD Engine, Validation, Stats)
+                  +-------------------------------+
+                                  |
+         +------------------------+------------------------+
+         |                                                 |
+         v                                                 v
+  [LocalStorage]                                    [game.html]
+  - kiemtien_profiles                               (Màn hình chơi game chính)
+  - kiemtien_active_profile_id                             |
+  - tu_tien_2d_save_v1 (Hồ sơ gốc)                         v
+  - tu_tien_2d_save_profile_{id} (Hồ sơ mới)        +--------------------------------+
+                                                    | js/profile/game-profile-bridge |
+                                                    +--------------------------------+
+                                                           | (Gắn vào StorageSystem)
+                                                           v
+                                                    +--------------------------------+
+                                                    | Core Game Engines & State      |
+                                                    | (player.js, combat.js...)      |
+                                                    +--------------------------------+
+                    </pre>
+                </div>
+            </section>
+
+            <!-- Khối 4: Hướng Dẫn Sử Dụng -->
+            <section class="about-section">
+                <h2 class="about-section-heading">📖 4. HƯỚNG DẪN TRẢI NGHIỆM ĐỒ ÁN</h2>
+                <div class="guide-steps-list">
+                    <div class="step-card">
+                        <span class="step-num">1</span>
+                        <div>
+                            <h4>Chọn Hồ Sơ Hoặc Khởi Tạo Mới</h4>
+                            <p>Khi mở web, hệ thống tự động nhận diện bản lưu cũ để tạo đạo thân "Tiêu Viêm". Bạn có thể bấm "Vào Tu Luyện" để chơi ngay, hoặc bấm "Lập Đạo Thân Mới" để tạo nhân vật khác.</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <span class="step-num">2</span>
+                        <div>
+                            <h4>Trải Nghiệm Form & Validation</h4>
+                            <p>Tại trang Tạo hoặc Sửa, thử nhập tên dưới 3 ký tự hoặc trên 20 ký tự, nhập ký tự đặc biệt (&lt; &gt; " /), hoặc nhập trùng tên để quan sát thông báo lỗi thời gian thực và live preview cập nhật tức thì.</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <span class="step-num">3</span>
+                        <div>
+                            <h4>Tu Luyện & Lưu Trữ Độc Lập</h4>
+                            <p>Trong game, tu vi tăng tiến và linh thạch nhận được sẽ được lưu riêng vào slot của hồ sơ đó. Nhấn nút <strong>"👤 Đổi Hồ Sơ"</strong> trên thanh điều khiển của game để quay lại cổng chọn đạo thân khác bất cứ lúc nào.</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <span class="step-num">4</span>
+                        <div>
+                            <h4>Theo Dõi Dashboard & Thao Tác Bảng</h4>
+                            <p>Vào trang Quản Lý để xem tổng thời gian tu luyện tích lũy, hồ sơ có cảnh giới cao nhất, xóa hồ sơ với hộp thoại xác nhận tuỳ biến an toàn.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Nút Hành Động -->
+            <div class="about-cta-bar">
+                <a href="index.html" class="btn-profile-primary btn-large">
+                    <span>👥 Trải Nghiệm Cổng Chọn Đạo Thân</span>
+                </a>
+                <a href="game.html" class="btn-profile-secondary btn-large">
+                    <span>🎮 Vào Trò Chơi Ngay</span>
+                </a>
+            </div>
+        </article>
+    </main>
+
+    <!-- Footer -->
+    <footer class="profile-footer">
+        <div class="footer-container">
+            <div class="footer-info">
+                <strong>Đồ Án Cuối Khóa: Lập Trình JavaScript Thuần & ES6+</strong>
+                <p>Báo Cáo Kỹ Thuật & Hướng Dẫn Trải Nghiệm Toàn Diện</p>
+            </div>
+            <div class="footer-meta">
+                <a href="index.html" style="color: #a5b4fc; text-decoration: none;">← Cổng chọn đạo thân</a>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

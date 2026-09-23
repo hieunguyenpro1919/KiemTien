@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Chi Tiết Đạo Thân • Kiếm Tiên 3.0</title>
+    <meta name="description" content="Xem chi tiết toàn bộ cảnh giới, chỉ số chiến lực, tài nguyên và thời gian tu luyện của đạo thân.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Cinzel:wght@600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/profile.css">
+</head>
+
+<body class="profile-body">
+    <!-- Navbar -->
+    <header class="profile-navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">
+                <span class="brand-logo">☯️</span>
+                <div class="brand-text">
+                    <span class="brand-main">KIẾM TIÊN 3.0</span>
+                    <span class="brand-sub">HỒ SƠ TU CHÂN</span>
+                </div>
+            </a>
+
+            <nav class="nav-links">
+                <a href="index.html" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-label">Chọn Đạo Thân</span>
+                </a>
+                <a href="profile-create.html" class="nav-item">
+                    <span class="nav-icon">➕</span>
+                    <span class="nav-label">Khởi Tạo</span>
+                </a>
+                <a href="profile-manage.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">Quản Lý & Thống Kê</span>
+                </a>
+                <a href="about.html" class="nav-item">
+                    <span class="nav-icon">ℹ️</span>
+                    <span class="nav-label">Giới Thiệu Đồ Án</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="profile-main-container">
+        <div class="detail-page-layout">
+            <!-- Thẻ Header Chi Tiết Đạo Thân -->
+            <section class="detail-hero-card">
+                <div class="detail-hero-left">
+                    <div class="detail-avatar-ring">
+                        <span class="detail-avatar-icon" id="detail-avatar">🧙‍♂️</span>
+                    </div>
+                </div>
+
+                <div class="detail-hero-info">
+                    <div class="detail-title-row">
+                        <h1 class="detail-name" id="detail-name">Đang tải...</h1>
+                        <span class="detail-realm-badge" id="detail-realm">Tôi Khí • Tầng 1</span>
+                    </div>
+
+                    <div class="detail-meta-list">
+                        <div class="detail-meta-item">
+                            <span class="meta-label">📅 Ngày Khởi Lập:</span>
+                            <span class="meta-val" id="detail-created-at">--/--/----</span>
+                        </div>
+                        <div class="detail-meta-item">
+                            <span class="meta-label">🕒 Hoạt Động Gần Nhất:</span>
+                            <span class="meta-val" id="detail-last-played">--</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-vow-quote">
+                        <span class="quote-icon">“</span>
+                        <p id="detail-notes">Đang tải lời thề đạo tâm...</p>
+                    </div>
+                </div>
+
+                <div class="detail-hero-actions">
+                    <button class="btn-profile-primary btn-large" id="btn-detail-play">
+                        <span>🎮 Tiếp Tục Tu Luyện</span>
+                    </button>
+                    <button class="btn-profile-secondary" id="btn-detail-edit">
+                        <span>✏️ Chỉnh Sửa</span>
+                    </button>
+                    <button class="btn-profile-danger" id="btn-detail-delete">
+                        <span>🗑️ Xóa Đạo Thân</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Bảng Thống Kê Chỉ Số Chiến Lực & Tài Nguyên -->
+            <section class="detail-stats-section">
+                <h2 class="section-title">📊 BẢN ĐỒ THUỘC TÍNH VÀ TIẾN TRÌNH TU ĐẠO</h2>
+                
+                <div class="detail-stats-grid">
+                    <!-- Thuộc tính chiến đấu -->
+                    <div class="detail-stat-card">
+                        <div class="stat-glyph">❤️</div>
+                        <div class="stat-body">
+                            <span class="stat-name">Khí Huyết (HP)</span>
+                            <strong class="stat-val" id="stat-hp">100</strong>
+                        </div>
+                    </div>
+
+                    <div class="detail-stat-card">
+                        <div class="stat-glyph">⚔️</div>
+                        <div class="stat-body">
+                            <span class="stat-name">Công Kích (ATK)</span>
+                            <strong class="stat-val" id="stat-atk">15</strong>
+                        </div>
+                    </div>
+
+                    <div class="detail-stat-card">
+                        <div class="stat-glyph">🛡️</div>
+                        <div class="stat-body">
+                            <span class="stat-name">Phòng Ngự (DEF)</span>
+                            <strong class="stat-val" id="stat-def">5</strong>
+                        </div>
+                    </div>
+
+                    <div class="detail-stat-card">
+                        <div class="stat-glyph">💨</div>
+                        <div class="stat-body">
+                            <span class="stat-name">Thân Pháp (Tốc Độ)</span>
+                            <strong class="stat-val" id="stat-speed">10</strong>
+                        </div>
+                    </div>
+
+                    <div class="detail-stat-card">
+                        <div class="stat-glyph">💥</div>
+                        <div class="stat-body">
+                            <span class="stat-name">Bạo Kích / Sát Thương</span>
+                            <strong class="stat-val" id="stat-crit">5% / 150%</strong>
+                        </div>
+                    </div>
+
+                    <!-- Tài nguyên & Đồng hành -->
+                    <div class="detail-stat-card">
+                        <div class="stat-glyph">💎</div>
+                        <div class="stat-body">
+                            <span class="stat-name">Linh Thạch Bản Mệnh</span>
+                            <strong class="stat-val" id="stat-linhthach">200</strong>
+                        </div>
+                    </div>
+
+                    <div class="detail-stat-card">
+                        <div class="stat-glyph">🌀</div>
+                        <div class="stat-body">
+                            <span class="stat-name">Hỗn Nguyên Thạch</span>
+                            <strong class="stat-val" id="stat-honnguyen">0</strong>
+                        </div>
+                    </div>
+
+                    <div class="detail-stat-card">
+                        <div class="stat-glyph">🐾</div>
+                        <div class="stat-body">
+                            <span class="stat-name">Linh Thú Xuất Chiến</span>
+                            <strong class="stat-val" id="stat-pet">Chưa thuần hóa</strong>
+                        </div>
+                    </div>
+
+                    <div class="detail-stat-card stat-card-wide">
+                        <div class="stat-glyph">⏳</div>
+                        <div class="stat-body">
+                            <span class="stat-name">Tổng Thời Gian Tu Luyện Tích Lũy</span>
+                            <strong class="stat-val" id="stat-playtime">0 phút</strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Thanh Quay Lại -->
+            <div class="detail-bottom-bar">
+                <a href="index.html" class="btn-profile-secondary">
+                    <span>⬅️ Quay Lại Cổng Chọn</span>
+                </a>
+                <a href="profile-manage.html" class="btn-profile-secondary">
+                    <span>📊 Xem Danh Sách Quản Lý</span>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="profile-footer">
+        <div class="footer-container">
+            <div class="footer-info">
+                <strong>Đồ Án Cuối Khóa: Lập Trình JavaScript Thuần & ES6+</strong>
+                <p>Chi Tiết Hồ Sơ Nhân Vật • Truy Vấn Bản Lưu Game Trực Tiếp</p>
+            </div>
+            <div class="footer-meta">
+                <a href="index.html" style="color: #a5b4fc; text-decoration: none;">← Cổng chọn đạo thân</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Script Controller -->
+    <script type="module" src="js/profile/detail-profile.js"></script>
+</body>
+
+</html>

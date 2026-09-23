@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Quản Lý & Thống Kê Hồ Sơ • Kiếm Tiên 3.0</title>
+    <meta name="description" content="Bảng quản lý hồ sơ nhân vật, theo dõi chỉ số thống kê dashboard tổng hợp, chỉnh sửa và dọn dẹp đạo thân.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Cinzel:wght@600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/profile.css">
+</head>
+
+<body class="profile-body">
+    <!-- Navbar -->
+    <header class="profile-navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">
+                <span class="brand-logo">☯️</span>
+                <div class="brand-text">
+                    <span class="brand-main">KIẾM TIÊN 3.0</span>
+                    <span class="brand-sub">HỒ SƠ TU CHÂN</span>
+                </div>
+            </a>
+
+            <nav class="nav-links">
+                <a href="index.html" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-label">Chọn Đạo Thân</span>
+                </a>
+                <a href="profile-create.html" class="nav-item">
+                    <span class="nav-icon">➕</span>
+                    <span class="nav-label">Khởi Tạo</span>
+                </a>
+                <a href="profile-manage.html" class="nav-item active">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">Quản Lý & Thống Kê</span>
+                </a>
+                <a href="about.html" class="nav-item">
+                    <span class="nav-icon">ℹ️</span>
+                    <span class="nav-label">Giới Thiệu Đồ Án</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="profile-main-container">
+        <!-- Phần 1: Bảng Thống Kê Dashboard (Mục 13 của đề bài) -->
+        <section class="dashboard-section">
+            <div class="section-header-row">
+                <div>
+                    <span class="hero-eyebrow">TỔNG QUAN TÀI NGUYÊN • ĐẠO THÂN CHI CHIẾU</span>
+                    <h1 class="page-title">THỐNG KÊ DASHBOARD HỒ SƠ</h1>
+                </div>
+            </div>
+
+            <div class="dashboard-grid" id="dashboard-stats-grid">
+                <!-- Sẽ được render động bằng renderDashboardCards -->
+            </div>
+        </section>
+
+        <!-- Phần 2: Bảng Quản Lý Danh Sách Hồ Sơ (Table View) -->
+        <section class="table-management-section">
+            <div class="table-card-box">
+                <div class="table-header-bar">
+                    <div class="table-title-area">
+                        <h2>DANH SÁCH ĐẠO THÂN</h2>
+                        <span class="table-capacity-tag" id="manage-capacity-badge">0/5</span>
+                    </div>
+                    <div class="table-actions-area">
+                        <a href="profile-create.html" class="btn-profile-primary btn-sm" id="btn-manage-create">
+                            <span>✨ Khởi Tạo Mới</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Bảng Dữ Liệu -->
+                <div class="table-responsive-wrapper" id="table-container-wrap">
+                    <table class="profile-data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;" class="text-center">STT</th>
+                                <th>Đạo Thân</th>
+                                <th>Cảnh Giới</th>
+                                <th>Hoạt Động Gần Nhất</th>
+                                <th style="width: 220px;" class="text-center">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="profiles-table-body">
+                            <!-- Render bằng renderProfileTableRow -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Trạng thái trống (Empty State) -->
+                <div class="table-empty-state" id="table-empty-state" style="display: none;">
+                    <span class="empty-emoji">🪷</span>
+                    <h3>Chưa có hồ sơ đạo thân nào</h3>
+                    <p>Hãy khởi tạo hồ sơ nhân vật đầu tiên để bắt đầu hành trình tu đạo!</p>
+                    <a href="profile-create.html" class="btn-profile-primary" style="margin-top: 12px; display: inline-flex;">
+                        <span>Khởi Tạo Ngay</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hướng dẫn & Lưu ý -->
+        <section class="manage-guide-section">
+            <div class="guide-box">
+                <div class="guide-item">
+                    <span class="guide-icon">⚠️</span>
+                    <div>
+                        <strong>Lưu ý khi xóa hồ sơ:</strong>
+                        <p>Thao tác xóa hồ sơ sẽ dọn sạch toàn bộ dữ liệu lưu trữ (save slot) tương ứng trong trình duyệt. Hãy cân nhắc kỹ trước khi xóa!</p>
+                    </div>
+                </div>
+                <div class="guide-item">
+                    <span class="guide-icon">🔄</span>
+                    <div>
+                        <strong>Đổi đạo thân đang tu luyện:</strong>
+                        <p>Nhấn vào nút <strong>"Chơi"</strong> ở bất kỳ dòng nào để chuyển đổi tức thì sang hồ sơ đó và tiếp tục tu vi.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="profile-footer">
+        <div class="footer-container">
+            <div class="footer-info">
+                <strong>Đồ Án Cuối Khóa: Lập Trình JavaScript Thuần & ES6+</strong>
+                <p>Bảng Quản Lý Dữ Liệu & Thống Kê Tổng Hợp • Kiếm Tiên 3.0</p>
+            </div>
+            <div class="footer-meta">
+                <a href="index.html" style="color: #a5b4fc; text-decoration: none;">← Cổng chọn đạo thân</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Script Controller -->
+    <script type="module" src="js/profile/manage-profile.js"></script>
+</body>
+
+</html>

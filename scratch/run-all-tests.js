@@ -425,6 +425,85 @@ runTest("Suite 8", "UIController.prototype tích hợp đầy đủ 8 phân hệ
     assert.strictEqual(typeof UIController.prototype.showItemTooltip, "function");
 });
 
-console.log("\n==================================================================");
-console.log(`🎉 KẾT QUẢ KIỂM THỬ: ${passedTests}/${totalTests} TESTS ĐẠT (100% PASS)`);
-console.log("==================================================================\n");
+// ==================================================================
+// SUITE 9: PHÂN HỆ QUẢN LÝ HỒ SƠ NHÂN VẬT (PROFILE CRUD & ARCHITECTURE)
+// ==================================================================
+async function runSuite9() {
+    console.log("\n--- SUITE 9: Phân Hệ Hồ Sơ Nhân Vật (Profile CRUD & Multi-Slot) ---");
+    const path = require('path');
+    const modulePath = path.resolve(__dirname, '../js/profile/profile-storage.js').replace(/\\/g, '/');
+    const ProfileStorage = await import('file:///' + modulePath);
+
+    runTest("Suite 9", "Xác thực dữ liệu: Đạo hiệu 3-20 ký tự, chống XSS, kiểm tra trùng lặp", () => {
+        const short = ProfileStorage.validateProfileData({ name: "A" });
+        assert.strictEqual(short.isValid, false);
+        const xss = ProfileStorage.validateProfileData({ name: "<script>" });
+        assert.strictEqual(xss.isValid, false);
+        const valid = ProfileStorage.validateProfileData({ name: "Tiểu Y Tiên" });
+        assert.strictEqual(valid.isValid, true);
+    });
+
+    runTest("Suite 9", "Auto-migration: Tự động di trú save cũ tu_tien_2d_save_v1 thành hồ sơ mặc định", () => {
+        global.localStorage._data = {};
+        global.localStorage.setItem("tu_tien_2d_save_v1", JSON.stringify({ name: "Lâm Động", realmIndex: 2 }));
+        ProfileStorage.migrateExistingSaveIfNeeded();
+        const profiles = ProfileStorage.getProfiles();
+        assert.strictEqual(profiles.length, 1);
+        assert.strictEqual(profiles[0].name, "Lâm Động");
+        assert.strictEqual(profiles[0].saveKey, "tu_tien_2d_save_v1");
+    });
+
+    runTest("Suite 9", "Khởi tạo hồ sơ mới độc lập và áp dụng giới hạn tối đa 5 hồ sơ", () => {
+        const res = ProfileStorage.createProfile({ name: "Hàn Lập", notes: "Khổ tu" });
+        assert.strictEqual(res.success, true);
+        assert.strictEqual(res.profile.saveKey, `tu_tien_2d_save_profile_${res.profile.id}`);
+
+        ProfileStorage.createProfile({ name: "Thạch Hạo" });
+        ProfileStorage.createProfile({ name: "Diệp Phàm" });
+        ProfileStorage.createProfile({ name: "Bạch Tiểu Thuần" });
+
+        assert.strictEqual(ProfileStorage.getProfiles().length, 5);
+        const resOver = ProfileStorage.createProfile({ name: "Mạnh Hạo" });
+        assert.strictEqual(resOver.success, false);
+    });
+
+    runTest("Suite 9", "Cập nhật đạo hiệu và đồng bộ tên mới sang save slot độc lập", () => {
+        const profiles = ProfileStorage.getProfiles();
+        const target = profiles.find(p => p.name === "Thạch Hạo");
+        global.localStorage.setItem(target.saveKey, JSON.stringify({ name: "Thạch Hạo", realmIndex: 0 }));
+        
+        const updateRes = ProfileStorage.updateProfile(target.id, { name: "Hoang Thiên Đế" });
+        assert.strictEqual(updateRes.success, true);
+        const saveCheck = JSON.parse(global.localStorage.getItem(target.saveKey));
+        assert.strictEqual(saveCheck.name, "Hoang Thiên Đế");
+    });
+
+    runTest("Suite 9", "Xóa hồ sơ dọn dẹp sạch save slot và chuyển active hồ sơ tự động", () => {
+        const profiles = ProfileStorage.getProfiles();
+        const toDelete = profiles.find(p => p.name === "Hoang Thiên Đế");
+        ProfileStorage.setActiveProfile(toDelete.id);
+        const delRes = ProfileStorage.deleteProfile(toDelete.id);
+        assert.strictEqual(delRes.success, true);
+        assert.strictEqual(ProfileStorage.getProfiles().length, 4);
+        assert.strictEqual(global.localStorage.getItem(toDelete.saveKey), null);
+        assert(ProfileStorage.getActiveProfile().id !== toDelete.id);
+    });
+
+    runTest("Suite 9", "Dashboard thống kê tổng hợp (Cảnh giới cao nhất, tổng giờ chơi tích lũy)", () => {
+        const stats = ProfileStorage.getProfileDashboardStats();
+        assert.strictEqual(stats.totalProfiles, 4);
+        assert.strictEqual(stats.maxCapacity, 5);
+        assert(typeof stats.highestRealmText === "string");
+        assert(typeof stats.totalPlayTimeFormatted === "string");
+    });
+
+    console.log("\n==================================================================");
+    console.log(`🎉 KẾT QUẢ KIỂM THỬ TOÀN BỘ HỆ THỐNG: ${passedTests}/${totalTests} TESTS ĐẠT (100% PASS)`);
+    console.log("==================================================================\n");
+}
+
+runSuite9().catch(err => {
+    console.error("Suite 9 thất bại:", err);
+    process.exit(1);
+});
+

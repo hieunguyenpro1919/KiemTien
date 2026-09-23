@@ -199,14 +199,20 @@ body {
 /* ================= NAVIGATION TABS (GHIM CÙNG HEADER) ================= */
 .game-navbar {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 8px;
     padding: 8px 16px;
     background: rgba(9, 13, 23, 0.96);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border-bottom: 1px solid rgba(78, 204, 163, 0.25);
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.game-navbar::-webkit-scrollbar {
+    display: none;
 }
 
 .nav-tab-btn {
@@ -222,6 +228,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-shrink: 0;
 }
 
 /* Ẩn hiện nhãn Tab trên PC vs Mobile */
@@ -475,12 +482,19 @@ body {
         white-space: nowrap;
     }
 
-    /* Thanh điều hướng 5 tab trên mobile */
+    /* Thanh điều hướng tab trên mobile (cho phép cuộn ngang) */
     .game-navbar {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start;
+        -webkit-overflow-scrolling: touch;
         gap: 3px;
-        padding: 5px 4px;
+        padding: 5px 8px;
+        scrollbar-width: none;
+    }
+    .game-navbar::-webkit-scrollbar {
+        display: none;
     }
 
     .nav-tab-btn {
@@ -492,6 +506,8 @@ body {
         text-align: center;
         position: relative;
         border-radius: 6px;
+        flex-shrink: 0;
+        min-width: 65px;
     }
 
     .nav-icon {

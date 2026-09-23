@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Khởi Tạo Đạo Thân • Kiếm Tiên 3.0</title>
+    <meta name="description" content="Khởi tạo hồ sơ nhân vật mới với đạo hiệu, hóa thân và lời thề tu đạo. Xác thực dữ liệu tức thì.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Cinzel:wght@600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/profile.css">
+</head>
+
+<body class="profile-body">
+    <!-- Navbar -->
+    <header class="profile-navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">
+                <span class="brand-logo">☯️</span>
+                <div class="brand-text">
+                    <span class="brand-main">KIẾM TIÊN 3.0</span>
+                    <span class="brand-sub">HỒ SƠ TU CHÂN</span>
+                </div>
+            </a>
+
+            <nav class="nav-links">
+                <a href="index.html" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-label">Chọn Đạo Thân</span>
+                </a>
+                <a href="profile-create.html" class="nav-item active">
+                    <span class="nav-icon">➕</span>
+                    <span class="nav-label">Khởi Tạo</span>
+                </a>
+                <a href="profile-manage.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">Quản Lý & Thống Kê</span>
+                </a>
+                <a href="about.html" class="nav-item">
+                    <span class="nav-icon">ℹ️</span>
+                    <span class="nav-label">Giới Thiệu Đồ Án</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="profile-main-container">
+        <div class="form-page-layout" id="create-card-box">
+            <!-- Cột Trái: Biểu Mẫu Nhập Liệu (Semantic Form) -->
+            <section class="form-card-container">
+                <div class="form-header">
+                    <a href="index.html" class="back-link">← Quay lại danh sách</a>
+                    <h1 class="form-title">KHỞI TẠO ĐẠO THÂN MỚI</h1>
+                    <p class="form-subtitle">Điền thông tin bản mệnh để khắc tên vào ngọc giản thiên đình.</p>
+                </div>
+
+                <form id="form-create-profile" class="profile-form" novalidate>
+                    <!-- Trường 1: Đạo Hiệu -->
+                    <div class="form-group">
+                        <label for="input-profile-name" class="form-label">
+                            <span>Đạo Hiệu Bản Mệnh</span>
+                            <span class="label-required">* Bắt buộc</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="input-profile-name" 
+                            name="name" 
+                            class="form-input" 
+                            placeholder="Ví dụ: Tiêu Viêm, Hàn Lập, Thạch Hạo..."
+                            maxlength="20"
+                            autocomplete="off"
+                            required
+                        >
+                        <div class="input-helper">Từ 3 đến 20 ký tự, không chứa ký tự đặc biệt nguy hiểm và không trùng lặp.</div>
+                        <div id="name-error" class="input-error-msg" style="display: none;"></div>
+                    </div>
+
+                    <!-- Trường 2: Chọn Hóa Thân (Avatar Picker) -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span>Hóa Thân Tu Chân (Avatar)</span>
+                            <span class="label-optional">Chọn một hình ảnh đại diện</span>
+                        </label>
+                        <div class="avatar-picker-grid" id="avatar-picker-container">
+                            <!-- Render bằng renderAvatarPicker -->
+                        </div>
+                    </div>
+
+                    <!-- Trường 3: Lời Thề Đạo Tâm (Ghi Chú) -->
+                    <div class="form-group">
+                        <div class="label-with-counter">
+                            <label for="input-profile-notes" class="form-label">Lời Thề Đạo Tâm (Ghi chú)</label>
+                            <span class="char-counter" id="notes-counter">0/100</span>
+                        </div>
+                        <textarea 
+                            id="input-profile-notes" 
+                            name="notes" 
+                            class="form-textarea" 
+                            rows="3" 
+                            maxlength="100"
+                            placeholder="Khắc ghi chí hướng tu đạo, quyết chí trường sinh bất tử..."
+                        ></textarea>
+                        <div class="input-helper">Tùy chọn, tối đa không quá 100 ký tự.</div>
+                    </div>
+
+                    <!-- Nút Thao Tác -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn-profile-primary" id="btn-submit-create">
+                            <span>✨ Khắc Tên Lập Hồ Sơ</span>
+                        </button>
+                        <a href="index.html" class="btn-profile-secondary">
+                            <span>Hủy Bỏ</span>
+                        </a>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Cột Phải: Xem Trước Trực Quan (Live Preview) -->
+            <aside class="form-preview-container">
+                <div class="preview-box-header">
+                    <span class="preview-icon">👁️</span>
+                    <h3>XEM TRƯỚC HỒ SƠ</h3>
+                </div>
+                <div class="preview-card-wrap">
+                    <article class="profile-card preview-card">
+                        <div class="profile-card-header">
+                            <div class="profile-card-avatar" style="border-color: #4ecca3;">
+                                <span id="preview-avatar">🧙‍♂️</span>
+                            </div>
+                            <div class="profile-card-identity">
+                                <h3 class="profile-card-name" id="preview-name">Chưa đặt đạo hiệu</h3>
+                                <div class="profile-card-realm" style="color: #4ecca3;">
+                                    <span>⚡ Tôi Khí</span>
+                                    <span class="realm-tier-bullet">•</span>
+                                    <span>Tầng 1</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-card-body">
+                            <div class="profile-meta-row">
+                                <span class="meta-label">🕒 Hoạt động:</span>
+                                <span class="meta-value">Mới tạo</span>
+                            </div>
+                            <div class="profile-meta-row">
+                                <span class="meta-label">📅 Trạng thái:</span>
+                                <span class="meta-value" style="color: #4ecca3;">Khởi nguyên đạo thể</span>
+                            </div>
+                            <div class="profile-card-notes" id="preview-notes">
+                                Chưa lập lời thề đạo tâm.
+                            </div>
+                        </div>
+
+                        <div class="profile-card-footer">
+                            <div class="preview-notice">
+                                <span>🔒 Bản xem trước tức thì của thẻ nhân vật</span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="profile-footer">
+        <div class="footer-container">
+            <div class="footer-info">
+                <strong>Đồ Án Cuối Khóa: Lập Trình JavaScript Thuần & ES6+</strong>
+                <p>Mô-đun Khởi Tạo Hồ Sơ Nhân Vật • Xác Thực Dữ Liệu Phía Trình Duyệt</p>
+            </div>
+            <div class="footer-meta">
+                <a href="index.html" style="color: #a5b4fc; text-decoration: none;">← Quay lại cổng chọn</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Script Controller -->
+    <script type="module" src="js/profile/create-profile.js"></script>
+</body>
+
+</html>
