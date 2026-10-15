@@ -57,3 +57,21 @@ html, body {
 .animate-fadeIn {
   animation: fadeIn 0.25s ease-out forwards;
 }
+
+@keyframes spinRing {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes spinRingReverse {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.animate-spin-ring {
+  animation: spinRing 25s linear infinite;
+}
+
+.animate-spin-reverse {
+  animation: spinRingReverse 35s linear infinite;
+}

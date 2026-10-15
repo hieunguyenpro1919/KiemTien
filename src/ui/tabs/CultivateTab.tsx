@@ -401,14 +401,24 @@ export const CultivateTab: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Vòng Tròn Thái Cực / Bát Quái Xoay Chậm */}
-                    <div className="relative w-36 h-36 my-2 flex items-center justify-center">
-                        {/* Outer Ring */}
-                        <div className="absolute inset-0 rounded-full border-2 border-dashed border-teal-400/40 animate-[spin_20s_linear_infinite]" />
-                        {/* Inner Ring */}
-                        <div className="absolute inset-2 rounded-full border border-teal-300/30 animate-[spin_12s_linear_infinite_reverse]" />
-                        {/* Avatar Trung Tâm */}
-                        <div className="w-24 h-24 rounded-full bg-slate-950 border-2 border-teal-400 flex items-center justify-center text-4xl shadow-[0_0_35px_rgba(78,204,163,0.45)] select-none">
+                    {/* Vòng Tròn Thái Cực / Bát Quái Xoay Lồng Nhau Chuẩn V3 */}
+                    <div className="relative w-44 h-44 my-2 flex items-center justify-center">
+                        {/* Vòng Ngoài Cùng: Vòng Bát Quái Kim Sắc Xoay Ngược Chiều Kim Đồng Hồ (35s) */}
+                        <div className="absolute -inset-2.5 rounded-full border border-amber-400/30 border-dashed animate-spin-reverse flex items-center justify-center pointer-events-none">
+                            <span className="absolute -top-2.5 text-[11px] text-amber-400 font-serif">☰</span>
+                            <span className="absolute -bottom-2.5 text-[11px] text-amber-400 font-serif">☷</span>
+                            <span className="absolute -left-2.5 text-[11px] text-amber-400 font-serif">☵</span>
+                            <span className="absolute -right-2.5 text-[11px] text-amber-400 font-serif">☲</span>
+                        </div>
+
+                        {/* Vòng Trung Gian: Linh Trận Ngọc Xanh Phát Sáng Xoay Thuận Chiều (25s) */}
+                        <div className="absolute inset-0 rounded-full border-2 border-dashed border-teal-400/45 shadow-[0_0_25px_rgba(78,204,163,0.3)] animate-spin-ring pointer-events-none" />
+
+                        {/* Vòng Trong: Hào Quang Thái Cực Phát Sáng Xanh Ngọc */}
+                        <div className="absolute inset-2.5 rounded-full border border-teal-300/35 animate-pulse pointer-events-none" />
+
+                        {/* Avatar Tu Sĩ Đả Tọa Trung Tâm */}
+                        <div className="relative w-28 h-28 rounded-full bg-gradient-to-b from-teal-950/60 via-slate-950 to-slate-950 border-2 border-teal-400/80 flex items-center justify-center text-5xl shadow-[0_0_40px_rgba(45,212,191,0.45)] select-none">
                             🧘‍♂️
                         </div>
                     </div>
@@ -535,13 +545,13 @@ export const CultivateTab: React.FC = () => {
                                             <div className="flex flex-col gap-1.5 shrink-0 justify-center">
                                                 <button
                                                     onClick={() => unequipItem(slotKey)}
-                                                    className="px-2.5 py-1 rounded bg-rose-950/80 hover:bg-rose-900 border border-rose-500/40 text-[11px] font-bold text-rose-300 transition cursor-pointer"
+                                                    className="px-2.5 py-1 rounded-md bg-rose-950/80 hover:bg-rose-900 border border-rose-700/50 text-rose-200 text-xs font-semibold transition cursor-pointer"
                                                 >
                                                     Tháo
                                                 </button>
                                                 <button
                                                     onClick={() => setEquipModalSlot(slotKey)}
-                                                    className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-slate-300 transition cursor-pointer"
+                                                    className="px-2.5 py-1 rounded-md bg-slate-800/80 hover:bg-slate-700 border border-slate-600/50 text-slate-200 text-xs font-semibold transition cursor-pointer"
                                                 >
                                                     Đổi
                                                 </button>
@@ -815,10 +825,32 @@ export const CultivateTab: React.FC = () => {
                                 const isCurrentlyEquipped = Object.values(equipped).includes(item.id);
                                 const isRealmOk = realmIndex >= item.reqRealm;
 
+                                const getRarityGlow = (r: string) => {
+                                    switch (r) {
+                                        case "pham":
+                                        case "linh":
+                                            return "shadow-[0_0_8px_rgba(79,195,247,0.18)] hover:shadow-[0_0_12px_rgba(79,195,247,0.3)]";
+                                        case "huyen":
+                                            return "shadow-[0_0_9px_rgba(186,104,200,0.22)] hover:shadow-[0_0_14px_rgba(186,104,200,0.35)]";
+                                        case "dia":
+                                            return "shadow-[0_0_10px_rgba(255,183,77,0.25)] hover:shadow-[0_0_15px_rgba(255,183,77,0.4)]";
+                                        case "thien":
+                                            return "shadow-[0_0_11px_rgba(255,82,82,0.28)] hover:shadow-[0_0_16px_rgba(255,82,82,0.45)]";
+                                        case "tien":
+                                            return "shadow-[0_0_11px_rgba(0,230,118,0.28)] hover:shadow-[0_0_16px_rgba(0,230,118,0.45)]";
+                                        case "thanh":
+                                            return "shadow-[0_0_12px_rgba(255,215,0,0.32)] hover:shadow-[0_0_18px_rgba(255,215,0,0.5)]";
+                                        case "cuc_dao":
+                                            return "shadow-[0_0_14px_rgba(255,42,133,0.35)] hover:shadow-[0_0_22px_rgba(255,42,133,0.55)]";
+                                        default:
+                                            return "shadow-sm";
+                                    }
+                                };
+
                                 return (
                                     <div
                                         key={`item_${item.id}`}
-                                        className="p-3 rounded-xl border flex flex-col justify-between transition relative overflow-hidden"
+                                        className={`p-3 rounded-xl border flex flex-col justify-between transition relative overflow-hidden ${getRarityGlow(item.rarity)}`}
                                         style={{
                                             borderColor: rarity.border,
                                             background: rarity.bg
@@ -884,10 +916,10 @@ export const CultivateTab: React.FC = () => {
                                                 <button
                                                     onClick={() => equipItem(item.slot, item.id)}
                                                     disabled={!isRealmOk}
-                                                    className={`flex-1 py-1 rounded text-[11px] font-bold transition cursor-pointer ${
+                                                    className={`flex-1 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
                                                         isCurrentlyEquipped
                                                             ? "bg-slate-800 text-amber-400 border border-amber-500/40"
-                                                            : "bg-teal-600 hover:bg-teal-500 text-slate-950 font-serif"
+                                                            : "bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-slate-950 font-serif shadow-sm shadow-teal-500/20"
                                                     } disabled:opacity-40 disabled:cursor-not-allowed`}
                                                 >
                                                     {isCurrentlyEquipped ? "Đang Mặc" : "Trang Bị"}
@@ -901,7 +933,7 @@ export const CultivateTab: React.FC = () => {
                                                         showToast(res.msg);
                                                     }}
                                                     disabled={!isRealmOk}
-                                                    className="flex-1 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold font-serif text-[11px] transition cursor-pointer disabled:opacity-40"
+                                                    className="flex-1 py-1 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold font-serif text-[11px] shadow-sm shadow-emerald-500/20 transition cursor-pointer disabled:opacity-40"
                                                 >
                                                     Sử Dụng
                                                 </button>
@@ -933,8 +965,8 @@ export const CultivateTab: React.FC = () => {
                                     key={`skill_${skill.id}`}
                                     className={`p-3 rounded-xl border flex flex-col justify-between transition relative overflow-hidden ${
                                         isEquipped
-                                            ? "bg-cyan-950/30 border-cyan-500/50 shadow-md shadow-cyan-950/40"
-                                            : "bg-slate-900/60 border-slate-800 hover:border-slate-700"
+                                            ? "bg-cyan-950/40 border-cyan-400 shadow-[0_0_14px_rgba(6,182,212,0.35)]"
+                                            : "bg-slate-900/70 border-teal-500/30 hover:border-teal-400/60 shadow-[0_0_8px_rgba(45,212,191,0.15)] hover:shadow-[0_0_14px_rgba(45,212,191,0.3)]"
                                     }`}
                                 >
                                     <div>
@@ -965,7 +997,7 @@ export const CultivateTab: React.FC = () => {
                                         {isEquipped ? (
                                             <button
                                                 onClick={() => unequipSkill(equipSlotIdx as 0 | 1 | 2)}
-                                                className="w-full py-1 rounded bg-rose-950/80 hover:bg-rose-900 border border-rose-500/40 text-[11px] font-bold text-rose-300 transition cursor-pointer"
+                                                className="w-full py-1.5 rounded-lg bg-gradient-to-r from-rose-950 to-red-900 hover:from-rose-900 hover:to-red-800 text-rose-200 border border-rose-600/40 text-[11px] font-bold shadow-sm transition cursor-pointer"
                                             >
                                                 Tháo Trận
                                             </button>
@@ -975,7 +1007,7 @@ export const CultivateTab: React.FC = () => {
                                                     quickEquipSkill(skill.id);
                                                     showToast(`Đã xuất trận [${skill.name}]!`);
                                                 }}
-                                                className="w-full py-1 rounded bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold font-serif text-[11px] transition cursor-pointer"
+                                                className="w-full py-1.5 rounded-lg bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-slate-950 font-bold font-serif text-[11px] shadow-sm shadow-teal-500/20 transition cursor-pointer"
                                             >
                                                 Xuất Trận
                                             </button>
