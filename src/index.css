@@ -1,19 +1,37 @@
 @import "tailwindcss";
 
-:root {
-  --font-body: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-heading: 'Cinzel', serif;
+@theme {
+  --font-sans: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Cinzel', 'Be Vietnam Pro', Georgia, serif;
 }
 
-body {
+:root {
+  --font-body: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Cinzel', 'Be Vietnam Pro', Georgia, serif;
+  font-family: var(--font-body);
+}
+
+html, body {
   margin: 0;
   padding: 0;
   background-color: #05070d;
   color: #e2e8f0;
-  font-family: var(--font-body);
+  font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   user-select: none;
   -webkit-user-select: none;
   overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Luôn ưu tiên font Be Vietnam Pro để không bao giờ bị tách/lỗi dấu tiếng Việt */
+.font-sans {
+  font-family: 'Be Vietnam Pro', sans-serif !important;
+}
+
+.font-serif {
+  font-family: 'Cinzel', 'Be Vietnam Pro', Georgia, serif !important;
 }
 
 /* Ẩn scrollbar nhưng vẫn cho cuộn ngang */

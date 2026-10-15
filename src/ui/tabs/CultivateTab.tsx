@@ -269,7 +269,7 @@ export const CultivateTab: React.FC = () => {
                                     <button
                                         onClick={() => handleAllocate("vat_li", -1)}
                                         disabled={statPoints < 1}
-                                        className="flex-1 py-1 rounded bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-[11px] font-bold font-mono text-slate-950 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                                        className="flex-1 py-1 rounded bg-amber-600 hover:bg-amber-500 text-[11px] font-bold font-mono text-slate-950 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
                                     >
                                         Max
                                     </button>
@@ -305,7 +305,7 @@ export const CultivateTab: React.FC = () => {
                                     <button
                                         onClick={() => handleAllocate("phep", -1)}
                                         disabled={statPoints < 1}
-                                        className="flex-1 py-1 rounded bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-[11px] font-bold font-mono text-slate-950 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                                        className="flex-1 py-1 rounded bg-amber-600 hover:bg-amber-500 text-[11px] font-bold font-mono text-slate-950 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
                                     >
                                         Max
                                     </button>
@@ -341,7 +341,7 @@ export const CultivateTab: React.FC = () => {
                                     <button
                                         onClick={() => handleAllocate("mau", -1)}
                                         disabled={statPoints < 1}
-                                        className="flex-1 py-1 rounded bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-[11px] font-bold font-mono text-slate-950 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                                        className="flex-1 py-1 rounded bg-amber-600 hover:bg-amber-500 text-[11px] font-bold font-mono text-slate-950 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
                                     >
                                         Max
                                     </button>
@@ -465,7 +465,7 @@ export const CultivateTab: React.FC = () => {
                         </button>
                         <button
                             onClick={handleQuickBreakthrough}
-                            className="flex-[0.9] py-2.5 px-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white font-bold font-serif text-xs rounded-xl shadow-lg shadow-purple-500/30 transition-all cursor-pointer active:scale-95 border border-pink-400/50"
+                            className="flex-[0.9] py-2.5 px-3 bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-500 hover:via-orange-500 hover:to-amber-600 text-slate-950 font-bold font-serif text-xs rounded-xl shadow-lg shadow-amber-600/30 transition-all cursor-pointer active:scale-95 border border-amber-400/60"
                         >
                             ⚡ Đột Phá Nhanh
                         </button>
@@ -497,23 +497,23 @@ export const CultivateTab: React.FC = () => {
                                     return (
                                         <div
                                             key={slotKey}
-                                            className="p-3 rounded-xl border flex items-center justify-between transition relative overflow-hidden"
+                                            className="p-3 rounded-xl border flex items-center justify-between gap-3 transition relative overflow-hidden"
                                             style={{
                                                 borderColor: rarity.border,
                                                 background: rarity.bg
                                             }}
                                         >
-                                            <div className="flex items-center gap-3">
-                                                <div className="text-3xl drop-shadow-md">
+                                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                <div className="text-3xl shrink-0 drop-shadow-md">
                                                     {item.icon}
                                                 </div>
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <strong className="text-xs font-serif" style={{ color: rarity.color }}>
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <strong className="text-xs font-serif truncate" style={{ color: rarity.color }}>
                                                             {item.name}
                                                         </strong>
                                                         <span
-                                                            className="text-[10px] px-1.5 py-0.2 rounded font-bold uppercase tracking-wider"
+                                                            className="text-[10px] px-1.5 py-0.2 rounded font-bold uppercase tracking-wider shrink-0"
                                                             style={{
                                                                 color: rarity.color,
                                                                 border: `1px solid ${rarity.border}`
@@ -522,7 +522,7 @@ export const CultivateTab: React.FC = () => {
                                                             {rarity.name}
                                                         </span>
                                                     </div>
-                                                    <div className="text-[10px] text-slate-300 font-mono mt-0.5">
+                                                    <div className="text-[10px] text-slate-300 font-mono mt-0.5 truncate">
                                                         {item.stats?.mau && `HP +${item.stats.mau} `}
                                                         {item.stats?.vatLi && `VL +${item.stats.vatLi} `}
                                                         {item.stats?.phep && `Phép +${item.stats.phep} `}
@@ -532,7 +532,7 @@ export const CultivateTab: React.FC = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="flex flex-col gap-1">
+                                            <div className="flex flex-col gap-1.5 shrink-0 justify-center">
                                                 <button
                                                     onClick={() => unequipItem(slotKey)}
                                                     className="px-2.5 py-1 rounded bg-rose-950/80 hover:bg-rose-900 border border-rose-500/40 text-[11px] font-bold text-rose-300 transition cursor-pointer"
@@ -555,19 +555,24 @@ export const CultivateTab: React.FC = () => {
                                     <div
                                         key={slotKey}
                                         onClick={() => setEquipModalSlot(slotKey)}
-                                        className="p-3.5 rounded-xl border-2 border-dashed border-slate-700/80 hover:border-amber-400/60 bg-black/30 flex items-center gap-3 cursor-pointer transition select-none group"
+                                        className="p-3.5 rounded-xl border-2 border-dashed border-slate-700/80 hover:border-amber-400/60 bg-black/30 flex items-center justify-between gap-3 cursor-pointer transition select-none group"
                                     >
-                                        <span className="text-2xl opacity-50 group-hover:opacity-100 transition">
-                                            {slotLabels[slotKey].defaultIcon}
-                                        </span>
-                                        <div>
-                                            <div className="text-xs font-semibold text-slate-400 group-hover:text-amber-300 transition">
-                                                Chưa Trang Bị [{slotLabels[slotKey].name}]
-                                            </div>
-                                            <div className="text-[10px] text-slate-500">
-                                                (Nhấp vào đây để mặc trang bị từ túi đồ)
+                                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                                            <span className="text-2xl shrink-0 opacity-50 group-hover:opacity-100 transition">
+                                                {slotLabels[slotKey].defaultIcon}
+                                            </span>
+                                            <div className="min-w-0">
+                                                <div className="text-xs font-semibold text-slate-400 group-hover:text-amber-300 transition truncate">
+                                                    Chưa Trang Bị [{slotLabels[slotKey].name}]
+                                                </div>
+                                                <div className="text-[10px] text-slate-500 truncate">
+                                                    (Nhấp vào đây để mặc trang bị từ túi đồ)
+                                                </div>
                                             </div>
                                         </div>
+                                        <span className="text-xs font-bold text-amber-400/80 shrink-0 group-hover:text-amber-300">
+                                            + Mặc
+                                        </span>
                                     </div>
                                 );
                             })}

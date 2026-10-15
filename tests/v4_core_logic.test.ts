@@ -188,16 +188,22 @@ test("Đột phá thành công: tiêu hao đúng tu vi, tăng tầng và cộng 
 });
 
 test("Đột phá nhanh (quickBreakthrough) thực hiện nhiều tầng liên tiếp cho đến khi dừng minh bạch", () => {
-    const store = usePlayerStore.getState();
-    store.resetAllData();
-    // Nạp đủ 50.000 tu vi để nhảy nhiều tầng
-    store.addTuVi(50000);
+    const origRandom = Math.random;
+    Math.random = () => 0.01; // Đảm bảo test không bị thất bại ngẫu nhiên do tỷ lệ lôi kiếp
+    try {
+        const store = usePlayerStore.getState();
+        store.resetAllData();
+        // Nạp đủ 50.000 tu vi để nhảy nhiều tầng
+        store.addTuVi(50000);
 
-    const quickRes = store.quickBreakthrough();
-    assert.strictEqual(quickRes.success, true);
-    assert(quickRes.successCount >= 3, "Phải thăng ít nhất 3 tầng");
-    assert(quickRes.totalPointsGained >= 12, "Phải nhận tương ứng số điểm tiềm năng");
-    assert.strictEqual(typeof quickRes.message, "string");
+        const quickRes = store.quickBreakthrough();
+        assert.strictEqual(quickRes.success, true);
+        assert(quickRes.successCount >= 3, "Phải thăng ít nhất 3 tầng");
+        assert(quickRes.totalPointsGained >= 12, "Phải nhận tương ứng số điểm tiềm năng");
+        assert.strictEqual(typeof quickRes.message, "string");
+    } finally {
+        Math.random = origRandom;
+    }
 });
 
 // -------------------------------------------------------------
