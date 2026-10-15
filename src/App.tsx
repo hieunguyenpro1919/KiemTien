@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Header } from "./ui/layouts/Header";
 import { Navigation, NavTabId } from "./ui/layouts/Navigation";
 import { CultivateTab } from "./ui/tabs/CultivateTab";
+import { CombatTab } from "./ui/tabs/CombatTab";
 import { PlaceholderTab } from "./ui/tabs/PlaceholderTab";
 import { useGameLoop } from "./core/state/useGameLoop";
 import { formatBigNumber } from "./core/utils/format";
@@ -28,19 +29,7 @@ export const App: React.FC = () => {
             <main className="flex-1 w-full pb-16 relative z-10">
                 {activeTab === "cultivate" && <CultivateTab />}
 
-                {activeTab === "combat" && (
-                    <PlaceholderTab
-                        title="Đấu Pháp & Sàn Đấu 2D"
-                        icon="⚔️"
-                        description="Khu vực khiêu chiến 23 Ải cốt truyện và chiến đấu trực quan thời gian thực trên nền đồ họa WebGL PixiJS v8."
-                        features={[
-                            "Sàn đấu 2D WebGL PixiJS v8 siêu mượt",
-                            "Cơ chế Kim Thân Boss & Phá Kim Thân",
-                            "Hiệu ứng kiếm quang, nổ hạt và rung chấn camera",
-                            "Tùy chỉnh tốc độ x1, x2, x3 & Tự động xuất chiêu"
-                        ]}
-                    />
-                )}
+                {activeTab === "combat" && <CombatTab />}
 
                 {activeTab === "tower" && (
                     <PlaceholderTab
