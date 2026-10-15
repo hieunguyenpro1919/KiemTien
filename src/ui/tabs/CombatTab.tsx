@@ -4,8 +4,9 @@ import { STAGE_DATABASE, StageDefinition, StageSystem } from "../../core/constan
 import { SkillSystem } from "../../core/constants/skills.data";
 import { CombatEngine, CombatEngineRuntimeState, CombatSpeed } from "../../combat/CombatEngine";
 import { formatBigNumber } from "../../core/utils/format";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 
-export const CombatTab: React.FC = () => {
+export const CombatTabContent: React.FC = () => {
     const canvasContainerRef = useRef<HTMLDivElement>(null);
     const engineRef = useRef<CombatEngine | null>(null);
 
@@ -24,6 +25,8 @@ export const CombatTab: React.FC = () => {
     // Stage Selection
     const [selectedStageIndex, setSelectedStageIndex] = useState(0);
     const [combatState, setCombatState] = useState<CombatEngineRuntimeState | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [initError, setInitError] = useState<string | null>(null);
     const [battleResult, setBattleResult] = useState<{
         type: "VICTORY" | "DEFEAT";
         message: string;
@@ -71,57 +74,93 @@ export const CombatTab: React.FC = () => {
         });
     }, []);
 
-    // Khởi tạo PixiJS v8 Application
+    // Khởi tạo PixiJS v8 Application an toàn
     useEffect(() => {
         let isMounted = true;
-        const container = canvasContainerRef.current;
-        if (!container) return;
 
-        const engine = new CombatEngine();
-        engineRef.current = engine;
+        const initPixi = async () => {
+            try {
+                const container = canvasContainerRef.current;
+                if (!container) return;
 
-        engine.onStateUpdate = (st) => {
-            if (isMounted) {
-                setCombatState(st);
+                // Đợi 1 frame để đảm bảo container đã mount và có kích thước thực tế
+                await new Promise((resolve) => requestAnimationFrame(resolve));
+                if (!isMounted) return;
+
+                const engine = new CombatEngine();
+                engineRef.current = engine;
+
+                engine.onStateUpdate = (st) => {
+                    if (isMounted) {
+                        setCombatState(st);
+                    }
+                };
+
+                engine.onVictory = (stage) => {
+                    if (isMounted) {
+                        handleVictory(stage);
+                    }
+                };
+
+                engine.onDefeat = (reason) => {
+                    if (isMounted) {
+                        handleDefeat(reason);
+                    }
+                };
+
+                // Gắn engine vào DOM
+                const success = await engine.init(container);
+                if (!isMounted) {
+                    engine.destroy(true);
+                    return;
+                }
+
+                if (!success) {
+                    setInitError("Không thể khởi tạo linh trận WebGL.");
+                    setLoading(false);
+                    return;
+                }
+
+                // Bắt đầu trận chiến với ải được chọn
+                const playerStats = getTotalStats();
+                engine.startBattle(
+                    currentStage,
+                    playerStats,
+                    [skill0, skill1, skill2],
+                    ultimateSkill
+                );
+
+                setLoading(false);
+            } catch (err: any) {
+                console.error("Pixi Init Error in CombatTab:", err);
+                if (isMounted) {
+                    setInitError(err?.message || "Lỗi khởi tạo linh trận");
+                    setLoading(false);
+                }
             }
         };
 
-        engine.onVictory = (stage) => {
-            if (isMounted) {
-                handleVictory(stage);
-            }
-        };
-
-        engine.onDefeat = (reason) => {
-            if (isMounted) {
-                handleDefeat(reason);
-            }
-        };
-
-        // Gắn engine vào DOM
-        engine.init(container).then(() => {
-            if (!isMounted) return;
-            // Bắt đầu trận chiến với ải được chọn
-            const playerStats = getTotalStats();
-            engine.startBattle(
-                currentStage,
-                playerStats,
-                [skill0, skill1, skill2],
-                ultimateSkill
-            );
-        });
+        initPixi();
 
         // Xử lý resize tự động
         const handleResize = () => {
-            engine.resize();
+            try {
+                engineRef.current?.resize();
+            } catch (_) {}
         };
         window.addEventListener("resize", handleResize);
 
         return () => {
             isMounted = false;
             window.removeEventListener("resize", handleResize);
-            engine.destroy();
-            engineRef.current = null;
+            if (engineRef.current) {
+                try {
+                    engineRef.current.destroy(true);
+                } catch (e) {
+                    console.error("Error destroying engine:", e);
+                }
+                engineRef.current = null;
+            }
         };
     }, []);
 
@@ -177,7 +216,28 @@ export const CombatTab: React.FC = () => {
     return (
         <div className="max-w-6xl mx-auto px-4 py-4 space-y-4">
             {/* KHUNG SÀN ĐẤU 2D WEBGL (PIXIJS V8 CANVAS) */}
-            <div className="relative rounded-2xl overflow-hidden border-2 border-amber-500/30 bg-[#060913] shadow-2xl shadow-cyan-950/40">
+            <div className="relative rounded-2xl overflow-hidden border-2 border-amber-500/30 bg-[#060913] shadow-2xl shadow-cyan-950/40 min-h-[380px]">
+                {/* Trạng thái Loading hoặc Lỗi Khởi Tạo */}
+                {loading && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#060913] text-amber-400 z-20">
+                        <span className="text-4xl animate-spin mb-3">☯️</span>
+                        <span className="font-serif text-sm font-semibold tracking-wider">Đang khởi tạo linh trận...</span>
+                    </div>
+                )}
+                {initError && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#060913] text-rose-400 z-20 p-4 text-center">
+                        <span className="text-3xl mb-2">⚠️</span>
+                        <span className="font-serif text-sm font-semibold mb-1">Không thể khởi tạo linh trận WebGL</span>
+                        <span className="text-xs text-slate-400 mb-3">{initError}</span>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg border border-slate-600 transition cursor-pointer"
+                        >
+                            Tải Lại Trang
+                        </button>
+                    </div>
+                )}
+
                 {/* Pixi Canvas Mount Point */}
                 <div
                     ref={canvasContainerRef}
@@ -483,4 +543,13 @@ export const CombatTab: React.FC = () => {
     );
 };
 
+export const CombatTab: React.FC = () => {
+    return (
+        <ErrorBoundary fallbackTitle="Linh Trận Chiến Đấu">
+            <CombatTabContent />
+        </ErrorBoundary>
+    );
+};
+
 export default CombatTab;
+

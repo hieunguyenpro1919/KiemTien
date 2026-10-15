@@ -153,60 +153,87 @@ export class CombatEngine {
     /**
      * Khởi tạo PixiJS v8 Application và gắn vào Container DOM
      */
-    public async init(container: HTMLElement): Promise<void> {
-        this.container = container;
-        this.app = new Application();
+    public async init(container: HTMLElement): Promise<boolean> {
+        try {
+            this.container = container;
+            this.isDestroyed = false;
 
-        await this.app.init({
-            resizeTo: container,
-            backgroundColor: 0x060913,
-            antialias: true,
-            resolution: window.devicePixelRatio || 1,
-            autoDensity: true
-        });
+            // Đảm bảo container có width & height hợp lệ
+            let w = container.clientWidth;
+            let h = container.clientHeight;
+            if (!w || !h || w <= 0 || h <= 0) {
+                w = w > 0 ? w : 800;
+                h = h > 0 ? h : 450;
+            }
 
-        if (this.isDestroyed) {
-            this.app.destroy(true, { children: true });
-            return;
+            this.app = new Application();
+
+            // Patch phòng ngừa lỗi PixiJS v8 _cancelResize khi destroy sớm
+            (this.app as any)._cancelResize = () => {};
+
+            await this.app.init({
+                width: w,
+                height: h,
+                backgroundColor: 0x060913,
+                antialias: true,
+                resolution: window.devicePixelRatio || 1,
+                autoDensity: true
+            });
+
+            // Patch lại sau khi init đề phòng Pixi gán undefined
+            if (this.app && typeof (this.app as any)._cancelResize !== "function") {
+                (this.app as any)._cancelResize = () => {};
+            }
+
+            if (this.isDestroyed) {
+                this.cleanupPixiApp();
+                return false;
+            }
+
+            if (this.app?.canvas && container && !container.contains(this.app.canvas)) {
+                container.appendChild(this.app.canvas);
+            }
+
+            // Thiết lập cấu trúc tầng (Layer Hierarchy)
+            this.app.stage.addChild(this.rootContainer);
+            this.rootContainer.addChild(this.backgroundLayer);
+            this.rootContainer.addChild(this.entityLayer);
+            this.rootContainer.addChild(this.vfxLayer);
+            this.rootContainer.addChild(this.uiLayer);
+
+            // Background elements
+            this.initBackgroundStars();
+            this.backgroundLayer.addChild(this.starsGraphics);
+            this.backgroundLayer.addChild(this.magicCircleGraphics);
+
+            // Entity Layer
+            this.entityLayer.addChild(this.playerAura);
+            this.entityLayer.addChild(this.playerGraphics);
+            this.entityLayer.addChild(this.monsterAura);
+            this.entityLayer.addChild(this.monsterGraphics);
+            this.entityLayer.addChild(this.kimThanShieldGraphics);
+
+            // UI Layer
+            this.uiLayer.addChild(this.bossHpBarBg);
+            this.uiLayer.addChild(this.bossHpBarFill);
+
+            // Fullscreen flash on VFX layer
+            this.vfxLayer.addChild(this.screenFlashGraphics);
+
+            this.initTexts();
+
+            // Ticker loop
+            this.app.ticker.add((ticker) => {
+                this.update(ticker.deltaTime / 60); // Đổi về đơn vị giây thực tế
+            });
+
+            this.isInitialized = true;
+            this.resize();
+            return true;
+        } catch (err) {
+            console.error("Pixi Init Error:", err);
+            return false;
         }
-
-        container.appendChild(this.app.canvas);
-
-        // Thiết lập cấu trúc tầng (Layer Hierarchy)
-        this.app.stage.addChild(this.rootContainer);
-        this.rootContainer.addChild(this.backgroundLayer);
-        this.rootContainer.addChild(this.entityLayer);
-        this.rootContainer.addChild(this.vfxLayer);
-        this.rootContainer.addChild(this.uiLayer);
-
-        // Background elements
-        this.initBackgroundStars();
-        this.backgroundLayer.addChild(this.starsGraphics);
-        this.backgroundLayer.addChild(this.magicCircleGraphics);
-
-        // Entity Layer
-        this.entityLayer.addChild(this.playerAura);
-        this.entityLayer.addChild(this.playerGraphics);
-        this.entityLayer.addChild(this.monsterAura);
-        this.entityLayer.addChild(this.monsterGraphics);
-        this.entityLayer.addChild(this.kimThanShieldGraphics);
-
-        // UI Layer
-        this.uiLayer.addChild(this.bossHpBarBg);
-        this.uiLayer.addChild(this.bossHpBarFill);
-
-        // Fullscreen flash on VFX layer
-        this.vfxLayer.addChild(this.screenFlashGraphics);
-
-        this.initTexts();
-
-        // Ticker loop
-        this.app.ticker.add((ticker) => {
-            this.update(ticker.deltaTime / 60); // Đổi về đơn vị giây thực tế
-        });
-
-        this.isInitialized = true;
-        this.resize();
     }
 
     private initBackgroundStars(): void {
@@ -1005,34 +1032,54 @@ export class CombatEngine {
         }
     }
 
+    private cleanupPixiApp(): void {
+        if (!this.app) return;
+        try {
+            if (this.app.canvas && this.app.canvas.parentElement) {
+                try {
+                    this.app.canvas.parentElement.removeChild(this.app.canvas);
+                } catch (_) {}
+            }
+            if (typeof (this.app as any)._cancelResize !== "function") {
+                (this.app as any)._cancelResize = () => {};
+            }
+            this.app.destroy(true, { children: true });
+        } catch (err) {
+            console.warn("Pixi App destroy warning:", err);
+        } finally {
+            this.app = null;
+        }
+    }
+
     /**
      * Dọn dẹp sạch sẽ tài nguyên PixiJS để tránh rò rỉ bộ nhớ khi rời tab
      */
-    public destroy(): void {
+    public destroy(_destroyRenderer = true): void {
         this.isDestroyed = true;
         this.isInitialized = false;
 
-        // Dọn dẹp Text & Graphics
-        this.floatingTexts.forEach((ft) => {
-            ft.pixiText.destroy();
-        });
-        this.floatingTexts = [];
+        try {
+            // Dọn dẹp Text & Graphics
+            this.floatingTexts.forEach((ft) => {
+                try { ft.pixiText.destroy(); } catch (_) {}
+            });
+            this.floatingTexts = [];
 
-        this.shockwaves.forEach((sw) => {
-            sw.graphics.destroy();
-        });
-        this.shockwaves = [];
+            this.shockwaves.forEach((sw) => {
+                try { sw.graphics.destroy(); } catch (_) {}
+            });
+            this.shockwaves = [];
 
-        this.slashes.forEach((s) => {
-            s.graphics.destroy();
-        });
-        this.slashes = [];
+            this.slashes.forEach((s) => {
+                try { s.graphics.destroy(); } catch (_) {}
+            });
+            this.slashes = [];
 
-        if (this.app) {
-            this.app.destroy(true, { children: true });
-            this.app = null;
+            this.cleanupPixiApp();
+        } catch (err) {
+            console.error("CombatEngine destroy error:", err);
+        } finally {
+            this.container = null;
         }
-
-        this.container = null;
     }
 }

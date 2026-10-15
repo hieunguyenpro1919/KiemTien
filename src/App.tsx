@@ -6,6 +6,7 @@ import { CombatTab } from "./ui/tabs/CombatTab";
 import { PlaceholderTab } from "./ui/tabs/PlaceholderTab";
 import { useGameLoop } from "./core/state/useGameLoop";
 import { formatBigNumber } from "./core/utils/format";
+import { ErrorBoundary } from "./ui/components/ErrorBoundary";
 
 export const App: React.FC = () => {
     const [activeTab, setActiveTab] = useState<NavTabId>("cultivate");
@@ -27,9 +28,10 @@ export const App: React.FC = () => {
 
             {/* Khung Nội Dung Chính */}
             <main className="flex-1 w-full pb-16 relative z-10">
-                {activeTab === "cultivate" && <CultivateTab />}
-
-                {activeTab === "combat" && <CombatTab />}
+                <ErrorBoundary fallbackTitle="Nội Dung Giao Diện Tạm Gián Đoạn">
+                    {activeTab === "cultivate" && <CultivateTab />}
+                    {activeTab === "combat" && <CombatTab />}
+                </ErrorBoundary>
 
                 {activeTab === "tower" && (
                     <PlaceholderTab
