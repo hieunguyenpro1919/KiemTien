@@ -29,6 +29,10 @@ export interface PlayerStoreState {
     statPhep: number;  // Điểm Công Phép
     statMau: number;   // Điểm Sinh Lực (Máu)
 
+    title: string;
+    inventory: string[];
+    learnedSkills: string[];
+
     // 3 Ô Trang Bị Đạo Thân (Nón, Giáp, Vũ Khí)
     equipped: EquippedItemsState;
 
@@ -53,6 +57,7 @@ export interface PlayerStoreState {
 
     // Actions
     setName: (name: string) => void;
+    setTitle: (title: string) => void;
     addTuVi: (amount: BigNumberSource) => { added: BigNumber; canBreakthrough: boolean };
     addTinhNguyen: (amount: BigNumberSource) => { added: BigNumber; canBreakthrough: boolean };
     addCurrency: (currency: keyof PlayerCurrencies, amount: BigNumberSource) => void;
@@ -62,11 +67,17 @@ export interface PlayerStoreState {
     allocateStatMax: (type: StatType) => number;
     resetStats: () => number;
 
-    // Thao tác Trang Bị & Kỹ Năng
-    equipItem: (slot: ItemSlotType, itemId: string | null) => void;
-    unequipItem: (slot: ItemSlotType) => void;
+    // Thao tác Trang Bị, Kỹ Năng & Túi Đồ
+    equipItem: (slot: ItemSlotType, itemId: string | null) => boolean;
+    unequipItem: (slot: ItemSlotType) => boolean;
     equipSkill: (slotIndex: 0 | 1 | 2, skillId: string | null) => void;
+    unequipSkill: (slotIndex: 0 | 1 | 2) => void;
+    quickEquipSkill: (skillId: string) => boolean;
     equipUltimate: (ultimateId: string | null) => void;
+    useConsumable: (itemId: string) => { success: boolean; msg: string };
+    sellItem: (itemId: string) => { success: boolean; gain: number };
+    sellAllDuplicateEquipment: (keepOne?: boolean) => { totalCount: number; totalGain: number };
+    addItemToInventory: (itemId: string) => void;
 
     attemptBreakthrough: () => BreakthroughResult;
     quickBreakthrough: () => QuickBreakthroughResult;
@@ -100,6 +111,25 @@ export const usePlayerStore = create<PlayerStoreState>((set, get) => ({
     statVatLi: 0,
     statPhep: 0,
     statMau: 0,
+
+    title: "Sơ Nhập Tu Tiên",
+    inventory: [
+        "hat_02",
+        "armor_02",
+        "weapon_02",
+        "pill_tu_khi_tieu",
+        "pill_tu_khi_tieu",
+        "pill_tu_khi_trung",
+        "pill_tay_tuy",
+        "item_rename_scroll",
+        "ticket_tam_dao"
+    ],
+    learnedSkills: [
+        "skill_toai_thach_quyen",
+        "skill_dan_hoa_thuat",
+        "skill_thiet_bo_sam",
+        "skill_quy_nguyen_khi"
+    ],
 
     // 3 Ô Trang Bị khởi đầu chuẩn V3
     equipped: {
@@ -300,6 +330,7 @@ export const usePlayerStore = create<PlayerStoreState>((set, get) => ({
 
     // ================= ACTIONS =================
     setName: (name: string) => set({ name: name.trim() }),
+    setTitle: (title: string) => set({ title: title.trim() }),
 
     addTuVi: (amount: BigNumberSource) => {
         const val = toBigNumber(amount);
@@ -402,15 +433,49 @@ export const usePlayerStore = create<PlayerStoreState>((set, get) => ({
         return total;
     },
 
-    // ================= TRANG BỊ & KỸ NĂNG =================
-    equipItem: (slot: ItemSlotType, itemId: string | null) => {
-        const equipped = { ...get().equipped, [slot]: itemId };
-        set({ equipped });
+    // ================= TRANG BỊ & KỸ NĂNG & TÚI ĐỒ =================
+    equipItem: (slot: ItemSlotType, itemId: string | null): boolean => {
+        if (!itemId) {
+            get().unequipItem(slot);
+            return true;
+        }
+        const item = ItemSystem.getItemById(itemId);
+        if (!item || !["non", "giap", "vukhi"].includes(slot)) return false;
+
+        const { realmIndex, inventory, equipped } = get();
+        if (realmIndex < item.reqRealm) {
+            return false;
+        }
+
+        const invIdx = inventory.indexOf(itemId);
+        const newInventory = [...inventory];
+        if (invIdx !== -1) {
+            newInventory.splice(invIdx, 1);
+        }
+
+        const oldEquipped = equipped[slot as "non" | "giap" | "vukhi"];
+        if (oldEquipped && oldEquipped !== itemId) {
+            newInventory.push(oldEquipped);
+        }
+
+        set({
+            equipped: { ...equipped, [slot]: itemId },
+            inventory: newInventory
+        });
+        return true;
     },
 
-    unequipItem: (slot: ItemSlotType) => {
-        const equipped = { ...get().equipped, [slot]: null };
-        set({ equipped });
+    unequipItem: (slot: ItemSlotType): boolean => {
+        if (!["non", "giap", "vukhi"].includes(slot)) return false;
+        const { equipped, inventory } = get();
+        const currentId = equipped[slot as "non" | "giap" | "vukhi"];
+        if (!currentId) return false;
+
+        set({
+            equipped: { ...equipped, [slot]: null },
+            inventory: [...inventory, currentId]
+        });
+        return true;
     },
 
     equipSkill: (slotIndex: 0 | 1 | 2, skillId: string | null) => {
@@ -419,8 +484,128 @@ export const usePlayerStore = create<PlayerStoreState>((set, get) => ({
         set({ equippedSkills: skills });
     },
 
+    unequipSkill: (slotIndex: 0 | 1 | 2) => {
+        const skills = [...get().equippedSkills] as [string | null, string | null, string | null];
+        skills[slotIndex] = null;
+        set({ equippedSkills: skills });
+    },
+
+    quickEquipSkill: (skillId: string): boolean => {
+        const skills = [...get().equippedSkills] as [string | null, string | null, string | null];
+        const emptyIdx = skills.findIndex(s => s === null);
+        if (emptyIdx !== -1) {
+            skills[emptyIdx] = skillId;
+            set({ equippedSkills: skills });
+            return true;
+        }
+        skills[0] = skillId;
+        set({ equippedSkills: skills });
+        return true;
+    },
+
     equipUltimate: (ultimateId: string | null) => {
         set({ equippedUltimate: ultimateId });
+    },
+
+    useConsumable: (itemId: string): { success: boolean; msg: string } => {
+        const item = ItemSystem.getItemById(itemId);
+        if (!item) return { success: false, msg: "Vật phẩm không tồn tại!" };
+
+        const { inventory, realmIndex } = get();
+        if (realmIndex < item.reqRealm) {
+            return { success: false, msg: `Cần đạt cảnh giới cao hơn để sử dụng!` };
+        }
+
+        const idx = inventory.indexOf(itemId);
+        if (idx === -1) return { success: false, msg: "Không có vật phẩm trong túi!" };
+
+        const newInventory = [...inventory];
+        newInventory.splice(idx, 1);
+
+        if (item.isResetPill) {
+            get().resetStats();
+            set({ inventory: newInventory });
+            return { success: true, msg: "Đã tẩy toàn bộ điểm tiềm năng thành công!" };
+        }
+
+        if (item.tuViGain) {
+            get().addTuVi(item.tuViGain);
+            set({ inventory: newInventory });
+            return { success: true, msg: `Tăng +${item.tuViGain} Tu Vi!` };
+        }
+
+        if (item.tinhNguyenGain) {
+            get().addTinhNguyen(item.tinhNguyenGain);
+            set({ inventory: newInventory });
+            return { success: true, msg: `Tăng +${item.tinhNguyenGain} 🌌 Tinh Nguyên!` };
+        }
+
+        set({ inventory: newInventory });
+        return { success: true, msg: `Đã sử dụng ${item.name}!` };
+    },
+
+    sellItem: (itemId: string): { success: boolean; gain: number } => {
+        const item = ItemSystem.getItemById(itemId);
+        if (!item) return { success: false, gain: 0 };
+        const { inventory } = get();
+        const idx = inventory.indexOf(itemId);
+        if (idx === -1) return { success: false, gain: 0 };
+
+        const newInventory = [...inventory];
+        newInventory.splice(idx, 1);
+        const gain = item.sellPrice || 10;
+        get().addCurrency("linhThach", gain);
+        set({ inventory: newInventory });
+        return { success: true, gain };
+    },
+
+    sellAllDuplicateEquipment: (keepOne = true): { totalCount: number; totalGain: number } => {
+        const { inventory, equipped } = get();
+        const counts: Record<string, number> = {};
+        inventory.forEach(id => {
+            counts[id] = (counts[id] || 0) + 1;
+        });
+
+        let totalCount = 0;
+        let totalGain = 0;
+        const newInventory: string[] = [];
+
+        Object.entries(counts).forEach(([id, count]) => {
+            const item = ItemSystem.getItemById(id);
+            const isEquip = item && ["non", "giap", "vukhi"].includes(item.slot);
+            if (!isEquip) {
+                for (let i = 0; i < count; i++) newInventory.push(id);
+                return;
+            }
+
+            const isCurrentlyWorn = Object.values(equipped).includes(id);
+            let keepCount = 0;
+            if (isCurrentlyWorn) {
+                keepCount = 0;
+            } else if (keepOne) {
+                keepCount = 1;
+            }
+
+            const sellCount = Math.max(0, count - keepCount);
+            if (sellCount > 0) {
+                totalCount += sellCount;
+                totalGain += (item.sellPrice || 10) * sellCount;
+            }
+            for (let i = 0; i < keepCount; i++) {
+                newInventory.push(id);
+            }
+        });
+
+        if (totalGain > 0) {
+            get().addCurrency("linhThach", totalGain);
+            set({ inventory: newInventory });
+        }
+
+        return { totalCount, totalGain };
+    },
+
+    addItemToInventory: (itemId: string) => {
+        set(s => ({ inventory: [...s.inventory, itemId] }));
     },
 
     // ================= ĐỘT PHÁ CẢNH GIỚI =================
@@ -680,6 +865,24 @@ export const usePlayerStore = create<PlayerStoreState>((set, get) => ({
         statVatLi: 0,
         statPhep: 0,
         statMau: 0,
+        title: "Sơ Nhập Tu Tiên",
+        inventory: [
+            "hat_02",
+            "armor_02",
+            "weapon_02",
+            "pill_tu_khi_tieu",
+            "pill_tu_khi_tieu",
+            "pill_tu_khi_trung",
+            "pill_tay_tuy",
+            "item_rename_scroll",
+            "ticket_tam_dao"
+        ],
+        learnedSkills: [
+            "skill_toai_thach_quyen",
+            "skill_dan_hoa_thuat",
+            "skill_thiet_bo_sam",
+            "skill_quy_nguyen_khi"
+        ],
         equipped: {
             non: "hat_01",
             giap: "armor_01",
